@@ -1,6 +1,18 @@
 # RasPass
 
 
+# Build Setup
+First, you need to install the Pico SDK.
+
+To build the project:
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+The resulting executable is in `main.uf2`. To load this onto the Pico, hold the BOOTSEL button on the board and connect it to your computer via USB. The board should mount as a drive. Copy the `main.uf2` file onto this drive, and the board should reboot (and the drive will be unmounted) as soon as it is loaded.
+
 
 ## Getting started
 
