@@ -3,6 +3,7 @@ A physical, encrypted password manager that has fingerprint authorization. After
 user has been authorized, they can use retrieve desired password through a
 companion GUI displayed on their computer.
 
+
 # Build Setup
 First, you need to install the Pico SDK.
 
