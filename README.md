@@ -3,6 +3,9 @@ A physical, encrypted password manager that has fingerprint authorization. After
 user has been authorized, they can use retrieve desired password through a
 companion GUI displayed on their computer.
 
+## Laptop GUI Companion
+![Inital Startup view](/App/imgs/Homepage.jpg "Initial Startup View")
+![Password Manager view](/App/imgs/PasswordView.jpg "Password Manager view")
 
 # Build Setup
 First, you need to install the Pico SDK.
