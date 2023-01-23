@@ -1,14 +1,13 @@
 import serial
+from serial.tools import list_ports
 import time
+import re
 
 import tkinter as tk
 from tkinter import ttk
 
 
 class RasPassApp():
-    def toggle_led(self):
-        self.s.write(b"toggle\n")
-
     def __init__(self, root, serial):
         self.s = serial
         content = ttk.Frame(root, padding=(3, 3, 12, 12))
@@ -31,6 +30,9 @@ class RasPassApp():
         s1 = ttk.Entry(rows)
         u1 = ttk.Entry(rows)
         p1 = ttk.Entry(rows)
+
+        # add sanitation of user input
+
         g1 = ttk.Button(rows, text="Copy PW", command=None)
         c1 = ttk.Button(rows, text="Change", command=None)
 
@@ -83,12 +85,33 @@ class RasPassApp():
 
         header.grid(column=0, row=0, columnspan=5)
 
+    def toggle_led(self):
+        self.s.write(b"toggle\n")
+
 
 def main():
     root = tk.Tk()
     root.title("RasPass Password Manager")
 
-    s = serial.Serial("COM3")
+    s = None
+    port = list_ports.comports()
+    for p in port:
+        info = p.manufacturer
+        if (p.manufacturer == "MicroPython"):
+            device = p.device
+            try:
+                s = serial.Serial(device)
+                print(device)
+            except serial.SerialException:
+                # for some reason when I do list_ports.comports on my mac it always
+                # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
+                # so this is just forcing it to use tty for my computer if connecting
+                # over cu fails
+                device = re.sub(r'/cu', r'/tty', device)
+                s = serial.Serial(device)
+                print(device)
+            break
+
     rasPassApp = RasPassApp(root, s)
 
     root.mainloop()
