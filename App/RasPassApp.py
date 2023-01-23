@@ -1,10 +1,16 @@
+import serial
+import time
+
 import tkinter as tk
 from tkinter import ttk
 
 
 class RasPassApp():
+    def toggle_led(self):
+        self.s.write(b"toggle\n")
 
-    def __init__(self, root):
+    def __init__(self, root, serial):
+        self.s = serial
         content = ttk.Frame(root, padding=(3, 3, 12, 12))
 
         banner = ttk.Frame(content, borderwidth=5, relief="solid")
@@ -12,7 +18,7 @@ class RasPassApp():
 
         column_names = ttk.Frame(body, borderwidth=5, relief="solid")
         rows = ttk.Frame(body, borderwidth=5, relief="solid")
-        new_button = ttk.Button(body, text="Add new password")
+        new_button = ttk.Button(body, text="Add new password (Toggle LED for now)", command=self.toggle_led)
 
         # column names
         site_label = ttk.Label(column_names, text="Site")
@@ -81,9 +87,10 @@ class RasPassApp():
 def main():
     root = tk.Tk()
     root.title("RasPass Password Manager")
-    rasPassApp = RasPassApp(root)
-    s = ttk.Style()
-    print(s.theme_names())
+
+    s = serial.Serial("COM3")
+    rasPassApp = RasPassApp(root, s)
+
     root.mainloop()
 
 
