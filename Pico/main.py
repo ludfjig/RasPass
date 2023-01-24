@@ -10,7 +10,6 @@ for i in range(5):
     time.sleep(1)
 
 while True:
-    
     # read a command from the host
     v = sys.stdin.readline().strip()
 

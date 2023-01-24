@@ -3,6 +3,9 @@ A physical, encrypted password manager that has fingerprint authorization. After
 user has been authorized, they can use retrieve desired password through a
 companion GUI displayed on their computer.
 
+## Pico Development Setup
+In VSCode, configure `Pico` folder as `Pico W Go` project, and upload the project.
+
 ## Laptop GUI Companion
 Basic design idea for the companion GUI app:
 
@@ -13,19 +16,6 @@ Initial startup view:
 After authentication via fingerprint, switch to password view:
 
 ![Password Manager view](/App/imgs/PasswordView.jpg "Password Manager view")
-
-# Build Setup
-First, you need to install the Pico SDK.
-
-To build the project:
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-The resulting executable is in `main.uf2`. To load this onto the Pico, hold the BOOTSEL button on the board and connect it to your computer via USB. The board should mount as a drive. Copy the `main.uf2` file onto this drive, and the board should reboot (and the drive will be unmounted) as soon as it is loaded.
-
 
 ## Dependencies (for development)
 Python 3.9+
