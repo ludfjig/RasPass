@@ -5,18 +5,23 @@
 # Write ("w"): edit/change data (so updating existing username-password combination)
 # Read ("r"): read data 
 # input() recieve user input 
+# flush(): writes buffer to file so more data can be written without closing file 
 
 #Open, Write, Close a datafile
 data_file = open("MyData.txt","a")           # Creates/Opens a file called MyData.txt for writing
-Num_Lines = 0                                # Counter for number of lines to create
-print("Please enter a string:\n")
-while Num_Lines < 5:                         # Loop 5 times
-    Num_Lines += 1                           # Increment line counter
-    Line = str(Num_Lines)                    # Convert line number to string data
-    Text = input()                           # Create a variable for to use for data writing to file containing multiple data items
-                                             # Using commas will allows the spreadsheet to sort the data for further processing
-    data_file.write(Text + "\n")             # Write data to the file
-    data_file.flush()                        # Writes buffer to file so more data can be written without closing file  
+while True:
+    print("Please enter username:")
+    Username = input()
+    data_file.write(Username + " ")
+    data_file.flush() 
+    print("Please password:")
+    Password = input()
+    data_file.write(Password + "\n")
+    data_file.flush() 
+    print("Done? (y/n):")  
+    Done = input()
+    if (Done == "y"):
+        break
 data_file.close()                            # Tidy up by closing file
 print("Wrote data to file\n\n")
 
