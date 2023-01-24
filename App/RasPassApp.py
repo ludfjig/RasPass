@@ -96,12 +96,12 @@ def main():
     s = None
     port = list_ports.comports()
     for p in port:
-        info = p.manufacturer
-        if (p.manufacturer == "MicroPython"):
+        info = p.vid
+        if (p.vid == 11914):
+            print(p.vid)
             device = p.device
             try:
                 s = serial.Serial(device)
-                print(device)
             except serial.SerialException:
                 # for some reason when I do list_ports.comports on my mac it always
                 # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
@@ -109,7 +109,6 @@ def main():
                 # over cu fails
                 device = re.sub(r'/cu', r'/tty', device)
                 s = serial.Serial(device)
-                print(device)
             break
 
     rasPassApp = RasPassApp(root, s)
