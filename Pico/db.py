@@ -64,6 +64,15 @@ class DB:
         self.__storeFlashDB()
         return 0
 
+    def delete(self, sitename : str):
+        """ Delete the sitename.
+        Will return error if sitename does not exist
+        Returns 0 on success, -1 on failure. """
+        if sitename not in self.db:
+            return -1
+        del self.db[sitename]
+        return 0
+
     def getAllSites(self) -> list[str]:
         """ Get list of all sitename strs """
         return list(self.db.keys())
