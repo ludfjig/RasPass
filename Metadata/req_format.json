@@ -1,0 +1,44 @@
+{
+    "getAllSitenames": {
+            "method": "getAllSitenames",
+            "authtoken": "<FUTURE FEATURE>"
+    },
+    "getPassword": {
+            "method": "getPassword",
+            "sitename": "<SITENAME>",
+            "authtoken": "<FUTURE FEATURE>"
+    },
+    "addPassword": {
+        "method": "addPassword",
+        "sitename": "<SITENAME>",
+        "username": "<USERNAME>",
+        "password": "<PASSWORD>",
+        "authtoken": "<FUTURE FEATURE>"
+    },
+    "changeUsername": {
+        "method": "changeUsername",
+        "sitename": "<SITENAME>",
+        "username": "<USERNAME>",
+        "authtoken": "<FUTURE FEATURE>"
+    },
+    "changePassword": {
+        "method": "changePassword",
+        "sitename": "<SITENAME>",
+        "password": "<PASSWORD>",
+        "authtoken": "<FUTURE FEATURE>"
+    },
+    "removePassword":  {
+        "method": "changePassword",
+        "sitename": "<SITENAME>",
+        "authtoken": "<FUTURE FEATURE>"
+    },
+    "getSettings":  {
+        "method": "getSettings",
+        "authtoken": "<FUTURE FEATURE>"
+    },
+    "setSettings":  {
+        "method": "setSettings",
+        "settings": "<SETTINGS OBJECT>",
+        "authtoken": "<FUTURE FEATURE>"
+    }
+}

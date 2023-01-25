@@ -1,0 +1,47 @@
+{
+    "getAllSitenames": {
+            "method": "getAllSitenames",
+            "status": "int",
+            "error": "undefined OR str",
+            "sitenames": "array of str"
+    },
+    "getPassword": {
+            "method": "getPassword",
+            "status": "int",
+            "error": "undefined OR str",
+            "sitename": "str",
+            "username": "str",
+            "password": "str"
+    },
+    "addPassword": {
+        "method": "addPassword",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "changeUsername": {
+        "method": "changeUsername",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "changePassword": {
+        "method": "changePassword",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "removePassword":  {
+        "method": "changePassword",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "getSettings":  {
+        "method": "getSettings",
+        "status": "int",
+        "error": "undefined OR str",
+        "settings": "object"
+    },
+    "setSettings":  {
+        "method": "setSettings",
+        "status": "int",
+        "error": "undefined OR str"
+    }
+}
