@@ -5,11 +5,10 @@ import serial
 from serial.tools import list_ports
 
 
-LARGEFONT = ("Verdana", 35)
+LARGEFONT = ("Arial", 35)
 
 class StartScreen(tk.Frame):
   def __init__(self, parent, controller, s):
-    print("test")
     tk.Frame.__init__(self, parent)
     self.s = s
 

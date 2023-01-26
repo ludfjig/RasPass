@@ -4,7 +4,7 @@ import StartScreen
 import serial
 
 
-LARGEFONT = ("Verdana", 35)
+LARGEFONT = ("Arial", 35)
 
 class PasswordView(tk.Frame):
   def __init__(self, parent, controller, s):

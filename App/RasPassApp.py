@@ -1,19 +1,19 @@
 import serial
 from serial.tools import list_ports
 import time
-import re
 
 import tkinter as tk
 from tkinter import ttk
 from PasswordView import PasswordView
 from StartScreen import StartScreen
+from AppComm import AppComm
 
 
 
 class RasPassApp(tk.Tk):
-    def __init__(self, serial, parent=None):
+    def __init__(self, commLink, parent=None):
         tk.Tk.__init__(self, parent)
-        self.s = serial
+        self.serial = commLink.s
         self.title("RasPass Password Manager")
 
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
@@ -24,7 +24,7 @@ class RasPassApp(tk.Tk):
         self.frames = {}
 
         for page in (StartScreen, PasswordView) :
-            frame = page(content, self, self.s)
+            frame = page(content, self, self.serial)
 
         # initialize frame of each page object
             self.frames[page] = frame
@@ -40,28 +40,9 @@ class RasPassApp(tk.Tk):
 
 
 def main():
-    #root = tk.Tk()
-    #root.title("RasPass Password Manager")
+    commLink = AppComm()
 
-    s = None
-    port = list_ports.comports()
-    for p in port:
-        info = p.vid
-        if (p.vid == 11914):
-            print(p.vid)
-            device = p.device
-            try:
-                s = serial.Serial(device)
-            except serial.SerialException:
-                # for some reason when I do list_ports.comports on my mac it always
-                # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
-                # so this is just forcing it to use tty for my computer if connecting
-                # over cu fails
-                device = re.sub(r'/cu', r'/tty', device)
-                s = serial.Serial(device)
-            break
-
-    rasPassApp = RasPassApp(s)
+    rasPassApp = RasPassApp(commLink)
 
     rasPassApp.mainloop()
 
