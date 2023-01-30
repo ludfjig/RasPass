@@ -7,6 +7,7 @@ from Communication import CommunicationInterface
 import serial
 from serial.tools import list_ports
 import re
+import json
 
 
 class AppComm(CommunicationInterface):
@@ -15,7 +16,6 @@ class AppComm(CommunicationInterface):
     port = list_ports.comports()
     for p in port:
       if (p.vid == 11914):
-        print(p.vid)
         device = p.device
         try:
           self.s = serial.Serial(device)
@@ -29,62 +29,154 @@ class AppComm(CommunicationInterface):
         break
 
     if self.s == None:
-      print("failure establishing connection")
-      exit()
+      exit('failure establishing connection\n')
 
-  def writeRequest(self, req: str) -> int:
+  def writeRequest(self, req: dict) -> dict:
     # will create correct json format to send later
     # right now just trying to set up basic framework
     try:
       # should return number of bytes written
-      bytes = self.s.write(req)
-      return bytes
+      res = self.s.write(json.dumps(req))
+      return json.load(res)
     except serial.SerialTimeoutException:
       # timed out, something went wrong, return -1 to indicate error
-      print("Failure to communicate with device")
-      return -1
+      return {}
 
   # expects a json response from pico
-  def readResponse(self) -> str:
+  def readResponse(self) -> dict:
+    # while there is a next line to read from pico, read data
+    # failure on error reading
+    # structure back to python object from json
+    # return object to caller
     try:
       res = self.s.read()
       # need to convert to json string from bytes?
-      return res
+      return json.load(res)
     except serial.SerialTimeoutException:
-      print("Failure to communicate with device")
-      return ""
+      return {}
 
   def getSerial(self):
     return self.s
 
   def getAllSiteNames(self):
     """Returns all site names stored in password manager"""
-    pass
+    req = {
+      "getAllSiteNames" : {
+        "method" : "getAllSiteNames",
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def getPassword(self, sitename: str):
     """Returns username, password, or error on authentication failure/no entry"""
-    pass
+    # sanitize input
+    req = {
+      "getPassword" : {
+        "method" : "getPassword",
+        "sitename" : sitename,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def addPassword(self, sitename: str, user: str, pswd: str):
     """Adds a new username, password, site to the password manager. Returns success/failure"""
-    pass
+    req = {
+      "addPassword" : {
+        "method" : "addPassword",
+        "sitename" : sitename,
+        "username" : user,
+        "password" : pswd,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def changeUsername(self, site: str, user: str):
     """Changes the username for a stored site in the password manager. Returns success/failure"""
-    pass
+    req = {
+      "changeUsername" : {
+        "method" : "changeUsername",
+        "sitename" : site,
+        "username" : user,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def changePassword(self, site: str, pswd: str):
     """Changes the password for a stored site in the password manager. Returns success/failure"""
-    pass
+    req = {
+      "changePassword" : {
+        "method" : "changePassword",
+        "sitename" : site,
+        "password" : pswd,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def removePassword(self, site: str):
     """Deletes a site, username, password entry from the password manager. Returns success/failure"""
-    pass
+    req = {
+      "removePassword" : {
+        "method" : "removePassword",
+        "sitename" : site,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def getSettings(self):
     """Returns all the current settings"""
-    pass
+    req = {
+      "getSettings" : {
+        "method" : "getSettings",
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
 
   def setSettings(self, settings: str):
     """Sets a setting in the password manager. Returns success/failure"""
-    pass
+    req = {
+      "setSettings" : {
+        "method" : "setSettings",
+        "settings" : settings,
+        "authtoken" : "1"
+      }
+    }
+    res = self.writeRequest(req)
+    if res == {}:
+      print("Failure to communicate with device\n")
+      return {}
+    return res
