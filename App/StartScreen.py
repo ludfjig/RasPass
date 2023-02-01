@@ -8,7 +8,7 @@ from serial.tools import list_ports
 LARGEFONT = ("Arial", 35)
 
 class StartScreen(tk.Frame):
-  def __init__(self, parent, controller, s):
+  def __init__(self, parent, controller, s, commLink):
     tk.Frame.__init__(self, parent)
     self.s = s
 

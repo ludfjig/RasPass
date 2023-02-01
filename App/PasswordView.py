@@ -7,10 +7,10 @@ import serial
 LARGEFONT = ("Arial", 35)
 
 class PasswordView(tk.Frame):
-  def __init__(self, parent, controller, s):
+  def __init__(self, parent, controller, s, commLink):
     tk.Frame.__init__(self, parent)
     self.s = s
-
+    self.comm = commLink
     content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
     banner = ttk.Frame(content, borderwidth=5, relief="solid")

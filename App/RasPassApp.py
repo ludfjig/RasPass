@@ -24,7 +24,7 @@ class RasPassApp(tk.Tk):
         self.frames = {}
 
         for page in (StartScreen, PasswordView) :
-            frame = page(content, self, self.serial)
+            frame = page(content, self, self.serial, commLink)
 
         # initialize frame of each page object
             self.frames[page] = frame

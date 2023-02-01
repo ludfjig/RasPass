@@ -9,7 +9,6 @@ from serial.tools import list_ports
 import re
 import json
 
-
 class AppComm(CommunicationInterface):
   def __init__(self):
     self.s = None
@@ -31,16 +30,18 @@ class AppComm(CommunicationInterface):
     if self.s == None:
       exit('failure establishing connection\n')
 
-  def writeRequest(self, req: dict) -> dict:
+  def writeRequest(self, req: dict) -> int:
     # will create correct json format to send later
     # right now just trying to set up basic framework
     try:
       # should return number of bytes written
-      res = self.s.write(json.dumps(req))
-      return json.load(res)
+      encoded = json.dumps(req).encode('utf-8')
+      size = self.s.write(encoded)
+
+      return (size != len(encoded))
     except serial.SerialTimeoutException:
       # timed out, something went wrong, return -1 to indicate error
-      return {}
+      return False
 
   # expects a json response from pico
   def readResponse(self) -> dict:
@@ -66,10 +67,16 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
       return {}
+
+    res = self.readResponse()
+    if res == {}:
+      print("Failure retrieving sitenames")
+      return {}
+
     return res
 
   def getPassword(self, sitename: str):
@@ -82,10 +89,16 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
       return {}
+
+    res = self.readResponse()
+    if res == {}:
+      print("Failure retrieving passwords")
+      return {}
+
     return res
 
   def addPassword(self, sitename: str, user: str, pswd: str):
@@ -99,11 +112,12 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
-      return {}
-    return res
+      return False
+
+    return True
 
   def changeUsername(self, site: str, user: str):
     """Changes the username for a stored site in the password manager. Returns success/failure"""
@@ -115,11 +129,12 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
-      return {}
-    return res
+      return False
+
+    return True
 
   def changePassword(self, site: str, pswd: str):
     """Changes the password for a stored site in the password manager. Returns success/failure"""
@@ -131,11 +146,12 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
-      return {}
-    return res
+      return False
+
+    return True
 
   def removePassword(self, site: str):
     """Deletes a site, username, password entry from the password manager. Returns success/failure"""
@@ -146,11 +162,11 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
-      return {}
-    return res
+      return False
+    return True
 
   def getSettings(self):
     """Returns all the current settings"""
@@ -160,10 +176,16 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
       return {}
+
+    res = self.readResponse()
+    if res == {}:
+      print("Failure retrieving settings")
+      return{}
+
     return res
 
   def setSettings(self, settings: str):
@@ -175,8 +197,8 @@ class AppComm(CommunicationInterface):
         "authtoken" : "1"
       }
     }
-    res = self.writeRequest(req)
-    if res == {}:
+    written = self.writeRequest(req)
+    if not written:
       print("Failure to communicate with device\n")
-      return {}
-    return res
+      return False
+    return True
