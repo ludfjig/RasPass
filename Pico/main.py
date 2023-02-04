@@ -1,13 +1,13 @@
 import time
 from machine import Pin
 import sys
-sys.path.append("/libraries")
+sys.path.append('/libraries')
 
-from communication import PicoComm
-from localdb import DataBase
-from crypto import Crypto
-from flashrw import FlashRW
-from auth import Auth
+from libraries.communication import PicoComm
+from libraries.auth import Auth
+from libraries.crypto import Crypto
+from libraries.flashrw import FlashRW
+from libraries.localdb import DataBase
 
 led = Pin(25, machine.Pin.OUT)
 

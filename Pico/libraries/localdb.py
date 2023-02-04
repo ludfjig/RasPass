@@ -8,7 +8,6 @@
 
 import flashrw
 import crypto
-from typing import Optional
 
 class DataBase:
     def __init__(self, flashRWI : flashrw.FlashRW, cryptoI : crypto.Crypto):
@@ -44,13 +43,13 @@ class DataBase:
         self.__storeFlashDB()
         return 0
 
-    def get(self, sitename : str) -> Optional[tuple[str, str]]:
+    def get(self, sitename : str) -> tuple[str, str] | None:
         """ Gets a (username, password) tuple corresponding to sitename. Returns None if no entry found. """
         if sitename not in self.db:
             return None
         return self.cr.getDecryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), self.db[sitename])
 
-    def update(self, sitename : str, username : Optional[str] = None, password : Optional[str] = None):
+    def update(self, sitename : str, username : str | None, password : str | None):
         """ Update username and/or password for given sitename.
         Will return error if sitename is not part of the db, or if both username and password are None
         Returns 0 on success, -1 on failure. """
