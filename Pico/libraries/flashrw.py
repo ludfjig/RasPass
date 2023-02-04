@@ -4,6 +4,7 @@
 class FlashRW:
     def __init__(self):
         """ Initialize the flash """
+        self.state = 0
 
     def readFlashDB(self) -> bytes:
         """ Read entire database in flash. Must be 256B-aligned. Returns None on failure """

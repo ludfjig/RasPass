@@ -1,12 +1,13 @@
 import time
 from machine import Pin
-
-import json
-
 import sys
 sys.path.append("/libraries")
 
-import PicoComm
+from communication import PicoComm
+from localdb import DataBase
+from crypto import Crypto
+from flashrw import FlashRW
+from auth import Auth
 
 led = Pin(25, machine.Pin.OUT)
 
@@ -17,16 +18,26 @@ for i in range(5):
     led.off()
     time.sleep(0.2)
 
-comms = PicoComm.PicoComm()
+frw = FlashRW()
+cr = Crypto()
+database = DataBase(frw, cr)
+fp = Auth()
+comms = PicoComm(database, fp)
 
 while True:
     # read a command from the host
-    res = comms.readRequest()
-    if res != None:
-        if res["toggle"] == 1:
+    req = comms.readRequest()
+    if req != None:
+        if "toggle" in req and req["toggle"] == 1:
             led.on()
-        else:
+        elif "toggle" in req and req["toggle"] == 0:
             led.off()
+        else:
+            led.on()
+            time.sleep(1.25)
+            led.off()
+            time.sleep(1.25)
+            #comms.processRequest(req)
     else:
         # Show some error condition
         led.on()

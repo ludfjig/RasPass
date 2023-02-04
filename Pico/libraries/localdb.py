@@ -10,7 +10,7 @@ import flashrw
 import crypto
 from typing import Optional
 
-class DB:
+class DataBase:
     def __init__(self, flashRWI : flashrw.FlashRW, cryptoI : crypto.Crypto):
         """ Initialize the database. Reads and parses database from flash """
         self.frw = flashRWI
