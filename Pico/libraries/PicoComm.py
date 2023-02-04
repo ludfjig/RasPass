@@ -1,6 +1,27 @@
-from Communication import CommunicationInterface
+import sys
+import json
 
-class PicoComm(CommunicationInterface):
+class PicoComm():
+
+  def __init__(self):
+    self.state = True
+
+  # send a response to the app
+  def writeResponse(self, resp: dict) -> int:
+    sys.stdout.write(json.dumps(resp))
+    return 0
+
+  # expects a json request from the app
+  def readRequest(self) -> bool: #dict:
+    # while there is a next line to read from pico, read data
+    # failure on error reading
+    # structure back to python object from json
+    # return object to caller
+    res = "".join(sys.stdin.readlines())
+    #return json.load(res)
+    self.state = not self.state
+    return self.state
+
   def getAllSiteNames(self):
     """Returns all site names stored in password manager"""
     pass

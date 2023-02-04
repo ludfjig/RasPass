@@ -3,6 +3,8 @@ from tkinter import ttk
 import StartScreen
 import serial
 
+import json
+
 
 LARGEFONT = ("Arial", 35)
 
@@ -11,6 +13,7 @@ class PasswordView(tk.Frame):
     tk.Frame.__init__(self, parent)
     self.s = s
     self.comm = commLink
+    self.ledState = 1
     content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
     banner = ttk.Frame(content, borderwidth=5, relief="solid")
@@ -94,4 +97,7 @@ class PasswordView(tk.Frame):
     btn1.grid(row = 1, column = 0, padx = 10, pady = 10)
 
   def toggle_led(self):
-    self.s.write(b"toggle\n")
+    #self.s.write(b"toggle\n")
+    encoded = json.dumps({"toggle":self.ledState}).encode('utf-8')
+    size = self.s.write(encoded + b"\n")
+    self.ledState = 1-self.ledState
