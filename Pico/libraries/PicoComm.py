@@ -12,15 +12,12 @@ class PicoComm():
     return 0
 
   # expects a json request from the app
-  def readRequest(self) -> bool: #dict:
-    # while there is a next line to read from pico, read data
-    # failure on error reading
-    # structure back to python object from json
-    # return object to caller
-    res = "".join(sys.stdin.readlines())
-    #return json.load(res)
-    self.state = not self.state
-    return self.state
+  def readRequest(self) -> dict | None:
+    raw = sys.stdin.readline().strip()
+    try:
+        return json.loads(raw)
+    except:
+      return None
 
   def getAllSiteNames(self):
     """Returns all site names stored in password manager"""

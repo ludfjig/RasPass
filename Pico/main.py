@@ -21,22 +21,15 @@ comms = PicoComm.PicoComm()
 
 while True:
     # read a command from the host
-    raw = sys.stdin.readline().strip()
-    try:
-        req = json.loads(raw)
-        if req["toggle"] == 1:
+    res = comms.readRequest()
+    if res != None:
+        if res["toggle"] == 1:
             led.on()
         else:
             led.off()
-    except:
+    else:
+        # Show some error condition
         led.on()
-        time.sleep(0.5)
+        time.sleep(0.25)
         led.off()
         time.sleep(0.25)
-
-    #if (comms.readRequest()):
-    #    led.toggle()
-
-    # perform the requested action
-    #if v.lower() == "toggle":
-    #    led.toggle()
