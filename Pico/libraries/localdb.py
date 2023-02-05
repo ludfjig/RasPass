@@ -30,6 +30,7 @@ class DataBase:
         raw_block = bytes()
         for sitename in self.db:
             raw_block += self.cr.getStorageByteEntry(sitename, self.db[sitename])
+        print("storing")
         self.frw.writeFlashDB(raw_block)
 
     def add(self, sitename : str, username : str, password : str):
@@ -39,6 +40,7 @@ class DataBase:
         if sitename in self.db:
             return -1
         encrypted_up = self.cr.getEncryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), username, password)
+        print(sitename)
         self.db[sitename] = encrypted_up
         self.__storeFlashDB()
         return 0
@@ -70,6 +72,7 @@ class DataBase:
         if sitename not in self.db:
             return -1
         del self.db[sitename]
+        self.__storeFlashDB()
         return 0
 
     def getAllSites(self) -> list[str]:

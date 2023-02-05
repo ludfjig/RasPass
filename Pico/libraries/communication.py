@@ -15,14 +15,21 @@ class PicoComm:
 
   # expects a json request from the app
   def readRequest(self) -> dict | None:
-    raw = sys.stdin.readline().strip()
+    print("reading")
+    raw = bytearray()
+    byte = sys.stdin.buffer.read(1)
+    while(byte != b'\0'):
+      raw.extend(byte)
+      byte = sys.stdin.buffer.read(1)
+    print(raw)
     try:
-        return json.loads(raw)
+        return json.loads(raw.decode(encoding='utf-8'))
     except:
       return None
 
   def processRequest(self, req) -> bool:
     """ Process a request, sending a response to the device. Returns true if req was successfully processed, and false otherwise. """
+    print("process")
     if "method" not in req:
       return False
     handler = getattr(self, req.method)

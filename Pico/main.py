@@ -27,20 +27,23 @@ comms = PicoComm(database, fp)
 while True:
     # read a command from the host
     req = comms.readRequest()
+    print(req)
     if req != None:
-        if "toggle" in req and req["toggle"] == 1:
-            led.on()
-        elif "toggle" in req and req["toggle"] == 0:
-            led.off()
-        else:
-            led.on()
-            time.sleep(1.25)
-            led.off()
-            time.sleep(1.25)
-            #comms.processRequest(req)
-    else:
-        # Show some error condition
         led.on()
-        time.sleep(0.25)
+        time.sleep(1.25)
         led.off()
-        time.sleep(0.25)
+        time.sleep(1.25)
+        comms.processRequest(req)
+    time.sleep(1)
+    #if req != None:
+    #    if "toggle" in req and req["toggle"] == 1:
+    #        led.on()
+    #    elif "toggle" in req and req["toggle"] == 0:
+    #        led.off()
+    #    else:
+    #        led.on()
+    #        time.sleep(1.25)
+    #        led.off()
+    #        time.sleep(1.25)
+    #        comms.processRequest(req)
+

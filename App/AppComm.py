@@ -35,10 +35,11 @@ class AppComm(CommunicationInterface):
     # right now just trying to set up basic framework
     try:
       # should return number of bytes written
-      encoded = json.dumps(req).encode('utf-8')
+      print(req)
+      encoded = json.dumps(req).encode('utf-8') + b'\0'
       size = self.s.write(encoded)
-
-      return (size != len(encoded))
+      print(size)
+      return (size == len(encoded))
     except serial.SerialTimeoutException:
       # timed out, something went wrong, return -1 to indicate error
       return False
@@ -49,12 +50,15 @@ class AppComm(CommunicationInterface):
     # failure on error reading
     # structure back to python object from json
     # return object to caller
-    try:
-      res = self.s.read()
-      # need to convert to json string from bytes?
-      return json.load(res)
-    except serial.SerialTimeoutException:
-      return {}
+    while(1):
+      try:
+       raw = self.s.readline().strip()
+       # need to convert to json string from bytes?
+       res = raw.decode('utf8').replace("'", '"')
+       print(res)
+       return json.loads(res)
+      except serial.SerialTimeoutException:
+        return {}
 
   def getSerial(self):
     return self.s
@@ -82,6 +86,7 @@ class AppComm(CommunicationInterface):
   def getPassword(self, sitename: str):
     """Returns username, password, or error on authentication failure/no entry"""
     # sanitize input
+    print("get pass")
     req = {
       "getPassword" : {
         "method" : "getPassword",
@@ -103,6 +108,7 @@ class AppComm(CommunicationInterface):
 
   def addPassword(self, sitename: str, user: str, pswd: str):
     """Adds a new username, password, site to the password manager. Returns success/failure"""
+    print("add pass")
     req = {
       "addPassword" : {
         "method" : "addPassword",
