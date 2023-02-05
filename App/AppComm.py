@@ -56,10 +56,6 @@ class AppComm(CommunicationInterface):
         # need to convert to json string from bytes?
         res = raw.decode('utf8').replace("'", '"')
         print("Read response: ", res)
-        raw = self.s.readline().strip()
-        # need to convert to json string from bytes?
-        res = raw.decode('utf8').replace("'", '"')
-        print("Read response: ", res)
         return json.loads(res)
       except serial.SerialTimeoutException:
         return {}

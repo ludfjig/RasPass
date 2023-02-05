@@ -10,8 +10,8 @@ class PicoComm:
 
   # send a response to the app
   def writeResponse(self, resp: dict) -> int:
-    #sys.stdout.write(json.dumps(resp).encode('utf-8') + b"\0")
-    print("write res: ", json.dumps(resp).encode('utf-8') + b"\0")
+    sys.stdout.write(json.dumps(resp).encode('utf-8') + b"\0")
+    #print("write res: ", json.dumps(resp).encode('utf-8') + b"\0")
     return 0
 
   # expects a json request from the app
