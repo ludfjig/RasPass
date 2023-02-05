@@ -52,11 +52,15 @@ class AppComm(CommunicationInterface):
     # return object to caller
     while(1):
       try:
-       raw = self.s.readline().strip()
-       # need to convert to json string from bytes?
-       res = raw.decode('utf8').replace("'", '"')
-       print(res)
-       return json.loads(res)
+        raw = self.s.readline().strip()
+        # need to convert to json string from bytes?
+        res = raw.decode('utf8').replace("'", '"')
+        print("Read response: ", res)
+        raw = self.s.readline().strip()
+        # need to convert to json string from bytes?
+        res = raw.decode('utf8').replace("'", '"')
+        print("Read response: ", res)
+        return json.loads(res)
       except serial.SerialTimeoutException:
         return {}
 
@@ -66,10 +70,8 @@ class AppComm(CommunicationInterface):
   def getAllSiteNames(self):
     """Returns all site names stored in password manager"""
     req = {
-      "getAllSiteNames" : {
         "method" : "getAllSiteNames",
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -88,11 +90,9 @@ class AppComm(CommunicationInterface):
     # sanitize input
     print("get pass")
     req = {
-      "getPassword" : {
         "method" : "getPassword",
         "sitename" : sitename,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -110,13 +110,11 @@ class AppComm(CommunicationInterface):
     """Adds a new username, password, site to the password manager. Returns success/failure"""
     print("add pass")
     req = {
-      "addPassword" : {
         "method" : "addPassword",
         "sitename" : sitename,
         "username" : user,
         "password" : pswd,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -128,12 +126,10 @@ class AppComm(CommunicationInterface):
   def changeUsername(self, site: str, user: str):
     """Changes the username for a stored site in the password manager. Returns success/failure"""
     req = {
-      "changeUsername" : {
         "method" : "changeUsername",
         "sitename" : site,
         "username" : user,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -145,12 +141,10 @@ class AppComm(CommunicationInterface):
   def changePassword(self, site: str, pswd: str):
     """Changes the password for a stored site in the password manager. Returns success/failure"""
     req = {
-      "changePassword" : {
         "method" : "changePassword",
         "sitename" : site,
         "password" : pswd,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -162,11 +156,9 @@ class AppComm(CommunicationInterface):
   def removePassword(self, site: str):
     """Deletes a site, username, password entry from the password manager. Returns success/failure"""
     req = {
-      "removePassword" : {
         "method" : "removePassword",
         "sitename" : site,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -177,10 +169,8 @@ class AppComm(CommunicationInterface):
   def getSettings(self):
     """Returns all the current settings"""
     req = {
-      "getSettings" : {
         "method" : "getSettings",
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:
@@ -197,11 +187,9 @@ class AppComm(CommunicationInterface):
   def setSettings(self, settings: str):
     """Sets a setting in the password manager. Returns success/failure"""
     req = {
-      "setSettings" : {
         "method" : "setSettings",
         "settings" : settings,
         "authtoken" : "1"
-      }
     }
     written = self.writeRequest(req)
     if not written:

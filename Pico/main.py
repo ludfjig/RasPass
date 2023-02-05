@@ -27,7 +27,6 @@ comms = PicoComm(database, fp)
 while True:
     # read a command from the host
     req = comms.readRequest()
-    print(req)
     if req != None:
         led.on()
         time.sleep(1.25)

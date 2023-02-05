@@ -102,5 +102,5 @@ class PasswordView(tk.Frame):
     #encoded = json.dumps({"toggle":self.ledState}).encode('utf-8')
     #size = self.s.write(encoded + b"\n")
     pswd = self.comm.getPassword("google.com")
-    print(pswd)
+    print("returned password: ", pswd)
     self.ledState = 1-self.ledState

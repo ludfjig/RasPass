@@ -1,5 +1,8 @@
 # Library to read/write from the Pico Flash
 # Copyright (c), 2023  RasPass
+
+import os
+
 PICO_FLASH_SIZE_BYTES = 2097152
 DATA_CHUNK = 256
 
@@ -30,4 +33,5 @@ class FlashRW:
 
     def getAESIV(self) -> bytes:
         """ TODO: fix this to use actual random IV - should be different for each """
-        return "abcdefgh".encode('ascii')
+        iv = os.urandom(16)
+        return iv

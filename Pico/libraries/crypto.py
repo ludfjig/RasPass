@@ -14,14 +14,14 @@ class Crypto:
 
     def getEncryptedUP(self, key : bytes, IV : bytes, username : str, password : str) -> bytes:
         """ Encrypt the username and password and return padded bytes value in data storage format (128B chunk)"""
-        cl = cryptolib.aes(key, cryptolib.MODE_CBC, IV)
+        cl = cryptolib.aes(key, 2, IV)
         uname = cl.encrypt(self.__getPadded(username, 64))
         pswd = cl.encrypt(self.__getPadded(password, 64))
         return uname + pswd
 
     def getDecryptedUP(self, key : bytes, IV : bytes, encrypted_up: bytes) -> tuple[str, str]:
         """ Decrypt the username and password, remove padding, and return strings for username, and password """
-        cl = cryptolib.aes(key, cryptolib.MODE_CBC, IV)
+        cl = cryptolib.aes(key, 2, IV)
         username = self.__getUnPadded(cl.decrypt(encrypted_up[128:128+64]))
         password = self.__getUnPadded(cl.decrypt(encrypted_up[128+64:]))
         return (username, password)

@@ -10,7 +10,8 @@ class PicoComm:
 
   # send a response to the app
   def writeResponse(self, resp: dict) -> int:
-    sys.stdout.write(json.dumps(resp).encode('utf-8') + b"\0")
+    #sys.stdout.write(json.dumps(resp).encode('utf-8') + b"\0")
+    print("write res: ", json.dumps(resp).encode('utf-8') + b"\0")
     return 0
 
   # expects a json request from the app
@@ -21,21 +22,27 @@ class PicoComm:
     while(byte != b'\0'):
       raw.extend(byte)
       byte = sys.stdin.buffer.read(1)
-    print(raw)
     try:
-        return json.loads(raw.decode(encoding='utf-8'))
+        decoded = json.loads(raw.decode('utf-8'))
+        print(decoded)
+        return decoded
     except:
       return None
 
   def processRequest(self, req) -> bool:
     """ Process a request, sending a response to the device. Returns true if req was successfully processed, and false otherwise. """
     print("process")
-    if "method" not in req:
-      return False
-    handler = getattr(self, req.method)
-    if not handler:
-      return False
-    resp = handler(req)
+    #if "method" not in req:
+    #  print("false no method in req")
+   #   return False
+    method = req["method"]
+    handler = getattr(PicoComm, method)
+    print("handler: ", handler)
+    #if not handler:
+    #  print("false", handler)
+    #  return False
+    resp = handler(self, req)
+    print("resp")
     if resp == None:
       return False
     self.writeResponse(resp)
