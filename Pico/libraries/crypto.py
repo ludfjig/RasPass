@@ -22,8 +22,8 @@ class Crypto:
     def getDecryptedUP(self, key : bytes, IV : bytes, encrypted_up: bytes) -> tuple[str, str]:
         """ Decrypt the username and password, remove padding, and return strings for username, and password """
         cl = cryptolib.aes(key, 2, IV)
-        username = self.__getUnPadded(cl.decrypt(encrypted_up[128:128+64]))
-        password = self.__getUnPadded(cl.decrypt(encrypted_up[128+64:]))
+        username = self.__getUnPadded(cl.decrypt(encrypted_up[0:64]))
+        password = self.__getUnPadded(cl.decrypt(encrypted_up[64:]))
         return (username, password)
 
     def __getPadded(self, toPad : str, padLen : int) -> bytes:

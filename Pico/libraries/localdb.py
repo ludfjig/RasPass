@@ -30,6 +30,7 @@ class DataBase:
         raw_block = bytes()
         for sitename in self.db:
             raw_block += self.cr.getStorageByteEntry(sitename, self.db[sitename])
+            print(raw_block)
         print("storing")
         self.frw.writeFlashDB(raw_block)
 
@@ -40,7 +41,6 @@ class DataBase:
         if sitename in self.db:
             return -1
         encrypted_up = self.cr.getEncryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), username, password)
-        print(sitename)
         self.db[sitename] = encrypted_up
         self.__storeFlashDB()
         return 0
@@ -49,7 +49,8 @@ class DataBase:
         """ Gets a (username, password) tuple corresponding to sitename. Returns None if no entry found. """
         if sitename not in self.db:
             return None
-        return self.cr.getDecryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), self.db[sitename])
+        decrypt = self.cr.getDecryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), self.db[sitename])
+        return decrypt
 
     def update(self, sitename : str, username : str | None, password : str | None):
         """ Update username and/or password for given sitename.
