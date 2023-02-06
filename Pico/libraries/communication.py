@@ -2,6 +2,7 @@ import sys
 import json
 import localdb
 import auth
+import time
 
 class PicoComm:
   def __init__(self, db : localdb.DataBase, auth : auth.Auth):
@@ -10,12 +11,13 @@ class PicoComm:
 
   # send a response to the app
   def writeResponse(self, resp: dict) -> int:
-    sys.stdout.write(json.dumps(resp).encode('utf-8') + b"\0")
+    res = json.dumps(resp).encode('utf-8')
+    print(res)
+    time.sleep(2)
     return 0
 
   # expects a json request from the app
   def readRequest(self) -> dict | None:
-    print("reading")
     raw = bytearray()
     byte = sys.stdin.buffer.read(1)
     while(byte != b'\0'):
@@ -23,20 +25,17 @@ class PicoComm:
       byte = sys.stdin.buffer.read(1)
     try:
         decoded = json.loads(raw.decode('utf-8'))
-        print(decoded)
         return decoded
     except:
       return None
 
   def processRequest(self, req) -> bool:
     """ Process a request, sending a response to the device. Returns true if req was successfully processed, and false otherwise. """
-    print("process")
     #if "method" not in req:
     #  print("false no method in req")
    #   return False
     method = req["method"]
     handler = getattr(PicoComm, method)
-    print("handler: ", handler)
     #if not handler:
     #  print("false", handler)
     #  return False
@@ -90,11 +89,12 @@ class PicoComm:
   def addPassword(self, req: dict) -> dict | None:
     """Adds a new username, password, site to the password manager. Returns success/failure"""
     if not self.auth.authenticate():
-      return {
+      res =  {
         "method": "addPassword",
         "status": 1,
         "error": "Failed biometric authentication"
       }
+      return res
     elif "sitename" not in req:
       return {
         "method": "addPassword",
@@ -115,11 +115,12 @@ class PicoComm:
       }
     else:
       if self.db.add(req["sitename"], req["username"], req["password"]) == 0:
-        return {
+        res = {
           "method": "addPassword",
           "status": 0,
           "error": None
         }
+        return res
       else:
         return {
           "method": "addPassword",

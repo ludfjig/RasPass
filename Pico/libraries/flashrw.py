@@ -22,7 +22,6 @@ class FlashRW:
     def writeFlashDB(self, raw_block : bytes) -> int:
         """ Write the raw_block to flash (will be 256B aligned). Return 0 on failure, 1 on success. """
         assert len(raw_block)%256 == 0
-        print("writing")
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
             return 1

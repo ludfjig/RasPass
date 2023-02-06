@@ -98,9 +98,13 @@ class PasswordView(tk.Frame):
 
   def toggle_led(self):
     #self.s.write(b"toggle\n")
-    self.comm.addPassword("google.com", "testuser", "testpswd")
+    addPass = self.comm.addPassword("google.com", "testuser", "testpswd")
     #encoded = json.dumps({"toggle":self.ledState}).encode('utf-8')
     #size = self.s.write(encoded + b"\n")
+    print(addPass)
+    if addPass["status"] != 0:
+      print("error")
+      exit()
     pswd = self.comm.getPassword("google.com")
     print("returned password: ", pswd)
     self.ledState = 1-self.ledState

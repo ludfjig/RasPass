@@ -30,8 +30,6 @@ class DataBase:
         raw_block = bytes()
         for sitename in self.db:
             raw_block += self.cr.getStorageByteEntry(sitename, self.db[sitename])
-            print(raw_block)
-        print("storing")
         self.frw.writeFlashDB(raw_block)
 
     def add(self, sitename : str, username : str, password : str):

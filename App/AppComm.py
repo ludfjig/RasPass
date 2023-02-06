@@ -8,6 +8,7 @@ import serial
 from serial.tools import list_ports
 import re
 import json
+import time
 
 class AppComm(CommunicationInterface):
   def __init__(self):
@@ -24,7 +25,7 @@ class AppComm(CommunicationInterface):
           # so this is just forcing it to use tty for my computer if connecting
           # over cu fails
           device = re.sub(r'/cu', r'/tty', device)
-          self.s = serial.Serial(device)
+          self.s = serial.Serial(device, 9600, timeout=None)
         break
 
     if self.s == None:
@@ -38,7 +39,7 @@ class AppComm(CommunicationInterface):
       print(req)
       encoded = json.dumps(req).encode('utf-8') + b'\0'
       size = self.s.write(encoded)
-      print(size)
+      time.sleep(2)
       return (size == len(encoded))
     except serial.SerialTimeoutException:
       # timed out, something went wrong, return -1 to indicate error
@@ -51,14 +52,13 @@ class AppComm(CommunicationInterface):
     # structure back to python object from json
     # return object to caller
     while(1):
-      try:
-        raw = self.s.readline().strip()
-        # need to convert to json string from bytes?
-        res = raw.decode('utf8').replace("'", '"')
-        print("Read response: ", res)
-        return json.loads(res)
-      except serial.SerialTimeoutException:
-        return {}
+      raw = self.s.readline()
+      raw = raw.rstrip()
+      decoded = raw.decode('utf-8')
+      decoded = json.loads(decoded[2:-1])
+      return decoded
+    return {}
+
 
   def getSerial(self):
     return self.s
@@ -115,9 +115,9 @@ class AppComm(CommunicationInterface):
     written = self.writeRequest(req)
     if not written:
       print("Failure to communicate with device\n")
-      return False
-
-    return True
+      return {}
+    res = self.readResponse()
+    return res
 
   def changeUsername(self, site: str, user: str):
     """Changes the username for a stored site in the password manager. Returns success/failure"""
