@@ -31,14 +31,8 @@ class DataBase:
         """ Store db in flash """
         raw_block = bytes()
         for sitename in self.db:
-<<<<<<< HEAD
             raw_block += self.cr.getStorageByteEntry(sitename, self.db[sitename])
         self.frw.writeFlashDB(raw_block)
-=======
-            raw_block += self.cr.getStorageByteEntry(
-                sitename, self.db[sitename])
-        # self.frw.writeFlashDB(raw_block)
->>>>>>> 8ee1ecf (ui responds to adding)
 
     def add(self, sitename: str, username: str, password: str):
         """ Inserts a new entry into the database.
