@@ -22,8 +22,8 @@ class DataBase:
         raw = self.frw.readFlashDB()
         for c in range(len(raw)//256):
             entry = raw[c*256:(c+1)*256]
-            sitename, encrypted_up = self.cr.getStorageSitnameUPPair(entry)
-            self.db[sitename] = encrypted_up
+            sitename, username, password = self.cr.getStorageSitnameUPPair(entry)
+            self.db[sitename] = (username, password)
 
     def __storeFlashDB(self):
         """ Store db in flash """
@@ -38,8 +38,8 @@ class DataBase:
         Returns 0 for success, -1 for error. """
         if sitename in self.db:
             return -1
-        encrypted_up = self.cr.getEncryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), username, password)
-        self.db[sitename] = encrypted_up
+        #encrypted_up = self.cr.getEncryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), username, password)
+        self.db[sitename] = (username, password)
         self.__storeFlashDB()
         return 0
 
@@ -47,8 +47,7 @@ class DataBase:
         """ Gets a (username, password) tuple corresponding to sitename. Returns None if no entry found. """
         if sitename not in self.db:
             return None
-        decrypt = self.cr.getDecryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), self.db[sitename])
-        return decrypt
+        return self.db[sitename]
 
     def update(self, sitename : str, username : str | None, password : str | None):
         """ Update username and/or password for given sitename.
@@ -56,11 +55,10 @@ class DataBase:
         Returns 0 on success, -1 on failure. """
         if sitename not in self.db or (username == None and password == None):
             return -1
-        orig_username, orig_password = self.cr.getDecryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), self.db[sitename])
+        orig_username, orig_password = self.db[sitename]
         new_username = orig_username if username == None else username
         new_password = orig_password if password == None else password
-        encrypted_up = self.cr.getEncryptedUP(self.frw.getAESKey(), self.frw.getAESIV(), new_username, new_password)
-        self.db[sitename] = encrypted_up
+        self.db[sitename] = (new_username, new_password)
         self.__storeFlashDB()
         return 0
 

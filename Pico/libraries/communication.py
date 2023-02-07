@@ -125,7 +125,7 @@ class PicoComm:
         return {
           "method": "addPassword",
           "status": 5,
-          "error": "Failed to add password (unknown error)"
+          "error": "Failed to add password (sitename already exists)"
         }
 
   def changeUsername(self, req: dict) -> dict | None:
