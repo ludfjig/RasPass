@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import StartScreen
 import serial
-
+import pyperclip as pc
 import json
 
 
@@ -169,12 +169,14 @@ class PasswordView(tk.Frame):
 
     def getUsername(self, sitename):
         # Open dialog/copy to clipboard
-        pswd = self.comm.getPassword(sitename)
-        print("returned password: ", pswd)
+        username = self.comm.getPassword(sitename)['username']
+        pc.copy(username)
+        print("returned username: ", username)
 
     def getPassword(self, sitename):
         # Open dialog/copy to clipboard
-        pswd = self.comm.getPassword(sitename)
+        pswd = self.comm.getPassword(sitename)['password']
+        pc.copy(pswd)
         print("returned password: ", pswd)
 
     def changePassword(self, sitename):
