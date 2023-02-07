@@ -9,7 +9,6 @@ from StartScreen import StartScreen
 from AppComm import AppComm
 
 
-
 class RasPassApp(tk.Tk):
     def __init__(self, commLink, parent=None):
         tk.Tk.__init__(self, parent)
@@ -23,12 +22,12 @@ class RasPassApp(tk.Tk):
         # connect pages
         self.frames = {}
 
-        for page in (StartScreen, PasswordView) :
+        for page in (StartScreen, PasswordView):
             frame = page(content, self, self.serial, commLink)
 
         # initialize frame of each page object
             self.frames[page] = frame
-            frame.grid(row = 0, column = 0, sticky="nsew")
+            frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame(StartScreen)
 
@@ -36,7 +35,6 @@ class RasPassApp(tk.Tk):
         """Changes the view to the frame of the page passed in to parameter"""
         frame = self.frames[page]
         frame.tkraise()
-
 
 
 def main():

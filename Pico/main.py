@@ -1,15 +1,15 @@
-import time
-from machine import Pin
 import sys
+from machine import Pin
+import time
 sys.path.append('/libraries')
+from libraries.communication import PicoComm  # noqa: E402
+from libraries.auth import Auth  # noqa: E402
+from libraries.crypto import Crypto   # noqa: E402
+from libraries.flashrw import FlashRW  # noqa: E402
+from libraries.localdb import DataBase  # noqa: E402
 
-from libraries.communication import PicoComm
-from libraries.auth import Auth
-from libraries.crypto import Crypto
-from libraries.flashrw import FlashRW
-from libraries.localdb import DataBase
 
-led = Pin(25, machine.Pin.OUT)
+led = Pin(25, Pin.OUT)
 
 # to make it clear whether the pico is loaded
 for i in range(5):
@@ -27,13 +27,13 @@ comms = PicoComm(database, fp)
 while True:
     # read a command from the host
     req = comms.readRequest()
-    if req != None:
+    if req is not None:
         led.on()
-        #time.sleep(1.25)
-        #time.sleep(1.25)
+        # time.sleep(1.25)
+        # time.sleep(1.25)
         comms.processRequest(req)
         led.off()
-    #if req != None:
+    # if req != None:
     #    if "toggle" in req and req["toggle"] == 1:
     #        led.on()
     #    elif "toggle" in req and req["toggle"] == 0:
@@ -44,4 +44,3 @@ while True:
     #        led.off()
     #        time.sleep(1.25)
     #        comms.processRequest(req)
-

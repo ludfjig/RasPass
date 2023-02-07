@@ -9,8 +9,9 @@
 import flashrw
 import crypto
 
+
 class DataBase:
-    def __init__(self, flashRWI : flashrw.FlashRW, cryptoI : crypto.Crypto):
+    def __init__(self, flashRWI: flashrw.FlashRW, cryptoI: crypto.Crypto):
         """ Initialize the database. Reads and parses database from flash """
         self.frw = flashRWI
         self.cr = cryptoI
@@ -22,17 +23,24 @@ class DataBase:
         raw = self.frw.readFlashDB()
         for c in range(len(raw)//256):
             entry = raw[c*256:(c+1)*256]
-            sitename, username, password = self.cr.getStorageSitnameUPPair(entry)
+            sitename, username, password = self.cr.getStorageSitnameUPPair(
+                entry)
             self.db[sitename] = (username, password)
 
     def __storeFlashDB(self):
         """ Store db in flash """
         raw_block = bytes()
         for sitename in self.db:
+<<<<<<< HEAD
             raw_block += self.cr.getStorageByteEntry(sitename, self.db[sitename])
         self.frw.writeFlashDB(raw_block)
+=======
+            raw_block += self.cr.getStorageByteEntry(
+                sitename, self.db[sitename])
+        # self.frw.writeFlashDB(raw_block)
+>>>>>>> 8ee1ecf (ui responds to adding)
 
-    def add(self, sitename : str, username : str, password : str):
+    def add(self, sitename: str, username: str, password: str):
         """ Inserts a new entry into the database.
         Will return error and not insert if sitename already exists (should use update)
         Returns 0 for success, -1 for error. """
@@ -43,13 +51,13 @@ class DataBase:
         self.__storeFlashDB()
         return 0
 
-    def get(self, sitename : str) -> tuple[str, str] | None:
+    def get(self, sitename: str) -> tuple[str, str] | None:
         """ Gets a (username, password) tuple corresponding to sitename. Returns None if no entry found. """
         if sitename not in self.db:
             return None
         return self.db[sitename]
 
-    def update(self, sitename : str, username : str | None, password : str | None):
+    def update(self, sitename: str, username: str | None, password: str | None):
         """ Update username and/or password for given sitename.
         Will return error if sitename is not part of the db, or if both username and password are None
         Returns 0 on success, -1 on failure. """
@@ -62,7 +70,7 @@ class DataBase:
         self.__storeFlashDB()
         return 0
 
-    def delete(self, sitename : str):
+    def delete(self, sitename: str):
         """ Delete the sitename.
         Will return error if sitename does not exist
         Returns 0 on success, -1 on failure. """
