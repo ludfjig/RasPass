@@ -123,7 +123,7 @@ class PasswordView(tk.Frame):
     def init_input_row(self):
         self.site_entry = ttk.Entry(self.rows)
         self.username_entry = ttk.Entry(self.rows)
-        self.password_entry = ttk.Entry(self.rows)
+        self.password_entry = ttk.Entry(self.rows, show="*")
         self.add_new_pswd = ttk.Button(
             self.rows, text="Add", command=lambda: self.addPassword(
                 self.site_entry.get(),
