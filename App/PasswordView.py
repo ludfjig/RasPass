@@ -21,7 +21,6 @@ class PasswordView(tk.Frame):
 
     column_names = ttk.Frame(body, borderwidth=5, relief="solid")
     rows = ttk.Frame(body, borderwidth=5, relief="solid")
-    new_button = ttk.Button(body, text="Add new password (Toggle LED for now)", command=self.toggle_led)
 
     # column names
     site_label = ttk.Label(column_names, text="Site")
@@ -31,14 +30,10 @@ class PasswordView(tk.Frame):
     column_names, text="Password")
 
     # actual entries / rows
-    s1 = ttk.Entry(rows)
-    u1 = ttk.Entry(rows)
-    p1 = ttk.Entry(rows)
-
-    # add sanitation of user input
-
-    g1 = ttk.Button(rows, text="Copy PW", command=None)
-    c1 = ttk.Button(rows, text="Change", command=None)
+    sitename = ttk.Entry(rows)
+    username = ttk.Entry(rows)
+    password = ttk.Entry(rows)
+    add_new_pswd = ttk.Button(rows, text="Add", command=lambda : self.addPassword(sitename.get(), username.get(), password.get()))
 
     # banner
     header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
@@ -59,14 +54,31 @@ class PasswordView(tk.Frame):
     password_label.grid(column=2, row=0)
 
     # entires
-    s1.grid(column=0, row=0, sticky="new")
-    u1.grid(column=1, row=0, sticky="new")
-    p1.grid(column=2, row=0, sticky="new")
-    g1.grid(column=3, row=0, sticky="new")
-    c1.grid(column=4, row=0, sticky="new")
 
+    ss = self.comm.getAllSiteNames()
+    n = 0
+    if ss["status"] == 0:
+      sitenames = ss["sitenames"]
+      n = len(sitenames)
+      for i in range(len(sitenames)):
+        s = ttk.Entry(rows)
+        u = ttk.Button(rows, text="Get Username", command=lambda sn = sitenames[i] : self.getUsername(sn))
+        g = ttk.Button(rows, text="Get Password", command=lambda sn = sitenames[i] : self.getPassword(sn))
+        c = ttk.Button(rows, text="Change", command=lambda sn = sitenames[i] : self.changePassword(sn))
+        d = ttk.Button(rows, text="Delete", command=lambda sn = sitenames[i] : self.deletePassword(sn))
+        s.grid(row=i, column=0, sticky="new")
+        s.insert(0, sitenames[i])
+        u.grid(row=i, column=1, sticky="new")
+        #p.grid(row=i, column=2, sticky="new")
+        g.grid(row=i, column=2, sticky="new")
+        c.grid(row=i, column=3, sticky="new")
+        d.grid(row=i, column=4, sticky="new")
+
+    sitename.grid(column=0, row=n, sticky="new")
+    username.grid(column=1, row=n, sticky="new")
+    password.grid(column=2, row=n, sticky="new")
+    add_new_pswd.grid(column=3, row=n, sticky="new", columnspan=2)
     # new password button
-    new_button.grid(column=0, row=2, sticky="new")
 
     # ----------  fill   starts here ---------------------------
     parent.columnconfigure(0, weight=1)
@@ -96,8 +108,13 @@ class PasswordView(tk.Frame):
 
     btn1.grid(row = 1, column = 0, padx = 10, pady = 10)
 
-  def toggle_led(self):
-    addPass = self.comm.addPassword("google.com", "testuser", "testpswd")
+
+  def addPassword(self, sitename, username, password):
+    # Add and refresh interface (e.g. show in list)
+    print("Adding password")
+    # TODO: encrypt username, password
+    # TODO: check length of sitename, username, password!!
+    addPass = self.comm.addPassword(sitename, username, password)
     print(addPass)
     if addPass["status"] == 0:
       print("Added password")
@@ -106,5 +123,23 @@ class PasswordView(tk.Frame):
     else:
       print("Unknown error")
       exit()
-    pswd = self.comm.getPassword("google.com")
+    pswd = self.comm.getPassword(sitename)
     print("returned password: ", pswd)
+
+  def getUsername(self, sitename):
+    # Open dialog/copy to clipboard
+    pswd = self.comm.getPassword(sitename)
+    print("returned password: ", pswd)
+
+  def getPassword(self, sitename):
+    # Open dialog/copy to clipboard
+    pswd = self.comm.getPassword(sitename)
+    print("returned password: ", pswd)
+
+  def changePassword(self, sitename):
+    # Open dialog to change password
+    pass
+
+  def deletePassword(self, sitename):
+    # Delete and refresh interface
+    pass
