@@ -1,7 +1,9 @@
 import sys
 from machine import Pin, UART
 import time
+
 sys.path.append('/libraries')
+
 from libraries.communication import PicoComm  # noqa: E402
 from libraries.auth import Auth  # noqa: E402
 from libraries.crypto import Crypto   # noqa: E402
