@@ -96,7 +96,7 @@ MODULEOK = const(0x55)
 class Adafruit_Fingerprint:
     """UART based fingerprint sensor."""
 
-    _debug = True
+    _debug = False
     _uart = None
 
     address = [0xFF, 0xFF, 0xFF, 0xFF]
@@ -116,7 +116,7 @@ class Adafruit_Fingerprint:
         # Create object with UART for interface, and default 32-bit password
         self.password = passwd
         self._uart = uart
-        self.check_module()
+        #self.check_module()
         if self.verify_password() != OK:
             raise RuntimeError("Failed to find sensor, check wiring!")
         if self.read_sysparam() != OK:
@@ -341,7 +341,6 @@ class Adafruit_Fingerprint:
         Returns just the data payload from the packet"""
         res = self._uart.read(expected)
         self._print_debug("_get_packet received data:", res, data_type="hex")
-        print(expected, res)
         if (not res) or (len(res) != expected):
             raise RuntimeError("Failed to read data from sensor")
 

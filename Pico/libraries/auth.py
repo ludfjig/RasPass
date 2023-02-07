@@ -69,8 +69,6 @@ class Auth:
                 print("Other error")
             return False
 
-
-    # pylint: disable=too-many-statements
     def enroll_finger(self, location):
         """Take a 2 finger images and template it, then store in 'location'"""
         for fingerimg in range(1, 3):
@@ -140,11 +138,7 @@ class Auth:
 
         return True
 
-
-    ##################################################
-
-
-    def get_num():
+    def get_num(self):
         """Use input() to get a valid number from 1 to 127. Retry till success!"""
         i = 0
         while (i > 127) or (i < 1):
@@ -167,14 +161,14 @@ class Auth:
             c = input("> ")
 
             if c == "e":
-                enroll_finger(get_num())
+                self.enroll_finger(self.get_num())
             if c == "f":
-                if get_fingerprint():
+                if self.get_fingerprint():
                     print("Detected #", finger.finger_id, "with confidence", finger.confidence)
                 else:
                     print("Finger not found")
             if c == "d":
-                if finger.delete_model(get_num()) == adafruit_fingerprint.OK:
+                if finger.delete_model(self.get_num()) == adafruit_fingerprint.OK:
                     print("Deleted!")
                 else:
                     print("Failed to delete")
