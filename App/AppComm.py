@@ -39,7 +39,7 @@ class AppComm(CommunicationInterface):
       print(req)
       encoded = json.dumps(req).encode('utf-8') + b'\0'
       size = self.s.write(encoded)
-      time.sleep(2)
+      #time.sleep(2)
       return (size == len(encoded))
     except serial.SerialTimeoutException:
       # timed out, something went wrong, return -1 to indicate error

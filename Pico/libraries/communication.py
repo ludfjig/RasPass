@@ -13,14 +13,14 @@ class PicoComm:
   def writeResponse(self, resp: dict) -> int:
     res = json.dumps(resp).encode('utf-8')
     print(res)
-    time.sleep(2)
+    #time.sleep(2)
     return 0
 
   # expects a json request from the app
   def readRequest(self) -> dict | None:
     raw = bytearray()
     byte = sys.stdin.buffer.read(1)
-    while(byte != b'\0'):
+    while (byte != b'\0'):
       raw.extend(byte)
       byte = sys.stdin.buffer.read(1)
     try:

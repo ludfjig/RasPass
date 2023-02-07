@@ -29,11 +29,10 @@ while True:
     req = comms.readRequest()
     if req != None:
         led.on()
-        time.sleep(1.25)
-        led.off()
-        time.sleep(1.25)
+        #time.sleep(1.25)
+        #time.sleep(1.25)
         comms.processRequest(req)
-    time.sleep(1)
+        led.off()
     #if req != None:
     #    if "toggle" in req and req["toggle"] == 1:
     #        led.on()
