@@ -60,6 +60,7 @@ _SETSYSPARA = const(0x0E)
 _READSYSPARA = const(0x0F)
 _HISPEEDSEARCH = const(0x1B)
 _VERIFYPASSWORD = const(0x13)
+_SETPASSWORD = const(0x12)
 _TEMPLATECOUNT = const(0x1D)
 _TEMPLATEREAD = const(0x1F)
 _SOFTRESET = const(0x3D)
@@ -116,8 +117,7 @@ class Adafruit_Fingerprint:
         # Create object with UART for interface, and default 32-bit password
         self.password = passwd
         self._uart = uart
-        #self.check_module()
-        if self.verify_password() != OK:
+        if not self.verify_password():
             raise RuntimeError("Failed to find sensor, check wiring!")
         if self.read_sysparam() != OK:
             raise RuntimeError("Failed to read system parameters!")
@@ -132,9 +132,16 @@ class Adafruit_Fingerprint:
 
     def verify_password(self) -> bool:
         """Checks if the password/connection is correct, returns True/False"""
-        print("verfiy password")
         self._send_packet([_VERIFYPASSWORD] + list(self.password))
-        return self._get_packet(12)[0] == 1
+        return self._get_packet(12)[0] == OK
+
+    def set_password(self, new_password: Tuple[int, int, int, int]) -> bool:
+        """Sets a new password, returns True/False"""
+        self._send_packet([_SETPASSWORD] + list(new_password))
+        if self._get_packet(12)[0] == OK:
+            self.password = new_password
+            return True
+        return False
 
     def count_templates(self) -> int:
         """Requests the sensor to count the number of templates and stores it

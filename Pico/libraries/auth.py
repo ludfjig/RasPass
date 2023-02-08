@@ -22,7 +22,6 @@ class Auth:
             return False
         return True
 
-
     # pylint: disable=too-many-branches
     def get_fingerprint_detail(self):
         """Get a finger print image, template it, and see if it matches!
