@@ -6,23 +6,8 @@
 `adafruit_fingerprint`
 ====================================================
 
-This library will let you use an Adafruit Fingerprint sensor on any UART to get, store,
-retreive and query fingerprints! Great for adding bio-sensing security to your next build.
-
 * Author(s): ladyada
 
-Implementation Notes
---------------------
-
-**Hardware:**
-
-* `Fingerprint sensor <https://www.adafruit.com/product/751>`_ (Product ID: 751)
-* `Panel Mount Fingerprint sensor <https://www.adafruit.com/product/4651>`_ (Product ID: 4651)
-
-**Software and Dependencies:**
-
-* Adafruit CircuitPython firmware (2.2.0+) for the ESP8622 and M0-based boards:
-  https://github.com/adafruit/circuitpython/releases
 """
 try:
     from typing import Tuple, List, Union
@@ -92,6 +77,7 @@ ADDRCODE = const(0x20)
 PASSVERIFY = const(0x21)
 MODULEOK = const(0x55)
 
+
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 class Adafruit_Fingerprint:
@@ -105,7 +91,7 @@ class Adafruit_Fingerprint:
     confidence = None
     templates = []
     template_count = None
-    library_size = None
+    library_size = -1
     security_level = None
     device_address = None
     data_packet_size = None
@@ -113,7 +99,7 @@ class Adafruit_Fingerprint:
     system_id = None
     status_register = None
 
-    def __init__(self, uart: UART, passwd: Tuple[int, int, int, int] = (0, 0, 0, 0)):
+    def __init__(self, uart: UART, passwd: Tuple[int, int, int, int]):
         # Create object with UART for interface, and default 32-bit password
         self.password = passwd
         self._uart = uart
@@ -145,7 +131,7 @@ class Adafruit_Fingerprint:
 
     def count_templates(self) -> int:
         """Requests the sensor to count the number of templates and stores it
-        in ``self.template_count``. Returns the packet error code or OK success"""
+        in ``self.template_count``. Returns the packet error code or OK """
         self._send_packet([_TEMPLATECOUNT])
         r = self._get_packet(14)
         self.template_count = struct.unpack(">H", bytes(r[1:3]))[0]
@@ -216,22 +202,23 @@ class Adafruit_Fingerprint:
         self._send_packet([_LOAD, slot, location >> 8, location & 0xFF])
         return self._get_packet(12)[0]
 
-    def get_fpdata(self, sensorbuffer: str = "char", slot: int = 1) -> List[int]:
+    def get_fpdata(self, sensorbuf: str = "char", slot: int = 1) -> List[int]:
         """Requests the sensor to transfer the fingerprint image or
         template.  Returns the data payload only."""
         if slot not in (1, 2):
             # raise error or use default value?
             slot = 2
-        if sensorbuffer == "image":
+        if sensorbuf == "image":
             self._send_packet([_UPLOADIMAGE])
-        elif sensorbuffer == "char":
+        elif sensorbuf == "char":
             self._send_packet([_UPLOAD, slot])
         else:
             raise RuntimeError("Uknown sensor buffer type")
+        res = []
         if self._get_packet(12)[0] == 0:
             res = self._get_data(9)
             self._print_debug("get_fpdata data size:", str(len(res)))
-        self._print_debug("get_fdata res:", res, data_type="hex")
+        #self._print_debug("get_fdata res:", res, data_type="hex")
         return res
 
     def send_fpdata(
@@ -251,7 +238,7 @@ class Adafruit_Fingerprint:
         if self._get_packet(12)[0] == 0:
             self._send_data(data)
             self._print_debug("send_fpdata data size:", str(len(data)))
-        self._print_debug("sent_fdata data:", data, data_type="hex")
+        #self._print_debug("sent_fdata data:", data, data_type="hex")
         return True
 
     def empty_library(self) -> int:
@@ -264,7 +251,7 @@ class Adafruit_Fingerprint:
         """Requests the sensor to list of all template locations in use and
         stores them in self.templates. Returns the packet error code or
         OK success"""
-        from math import ceil  # pylint: disable=import-outside-toplevel
+        from math import ceil
 
         self.templates = []
         self.read_sysparam()
@@ -287,7 +274,7 @@ class Adafruit_Fingerprint:
 
     def finger_fast_search(self) -> int:
         """Asks the sensor to search for a matching fingerprint template to the
-        last model generated. Stores the location and confidence in self.finger_id
+        last model generated. Stores location and confidence in self.finger_id
         and self.confidence. Returns the packet error code or OK success"""
         # high speed search of slot #1 starting at page 0x0000 and page #0x00A3
         # self._send_packet([_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3])
@@ -301,7 +288,7 @@ class Adafruit_Fingerprint:
         )
         r = self._get_packet(16)
         self.finger_id, self.confidence = struct.unpack(">HH", bytes(r[1:5]))
-        self._print_debug("finger_fast_search packet:", r, data_type="hex")
+        #self._print_debug("finger_fast_search packet:", r, data_type="hex")
         return r[0]
 
     def finger_search(self) -> int:
@@ -311,7 +298,8 @@ class Adafruit_Fingerprint:
         self.read_sysparam()
         capacity = self.library_size
         self._send_packet(
-            [_FINGERPRINTSEARCH, 0x01, 0x00, 0x00, capacity >> 8, capacity & 0xFF]
+            [_FINGERPRINTSEARCH, 0x01, 0x00, 0x00, capacity >> 8,
+                capacity & 0xFF]
         )
         r = self._get_packet(16)
         self.finger_id, self.confidence = struct.unpack(">HH", bytes(r[1:5]))
@@ -319,13 +307,13 @@ class Adafruit_Fingerprint:
         return r[0]
 
     def compare_templates(self) -> int:
-        """Compares two fingerprint templates in char buffers 1 and 2. Stores the confidence score
-        in self.finger_id and self.confidence. Returns the packet error code or
-        OK success"""
+        """Compares two fingerprint templates in char buffers 1 and 2. Stores
+        the confidence score in self.finger_id and self.confidence.
+        Returns the packet error code or OK success"""
         self._send_packet([_COMPARE])
         r = self._get_packet(14)
         self.confidence = struct.unpack(">H", bytes(r[1:3]))
-        self._print_debug("compare_templates confidence:", self.confidence)
+        #self._print_debug("compare_templates confidence:", self.confidence)
         return r[0]
 
     def set_led(

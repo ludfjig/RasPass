@@ -2,18 +2,18 @@ import sys
 from machine import Pin, UART
 import time
 
-sys.path.append('/libraries')
+sys.path.append("/libraries")
 
 from libraries.communication import PicoComm  # noqa: E402
 from libraries.auth import Auth  # noqa: E402
-from libraries.crypto import Crypto   # noqa: E402
+from libraries.crypto import Crypto  # noqa: E402
 from libraries.flashrw import FlashRW  # noqa: E402
 from libraries.localdb import DataBase  # noqa: E402
 from libraries.adafruit_fingerprint import Adafruit_Fingerprint  # noqa: E402
 
 # Fingerprint module temp password
 FP_PSWD = (1, 2, 3, 4)
-FP_CHANGED_PSWD = False
+CHANGED_PSWD = False
 
 # Fingerprint Sensor UART
 # Wiring:
@@ -35,7 +35,7 @@ for i in range(5):
     time.sleep(0.2)
 
 # Initialize fingerprint sensor
-finger = Adafruit_Fingerprint(uart, FP_PSWD if FP_CHANGED_PSWD else (0,0,0,0))
+finger = Adafruit_Fingerprint(uart, FP_PSWD if CHANGED_PSWD else (0, 0, 0, 0))
 time.sleep(0.25)
 
 # change password

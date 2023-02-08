@@ -2,23 +2,23 @@ import sys
 import json
 import localdb
 import auth
-import time
 
 
 class PicoComm:
+    """ Communication interface on Pico via USB """
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
         self.db = db
         self.auth = auth
 
-    # send a response to the app
     def writeResponse(self, resp: dict) -> int:
+        """ Send response to app """
         res = json.dumps(resp).encode('utf-8')
         print(res)
-        # time.sleep(2)
         return 0
 
-    # expects a json request from the app
     def readRequest(self) -> dict | None:
+        """ Receieve a request from the app. Blocking call.
+        Returns request or None on error. """
         raw = bytearray()
         byte = sys.stdin.buffer.read(1)
         while (byte != b'\0'):
@@ -27,21 +27,16 @@ class PicoComm:
         try:
             decoded = json.loads(raw.decode('utf-8'))
             return decoded
-        except:
+        except ValueError:
             return None
 
     def processRequest(self, req) -> bool:
-        """ Process a request, sending a response to the device. Returns true if req was successfully processed, and false otherwise. """
-        # if "method" not in req:
-        #  print("false no method in req")
-        #   return False
+        """ Process a request, sending a response to the device. Returns true
+        if req was successfully processed, and false otherwise. """
         method = req["method"]
         handler = getattr(PicoComm, method)
-        # if not handler:
-        #  print("false", handler)
-        #  return False
         resp = handler(self, req)
-        if resp == None:
+        if resp is None:
             return False
         self.writeResponse(resp)
         return True
@@ -56,7 +51,8 @@ class PicoComm:
         }
 
     def getPassword(self, req: dict) -> dict | None:
-        """Returns username, password, or error on authentication failure/no entry"""
+        """Returns username, password, or error on authentication
+        failure/no entry"""
         if not self.auth.authenticate():
             return {
                 "method": "getPassword",
@@ -71,7 +67,7 @@ class PicoComm:
             }
         else:
             up = self.db.get(req["sitename"])
-            if up != None:
+            if up is not None:
                 return {
                     "method": "getPassword",
                     "status": 0,
@@ -88,7 +84,8 @@ class PicoComm:
                 }
 
     def addPassword(self, req: dict) -> dict | None:
-        """Adds a new username, password, site to the password manager. Returns success/failure"""
+        """Adds a new username, password, site to the password manager.
+        Returns success/failure"""
         if not self.auth.authenticate():
             res = {
                 "method": "addPassword",
@@ -115,7 +112,8 @@ class PicoComm:
                 "error": "No password"
             }
         else:
-            if self.db.add(req["sitename"], req["username"], req["password"]) == 0:
+            if self.db.add(
+                    req["sitename"], req["username"], req["password"]) == 0:
                 res = {
                     "method": "addPassword",
                     "status": 0,
@@ -130,7 +128,8 @@ class PicoComm:
                 }
 
     def changeUsername(self, req: dict) -> dict | None:
-        """Changes the username for a stored site in the password manager. Returns success/failure"""
+        """Changes the username for a stored site in the password manager.
+        Returns success/failure"""
         if not self.auth.authenticate():
             return {
                 "method": "changeUsername",
@@ -164,7 +163,8 @@ class PicoComm:
                 }
 
     def changePassword(self, req: dict) -> dict | None:
-        """Changes the password for a stored site in the password manager. Returns success/failure"""
+        """Changes the password for a stored site in the password manager.
+        Returns success/failure"""
         if not self.auth.authenticate():
             return {
                 "method": "changePassword",
@@ -198,7 +198,8 @@ class PicoComm:
                 }
 
     def removePassword(self, req: dict) -> dict | None:
-        """Deletes a site, username, password entry from the password manager. Returns success/failure"""
+        """Deletes a site, username, password entry from the password manager.
+        Returns success/failure"""
         if not self.auth.authenticate():
             return {
                 "method": "removePassword",
@@ -257,3 +258,13 @@ class PicoComm:
                 "status": 0,
                 "error": None
             }
+
+    def addFingerprint(self, req: dict) -> dict | None:
+        pass
+
+    def removeFingerprint(self, req: dict) -> dict | None:
+        """ Future feature """
+        pass
+
+    def checkFingerprint(self, req: dict) -> dict | None:
+        pass
