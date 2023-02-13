@@ -18,30 +18,8 @@ class Crypto:
         return (
             self.__getPadded(sn, 128)
             + self.__getPadded(up_pair[0], 64)
-            + self.__getPadded(up_pair[0], 64)
+            + self.__getPadded(up_pair[1], 64)
         )
-
-    def getEncryptedUP(
-        self, key: bytes, IV: bytes, username: str, password: str
-    ) -> bytes:
-        """Encrypt the username and password and return padded bytes value
-        in data storage format (128B chunk)"""
-        # UNUSED
-        cl = cryptolib.aes(key, 2, IV)
-        uname = cl.encrypt(self.__getPadded(username, 64))
-        pswd = cl.encrypt(self.__getPadded(password, 64))
-        return uname + pswd
-
-    def getDecryptedUP(
-        self, key: bytes, IV: bytes, encrypted_up: bytes
-    ) -> tuple[str, str]:
-        """Decrypt the username and password, remove padding,
-        and return strings for username, and password"""
-        # UNUSED
-        cl = cryptolib.aes(key, 2, IV)
-        username = self.__getUnPadded(cl.decrypt(encrypted_up[0:64]))
-        password = self.__getUnPadded(cl.decrypt(encrypted_up[64:]))
-        return (username, password)
 
     def __getPadded(self, toPad: str, padLen: int) -> bytes:
         """Encodes ASCII string <toPad> into bytes and

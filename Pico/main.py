@@ -61,8 +61,9 @@ if False:
 print("Setup:",fp.setupFp((0,0,0,0)))
 time.sleep(0.25)
 while True:
-    if fp.verifyFingerprint():
-        print("Yay")
+    fpval = fp.verifyFingerprint()
+    if fpval is not None:
+        print("Authenticated for fingerprint id", fpval[0])
     time.sleep(1)
 #print("Change password:", fp.changePswd((0,0,0,0),(0,0,0,0)))
 

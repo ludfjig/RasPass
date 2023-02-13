@@ -266,7 +266,6 @@ class Adafruit_Fingerprint:
         if self._get_packet(12)[0] == 0:
             self._send_data(data)
             self._print_debug("send_fpdata data size:", str(len(data)))
-        #self._print_debug("sent_fdata data:", data, data_type="hex")
         return True
 
     def empty_library(self) -> int:
