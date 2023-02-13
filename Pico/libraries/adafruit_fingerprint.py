@@ -98,15 +98,19 @@ class Adafruit_Fingerprint:
     baudrate = None
     system_id = None
     status_register = None
+    password = None
 
-    def __init__(self, uart: UART, passwd: Tuple[int, int, int, int]):
-        # Create object with UART for interface, and default 32-bit password
-        self.password = passwd
+    def __init__(self, uart: UART):
+        # Create object with UART for interface
         self._uart = uart
-        if not self.verify_password():
-            raise RuntimeError("Failed to find sensor, check wiring!")
-        if self.read_sysparam() != OK:
-            raise RuntimeError("Failed to read system parameters!")
+
+    def initialize(self, passwd: Tuple[int, int, int, int]) -> bool:
+        """Verify the sensor password, and setup sys parameters.
+        Must be called before all other API calls"""
+        self.password = passwd
+        if not self.verify_password(passwd) or self.read_sysparam() != OK:
+            return False
+        return True
 
     def check_module(self) -> bool:
         """Checks the state of the fingerprint scanner module.
@@ -116,13 +120,15 @@ class Adafruit_Fingerprint:
             raise RuntimeError("Something is wrong with the sensor.")
         return True
 
-    def verify_password(self) -> bool:
+    def verify_password(self, passwd: Tuple[int, int, int, int]) -> bool:
         """Checks if the password/connection is correct, returns True/False"""
-        self._send_packet([_VERIFYPASSWORD] + list(self.password))
+        self._send_packet([_VERIFYPASSWORD] + list(passwd))
         return self._get_packet(12)[0] == OK
 
     def set_password(self, new_password: Tuple[int, int, int, int]) -> bool:
         """Sets a new password, returns True/False"""
+        if not self.password:
+            return False
         self._send_packet([_SETPASSWORD] + list(new_password))
         if self._get_packet(12)[0] == OK:
             self.password = new_password
@@ -132,6 +138,8 @@ class Adafruit_Fingerprint:
     def count_templates(self) -> int:
         """Requests the sensor to count the number of templates and stores it
         in ``self.template_count``. Returns the packet error code or OK """
+        if not self.password:
+            return False
         self._send_packet([_TEMPLATECOUNT])
         r = self._get_packet(14)
         self.template_count = struct.unpack(">H", bytes(r[1:3]))[0]
@@ -139,6 +147,8 @@ class Adafruit_Fingerprint:
 
     def read_sysparam(self) -> int:
         """Returns the system parameters on success via attributes."""
+        if not self.password:
+            return False
         self._send_packet([_READSYSPARA])
         r = self._get_packet(28)
         if r[0] != OK:
@@ -154,6 +164,8 @@ class Adafruit_Fingerprint:
 
     def set_sysparam(self, param_num: int, param_val: int) -> int:
         """Set the system parameters (param_num)"""
+        if not self.password:
+            return False
         self._send_packet([_SETSYSPARA, param_num, param_val])
         r = self._get_packet(12)
         if r[0] != OK:
@@ -169,42 +181,56 @@ class Adafruit_Fingerprint:
     def get_image(self) -> int:
         """Requests the sensor to take an image and store it memory, returns
         the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_GETIMAGE])
         return self._get_packet(12)[0]
 
     def image_2_tz(self, slot: int = 1) -> int:
         """Requests the sensor convert the image to a template, returns
         the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_IMAGE2TZ, slot])
         return self._get_packet(12)[0]
 
     def create_model(self) -> int:
         """Requests the sensor take the template data and turn it into a model
         returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_REGMODEL])
         return self._get_packet(12)[0]
 
     def store_model(self, location: int, slot: int = 1) -> int:
         """Requests the sensor store the model into flash memory and assign
         a location. Returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_STORE, slot, location >> 8, location & 0xFF])
         return self._get_packet(12)[0]
 
     def delete_model(self, location: int) -> int:
         """Requests the sensor delete a model from flash memory given by
         the argument location. Returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_DELETE, location >> 8, location & 0xFF, 0x00, 0x01])
         return self._get_packet(12)[0]
 
     def load_model(self, location: int, slot: int = 1) -> int:
         """Requests the sensor to load a model from the given memory location
         to the given slot.  Returns the packet error code or success"""
+        if not self.password:
+            return False
         self._send_packet([_LOAD, slot, location >> 8, location & 0xFF])
         return self._get_packet(12)[0]
 
     def get_fpdata(self, sensorbuf: str = "char", slot: int = 1) -> List[int]:
         """Requests the sensor to transfer the fingerprint image or
         template.  Returns the data payload only."""
+        if not self.password:
+            return []
         if slot not in (1, 2):
             # raise error or use default value?
             slot = 2
@@ -224,6 +250,8 @@ class Adafruit_Fingerprint:
     def send_fpdata(
         self, data: List[int], sensorbuffer: str = "char", slot: int = 1
     ) -> bool:
+        if not self.password:
+            return False
         """Requests the sensor to receive data, either a fingerprint image or
         a character/template data.  Data is the payload only."""
         if slot not in (1, 2):
@@ -244,6 +272,8 @@ class Adafruit_Fingerprint:
     def empty_library(self) -> int:
         """Requests the sensor to delete all models from flash memory.
         Returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_EMPTY])
         return self._get_packet(12)[0]
 
@@ -251,6 +281,8 @@ class Adafruit_Fingerprint:
         """Requests the sensor to list of all template locations in use and
         stores them in self.templates. Returns the packet error code or
         OK success"""
+        if not self.password:
+            return False
         from math import ceil
 
         self.templates = []
@@ -281,6 +313,8 @@ class Adafruit_Fingerprint:
         # or page #0x03E9 to accommodate modules with up to 1000 capacity
         # self._send_packet([_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x03, 0xE9])
         # or base the page on module's capacity
+        if not self.password:
+            return False
         self.read_sysparam()
         capacity = self.library_size
         self._send_packet(
@@ -295,6 +329,8 @@ class Adafruit_Fingerprint:
         """Asks the sensor to search for a matching fingerprint starting at
         slot 1. Stores the location and confidence in self.finger_id
         and self.confidence. Returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self.read_sysparam()
         capacity = self.library_size
         self._send_packet(
@@ -310,6 +346,8 @@ class Adafruit_Fingerprint:
         """Compares two fingerprint templates in char buffers 1 and 2. Stores
         the confidence score in self.finger_id and self.confidence.
         Returns the packet error code or OK success"""
+        if not self.password:
+            return False
         self._send_packet([_COMPARE])
         r = self._get_packet(14)
         self.confidence = struct.unpack(">H", bytes(r[1:3]))
@@ -326,6 +364,8 @@ class Adafruit_Fingerprint:
         speed: animation speed 0-255
         cycles: numbe of time to repeat 0=infinite or 1-255
         Returns the packet error code or success"""
+        if not self.password:
+            return False
         self._send_packet([_SETAURA, mode, speed, color, cycles])
         return self._get_packet(12)[0]
 
@@ -400,7 +440,6 @@ class Adafruit_Fingerprint:
             reply = list(i for i in res[0:length])
             received_checksum = struct.unpack(">H", self._uart.read(2))
             self._print_debug("_get_data received checksum:", received_checksum)
-
             reply += self._get_data(9)
         elif packet_type == _ENDDATAPACKET:
             res = self._uart.read(length - 2)

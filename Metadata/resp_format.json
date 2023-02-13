@@ -43,5 +43,32 @@
         "method": "setSettings",
         "status": "int",
         "error": "undefined OR str"
+    },
+    "enrollFingerprint": {
+        "method": "enrollFp",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "deleteFingerprint": {
+        "method": "deleteFp",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "verifyFingerprint": {
+        "method": "verifyFp",
+        "status": "int",
+        "fpId": "int",
+        "fpHash": "byte hash of fingerprint template",
+        "error": "undefined OR str"
+    },
+    "verifyFingerprintPswd": {
+        "method": "verifyFpPswd",
+        "status": "int",
+        "error": "undefined OR str"
+    },
+    "changeMasterPswd": {
+        "method": "changeMasterPswd",
+        "status": "int",
+        "error": "undefined OR str"
     }
 }

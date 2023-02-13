@@ -3,8 +3,6 @@
 
 PICO_FLASH_SIZE_BYTES = 2097152
 DATA_CHUNK = 256
-IV = "fd03169b74ef3ec9"
-
 
 class FlashRW:
     def __init__(self):
@@ -26,13 +24,3 @@ class FlashRW:
             self.file.flush()
             return 1
         return 0
-
-    def getAESKey(self) -> bytes:
-        """TODO: generate a key to store in flash,
-        or use cryptographic co-processor"""
-        return "s5v8y/B?E(H+MbQeThWmZq4t7w9z$C&F".encode("ascii")
-
-    def getAESIV(self) -> bytes:
-        """TODO: fix this to use actual random IV,
-        should be different for each"""
-        return IV.encode("ascii")

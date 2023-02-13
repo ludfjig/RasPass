@@ -1,10 +1,57 @@
 import adafruit_fingerprint as af
 import time
+import hashlib
+
+try:
+    from typing import Tuple, Dict
+except ImportError:
+    pass
 
 
 class Auth:
-    def __init__(self, fingerprint):
+    finger: af.Adafruit_Fingerprint
+    fingerTemplates: Dict[int,str]
+    numAttempts: int
+
+    def __init__(self, fingerprint : af.Adafruit_Fingerprint):
         self.finger = fingerprint
+        self.fingerTemplates = {}
+        self.numAttempts = 3 # Number of attempts. TODO: initialize from settings
+
+    def setupFp(self, fpPasswd: Tuple[int, int, int, int]):
+        """Initialize the fingerprint sensor with the password.
+        This must be called first, before any other API call.
+        Returns true on success, or false on failed authentication/error"""
+        if self.finger.initialize(fpPasswd):
+            self.fingerTemplates = {}
+            if self.finger.read_templates() == af.OK:
+                for fpId in self.finger.templates:
+                    if self.finger.load_model(fpId,1) == af.OK:
+                        self.fingerTemplates[fpId] = str(hashlib.sha256(bytes(self.finger.get_fpdata("char",1))).digest().hex())
+                        time.sleep(0.1)
+                    #print("Hashed template for fingerprint",fpId) # DEBUGGING
+                return True
+        return False
+
+    def changePswd(self, oldFpPasswd: Tuple[int, int, int, int],
+                        newFpPasswd: Tuple[int, int, int, int]):
+        """Change the fp password, if the old password is correct"""
+        if self.finger.verify_password(oldFpPasswd):
+            return self.finger.set_password(newFpPasswd)
+        return False
+
+    def verifyFingerprint(self, desiredId: int | None = None) -> Tuple[int, str] | None:
+        """Verify a fingerprint is present and matches (matches to id desiredId if not None).
+        Returns None on failure, or otherwise a tuple of the fingerprint ID and the hexdigest of the template."""
+        for i in range(self.numAttempts):
+            if self.get_fingerprint_detail():
+                if self.finger.finger_id is not None and self.finger.finger_id > 0:
+                    fpId = int(self.finger.finger_id)
+                    if fpId in self.fingerTemplates:
+                        if desiredId is None or fpId == desiredId:
+                            return (fpId, self.fingerTemplates[fpId])
+            time.sleep(1)
+        return None
 
     def authenticate(self) -> bool:
         """Require fingerprint authentication to continue"""
@@ -27,46 +74,44 @@ class Auth:
     def get_fingerprint_detail(self):
         """Get a finger print image, template it, and see if it matches!
         This time, print out each error instead of just returning on failure"""
-        print("Getting image...", end="")
+        #print("Getting image...", end="")
         i = self.finger.get_image()
-        if i == af.OK:
-            print("Image taken")
-        else:
-            if i == af.NOFINGER:
+        if i != af.OK:
+            """if i == af.NOFINGER:
                 print("No finger detected")
             elif i == af.IMAGEFAIL:
                 print("Imaging error")
             else:
-                print("Other error")
+                print("Other error")"""
             return False
 
-        print("Templating...", end="")
+        #print("Templating...", end="")
         i = self.finger.image_2_tz(1)
-        if i == af.OK:
-            print("Templated")
-        else:
-            if i == af.IMAGEMESS:
+        if i != af.OK:
+            """if i == af.IMAGEMESS:
                 print("Image too messy")
             elif i == af.FEATUREFAIL:
                 print("Could not identify features")
             elif i == af.INVALIDIMAGE:
                 print("Image invalid")
             else:
-                print("Other error")
+                print("Other error")"""
             return False
 
-        print("Searching...", end="")
-        i = self.finger.finger_fast_search()
+        #print("Searching...", end="")
+        i = self.finger.finger_search()
         # pylint: disable=no-else-return
         # This block needs to be refactored when it can be tested.
         if i == af.OK:
-            print("Found fingerprint!")
+            #print("Found fingerprint!")
+            #print("Confidence:", self.finger.confidence)
+            #print("ID:", self.finger.finger_id)
             return True
         else:
-            if i == af.NOTFOUND:
+            """if i == af.NOTFOUND:
                 print("No match found")
             else:
-                print("Other error")
+                print("Other error")"""
             return False
 
     def enroll_finger(self, location):
@@ -139,6 +184,9 @@ class Auth:
         return True
 
     def get_num(self):
+        """ Note: this should not be used in the final application.
+        Replace by reading the number of fingerprints from the sensor 
+        and generate a new id from that"""
         """Use input() to get a valid number from 1 to 127.
         Retry till success!"""
         i = 0
@@ -150,6 +198,7 @@ class Auth:
         return i
 
     def main_loop(self, finger):
+        """ Note: this is just used for testing. """
         while True:
             print("----------------")
             if finger.read_templates() != af.OK:

@@ -259,12 +259,76 @@ class PicoComm:
                 "error": None
             }
 
-    def addFingerprint(self, req: dict) -> dict | None:
+    def enrollFingerprint(self, req: dict) -> dict | None:
+        """ TODO: @Audrey/Hafsa"""
         pass
 
-    def removeFingerprint(self, req: dict) -> dict | None:
-        """ Future feature """
+    def deleteFingerprint(self, req: dict) -> dict | None:
+        """ TODO: @Audrey/Hafsa """
         pass
 
-    def checkFingerprint(self, req: dict) -> dict | None:
-        pass
+    def verifyFingerprint(self, req: dict) -> dict | None:
+        """Verifies a fingerprint on the sensor that is enrolled is valid.
+        If the fpId field is defined in req, will search for that fingerprint."""
+        fpId = None
+        if "fpId" in req and req["fpId"] > 0 and req["fpId"] < 127:
+            fpId = req["fpId"]
+        res = self.auth.verifyFingerprint(fpId)
+        if res is not None:
+            return {
+                "method": "verifyFpPswd",
+                "status": 0,
+                "fpId": res[0],
+                "fpHash": res[1],
+                "error": None
+            }
+        else:
+            return {
+                "method": "verifyFpPswd",
+                "status": 1,
+                "error": "Failed to find user fingerprint after 3 tries"
+            }
+
+    def verifyFingerprintPswd(self, req: dict) -> dict | None:
+        """Verifies the fingerprint password from 4 byte code"""
+        if "authtoken" not in req:
+            return {
+                "method": "verifyFpPswd",
+                "status": 1,
+                "error": "No auth token"
+            }
+        else:
+            if self.auth.setupFp(req["authtoken"]):
+                return {
+                    "method": "verifyFpPswd",
+                    "status": 0,
+                    "error": None
+                }
+            else:
+                return {
+                    "method": "verifyFpPswd",
+                    "status": 2,
+                    "error": "Failed to authenticate password"
+                }
+
+    def changeMasterPswd(self, req: dict) -> dict | None:
+        """Change the code for the fingerprint sensor"""
+        if "oldauthtoken" not in req or "newauthtoken" not in req:
+            return {
+                "method": "changeMasterPswd",
+                "status": 1,
+                "error": "No new/old auth token"
+            }
+        else:
+            if self.auth.changePswd(req["oldauthtoken"], req["newauthtoken"]):
+                return {
+                    "method": "changeMasterPswd",
+                    "status": 0,
+                    "error": None
+                }
+            else:
+                return {
+                    "method": "changeMasterPswd",
+                    "status": 2,
+                    "error": "Failed to validate old authtoken"
+                }

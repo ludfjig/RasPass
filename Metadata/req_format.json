@@ -1,44 +1,67 @@
 {
     "getAllSitenames": {
-            "method": "getAllSitenames",
-            "authtoken": "<FUTURE FEATURE>"
+        "method": "getAllSitenames",
+        "authtoken": "<FP AUTH>"
     },
     "getPassword": {
-            "method": "getPassword",
-            "sitename": "<SITENAME>",
-            "authtoken": "<FUTURE FEATURE>"
+        "method": "getPassword",
+        "sitename": "<SITENAME>",
+        "authtoken": "<FP AUTH>"
     },
     "addPassword": {
         "method": "addPassword",
         "sitename": "<SITENAME>",
         "username": "<USERNAME>",
         "password": "<PASSWORD>",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
     },
     "changeUsername": {
         "method": "changeUsername",
         "sitename": "<SITENAME>",
         "username": "<USERNAME>",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
     },
     "changePassword": {
         "method": "changePassword",
         "sitename": "<SITENAME>",
         "password": "<PASSWORD>",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
     },
     "removePassword":  {
         "method": "changePassword",
         "sitename": "<SITENAME>",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
     },
     "getSettings":  {
         "method": "getSettings",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
     },
     "setSettings":  {
         "method": "setSettings",
         "settings": "<SETTINGS OBJECT>",
-        "authtoken": "<FUTURE FEATURE>"
+        "authtoken": "<FP AUTH>"
+    },
+    "enrollFingerprint": {
+        "method": "enrollFp",
+        "newFpId": "<integer ID>",
+        "authtoken": "<FP AUTH>"
+    },
+    "deleteFingerprint": {
+        "method": "deleteFp",
+        "fpId": "<integer ID>",
+        "authtoken": "<FP AUTH>"
+    },
+    "verifyFingerprint": {
+        "method": "verifyFp",
+        "fpId": "<integer ID> or undefined"
+    },
+    "verifyFingerprintPswd": {
+        "method": "verifyFpPswd",
+        "authtoken": "<FP AUTH>"
+    },
+    "changeMasterPswd": {
+        "method": "changeMasterPswd",
+        "oldauthtoken": "<OLD FP AUTH>",
+        "newauthtoken": "<NEW FP AUTH>"
     }
 }
