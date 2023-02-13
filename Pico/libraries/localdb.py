@@ -7,14 +7,12 @@
 # Uses crypto library to encrypt/decrypt database entries
 
 import flashrw
-import crypto
 
 
 class DataBase:
-    def __init__(self, flashRWI: flashrw.FlashRW, cryptoI: crypto.Crypto):
+    def __init__(self, flashRWI: flashrw.FlashRW):
         """Initialize the database. Reads and parses database from flash"""
         self.frw = flashRWI
-        self.cr = cryptoI
         self.__parseFlashDB()
 
     def __parseFlashDB(self):
@@ -23,15 +21,41 @@ class DataBase:
         raw = self.frw.readFlashDB()
         for c in range(len(raw) // 256):
             en = raw[c * 256: (c + 1) * 256]
-            sitename, username, password = self.cr.getStorageSitnameUPPair(en)
+            sitename, username, password = self.getStorageSitnameUPPair(en)
             self.db[sitename] = (username, password)
 
     def __storeFlashDB(self):
         """Store db in flash"""
         raw_block = bytes()
         for sn in self.db:
-            raw_block += self.cr.getStorageByteEntry(sn, self.db[sn])
+            raw_block += self.getStorageByteEntry(sn, self.db[sn])
         self.frw.writeFlashDB(raw_block)
+
+    def getStorageSitnameUPPair(self, entry: bytes) -> tuple[str, str, str]:
+        """Returns (sitename, username, password)"""
+        return (
+            self.__getUnPadded(entry[:128]),
+            self.__getUnPadded(entry[128: 128 + 64]),
+            self.__getUnPadded(entry[128 + 64:]),
+        )
+
+    def getStorageByteEntry(self, sn: str, up_pair: tuple[str, str]) -> bytes:
+        """Returns padded sitename and encrypted_up in 256B format"""
+        return (
+            self.__getPadded(sn, 128)
+            + self.__getPadded(up_pair[0], 64)
+            + self.__getPadded(up_pair[1], 64)
+        )
+
+    def __getPadded(self, toPad: str, padLen: int) -> bytes:
+        """Encodes ASCII string <toPad> into bytes and
+        then pads to length <padLen> with null characters"""
+        return toPad.encode("ascii") + (padLen - len(toPad)) * b"\x00"
+
+    def __getUnPadded(self, toUnPad: bytes) -> str:
+        """Decodes to ASCII string and removes all
+        but the last null character in toUnPad"""
+        return toUnPad.decode("ascii").rstrip("\x00")
 
     def add(self, sitename: str, username: str, password: str):
         """Inserts a new entry into the database.

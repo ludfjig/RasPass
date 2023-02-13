@@ -6,7 +6,6 @@ sys.path.append("/libraries")
 
 from libraries.communication import PicoComm  # noqa: E402
 from libraries.auth import Auth  # noqa: E402
-from libraries.crypto import Crypto  # noqa: E402
 from libraries.flashrw import FlashRW  # noqa: E402
 from libraries.localdb import DataBase  # noqa: E402
 import libraries.adafruit_fingerprint as af  # noqa: E402
@@ -21,6 +20,9 @@ import libraries.adafruit_fingerprint as af  # noqa: E402
 uart = UART(1, 57600, parity=None, stop=1, tx=Pin(4), rx=Pin(5))
 uart.init(timeout=5000)
 
+# Initialize fingerprint sensor
+finger = af.Adafruit_Fingerprint(uart)
+
 # On-board LED
 led = Pin(25, Pin.OUT)
 
@@ -31,15 +33,9 @@ for i in range(5):
     led.off()
     time.sleep(0.2)
 
-# Initialize fingerprint sensor
-finger = af.Adafruit_Fingerprint(uart)
-time.sleep(0.25)
-
-
 # Initialize libraries
 frw = FlashRW()
-cr = Crypto()
-database = DataBase(frw, cr)
+database = DataBase(frw)
 fp = Auth(finger)
 comms = PicoComm(database, fp)
 

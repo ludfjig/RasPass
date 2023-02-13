@@ -12,9 +12,11 @@ class Auth:
     finger: af.Adafruit_Fingerprint
     fingerTemplates: Dict[int,str]
     numAttempts: int
+    hasSetup: bool
 
     def __init__(self, fingerprint : af.Adafruit_Fingerprint):
         self.finger = fingerprint
+        self.hasSetup = False
         self.fingerTemplates = {}
         self.numAttempts = 3 # Number of attempts. TODO: initialize from settings
 
@@ -36,6 +38,8 @@ class Auth:
     def changePswd(self, oldFpPasswd: Tuple[int, int, int, int],
                         newFpPasswd: Tuple[int, int, int, int]):
         """Change the fp password, if the old password is correct"""
+        if not self.hasSetup:
+            return False
         if self.finger.verify_password(oldFpPasswd):
             return self.finger.set_password(newFpPasswd)
         return False
@@ -43,6 +47,8 @@ class Auth:
     def verifyFingerprint(self, desiredId: int | None = None) -> Tuple[int, str] | None:
         """Verify a fingerprint is present and matches (matches to id desiredId if not None).
         Returns None on failure, or otherwise a tuple of the fingerprint ID and the hexdigest of the template."""
+        if not self.hasSetup:
+            return None
         for i in range(self.numAttempts):
             if self.get_fingerprint_detail():
                 if self.finger.finger_id is not None and self.finger.finger_id > 0:
@@ -55,11 +61,15 @@ class Auth:
 
     def authenticate(self) -> bool:
         """Require fingerprint authentication to continue"""
-        return True
+        if not self.hasSetup:
+            return False
+        return self.verifyFingerprint() != None
 
     def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""
         print("Waiting for image...")
+        if not self.hasSetup:
+            return False
         while self.finger.get_image() != af.OK:
             pass
         print("Templating...")
@@ -74,6 +84,8 @@ class Auth:
     def get_fingerprint_detail(self):
         """Get a finger print image, template it, and see if it matches!
         This time, print out each error instead of just returning on failure"""
+        if not self.hasSetup:
+            return False
         #print("Getting image...", end="")
         i = self.finger.get_image()
         if i != af.OK:
@@ -116,6 +128,8 @@ class Auth:
 
     def enroll_finger(self, location):
         """Take a 2 finger images and template it, then store in 'location'"""
+        if not self.hasSetup:
+            return False
         for fingerimg in range(1, 3):
             if fingerimg == 1:
                 print("Place finger on sensor...", end="")
@@ -185,7 +199,7 @@ class Auth:
 
     def get_num(self):
         """ Note: this should not be used in the final application.
-        Replace by reading the number of fingerprints from the sensor 
+        Replace by reading the number of fingerprints from the sensor
         and generate a new id from that"""
         """Use input() to get a valid number from 1 to 127.
         Retry till success!"""
