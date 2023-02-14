@@ -29,7 +29,9 @@ class Auth:
             if self.finger.read_templates() == af.OK:
                 for fpId in self.finger.templates:
                     if self.finger.load_model(fpId,1) == af.OK:
-                        self.fingerTemplates[fpId] = str(hashlib.sha256(bytes(self.finger.get_fpdata("char",1))).digest().hex())
+                        data = self.finger.get_fpdata("char",1)
+                        if len(data) > 0:
+                            self.fingerTemplates[fpId] = str(hashlib.sha256(bytes(data)).digest().hex())
                         time.sleep(0.1)
                     #print("Hashed template for fingerprint",fpId) # DEBUGGING
                 return True

@@ -4,6 +4,9 @@ user has been authorized, they can use retrieve desired password through a
 companion GUI displayed on their computer.
 
 ## Pico Development Setup
+Flash the Pico with the latest Microython UF2 from Raspberry Pi (![download link](https://micropython.org/download/rp2-pico/rp2-pico-latest.uf2). We tested on version 1.9.1-859)
+
+
 In VSCode, configure `Pico` folder as `Pico W Go` project, and upload the project.
 
 ## Laptop GUI Companion
