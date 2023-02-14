@@ -1,10 +1,8 @@
 # Library to support database insert, read, and search functionality
 # Copyright (c), 2023  RasPass
 
-
 # Key-value database stored in the flash of the Pico
 # Unique keys required
-# Uses crypto library to encrypt/decrypt database entries
 
 import flashrw
 

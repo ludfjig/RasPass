@@ -1,8 +1,10 @@
+# Library for communication via JSON requests/responses over standard IO
+# Copyright (c), 2023  RasPass
+
 import sys
 import json
 import localdb
 import auth
-
 
 
 class PicoComm:

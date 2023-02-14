@@ -1,3 +1,7 @@
+# Main program for RasPass on Pico
+# Runs setup and handles requests
+# Copyright (c), 2023  RasPass
+
 import sys
 from machine import Pin, UART
 import time
@@ -53,21 +57,16 @@ FP_PSWD = (0, 0, 0, 0)
 if False:
     print("Change password:", fp.changePswd((0,0,0,0),(0,0,0,0)))
 
+
+print("Setup sensor status:",fp.setupFp((0,0,0,0))) # this requires fingerprint to already be enrolled
+
 # setup sensor
 time.sleep(0.25)
 
-# enter main loop
+fp.main_loop(finger)
 """
 
 fp.setupFp((0,0,0,0))
-#print("Setup:",fp.setupFp((0,0,0,0))) # this requires fingerprint to already be enrolled
-#finger.initialize((0,0,0,0)) # don't think this does much rn except check pw
-# uncomment this to modify finger-prints
-# fp.main_loop(finger)
-
-# i = 0
-# while True:
-#     print(fp.verifyFingerprint())
 
 while True:
     req = comms.readRequest()

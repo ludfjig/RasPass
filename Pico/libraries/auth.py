@@ -1,3 +1,8 @@
+# Library for communication via JSON requests/responses over standard IO
+# Copyright (c), 2023  RasPass
+
+# Sections of this code are credited to Adafruit under the MIT license
+
 import adafruit_fingerprint as af
 import time
 import hashlib
@@ -27,7 +32,7 @@ class Auth:
         for i in range(4):
             self.led.toggle()
             time.sleep(0.2)
-    
+
     def blink_no(self):
         for i in range(10):
             self.led.toggle()
