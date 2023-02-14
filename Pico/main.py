@@ -44,27 +44,21 @@ comms = PicoComm(database, fp)
 # This section is used to experiment with the fingerprint sensor directly using
 # an Adafruit-provided user interface via the CLI for the sensor
 
+# Use this to enroll and delete fingerprints
+
 # Fingerprint module temp password
-FP_PSWD = (1, 2, 3, 4)
-CHANGED_PSWD = False
+FP_PSWD = (0, 0, 0, 0)
 
 # change password
 if False:
-    print("Set password", finger.set_password(FP_PSWD))
+    print("Change password:", fp.changePswd((0,0,0,0),(0,0,0,0)))
 
 # setup sensor
-#finger.initialize(FP_PSWD if CHANGED_PSWD else (0, 0, 0, 0))
-print("Setup:",fp.setupFp((0,0,0,0)))
+print("Setup:",fp.setupFp(FP_PSWD))
 time.sleep(0.25)
-while True:
-    fpval = fp.verifyFingerprint()
-    if fpval is not None:
-        print("Authenticated for fingerprint id", fpval[0])
-    time.sleep(1)
-#print("Change password:", fp.changePswd((0,0,0,0),(0,0,0,0)))
 
 # enter main loop
-#fp.main_loop(finger)
+fp.main_loop(finger)
 """
 
 while True:

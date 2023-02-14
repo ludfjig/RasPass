@@ -8,7 +8,7 @@ class FlashRW:
     def __init__(self):
         """Initialize the flash"""
         self.mode = "r"
-        self.file = open("storage.bin", "r+b")
+        self.file = open("storage.bin", "w+b")
         self.openRead()
 
     def openRead(self):
