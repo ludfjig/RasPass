@@ -24,7 +24,6 @@ class PasswordView(tk.Frame):
         column_names = ttk.Frame(body, borderwidth=5, relief="solid")
         rows = ttk.Frame(body, borderwidth=5, relief="solid")
         self.rows = rows
-        self.rowIndex = []
         # column names
         site_label = ttk.Label(column_names, text="Site")
         username_label = ttk.Label(
@@ -123,8 +122,6 @@ class PasswordView(tk.Frame):
         items.append(c)
         items.append(d)
 
-        #self.rowIndex.append(items)
-
         s.grid(row=rows, column=0, sticky="new")
         s.insert(0, site)
         s.config(state="readonly")
@@ -208,10 +205,10 @@ class PasswordView(tk.Frame):
 
     def deletePassword(self, sitename, items):
         # Delete and refresh interface
-        ret = self.comm.removePassword(sitename)
 
-        for i in items:
-            i.destroy()
+        # should probably prompt the user again to make sure they really meant
+        # to delete the password
+        ret = self.comm.removePassword(sitename)
 
         if ret == 1:
             print("unable to remove password")
@@ -219,5 +216,8 @@ class PasswordView(tk.Frame):
         elif ret['status'] == 3:
             print("error occurred while deleting")
             return False
-        print(ret)
+
+        for i in items:
+            i.destroy()
+
         return True
