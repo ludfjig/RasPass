@@ -7,7 +7,7 @@ DATA_CHUNK = 256
 class FlashRW:
     def __init__(self):
         """Initialize the flash"""
-        self.mode = "r"
+        self.mode = "w"
         self.file = open("storage.bin", "w+b")
         self.openRead()
 
