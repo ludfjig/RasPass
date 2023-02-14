@@ -60,7 +60,7 @@ time.sleep(0.25)
 """
 
 print("Setup:",fp.setupFp((0,0,0,0))) # this requires fingerprint to already be enrolled
-# finger.initialize((0,0,0,0)) # don't think this does much rn except check pw
+finger.initialize((0,0,0,0)) # don't think this does much rn except check pw
 # uncomment this to modify finger-prints
 # fp.main_loop(finger)
 
