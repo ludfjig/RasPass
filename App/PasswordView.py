@@ -4,6 +4,9 @@ import StartScreen
 import serial
 import pyperclip as pc
 import json
+import hashlib
+import os
+import crypto
 
 
 LARGEFONT = ("Arial", 35)
@@ -148,6 +151,11 @@ class PasswordView(tk.Frame):
         self.username_entry.grid(column=1, row=rows, sticky="new")
         self.password_entry.grid(column=2, row=rows, sticky="new")
         self.add_new_pswd.grid(column=3, row=rows, sticky="new", columnspan=2)
+    
+    def get_master_pw_hash(self):
+        m = hashlib.sha256()
+        m.update(self.master_pw.get().encode('utf-8'))
+        return m.digest()
 
     def init_password_rows(self):
         site_reply = self.comm.getAllSiteNames()
@@ -157,12 +165,17 @@ class PasswordView(tk.Frame):
             for i in range(len(sitenames)):
                 self.add_row(sitenames[i])
 
+
     def addPassword(self, sitename, username, password):
         # Add and refresh interface (e.g. show in list)
-        print("Adding password")
+        print("Adding password", password)
         # TODO: encrypt username, password
         # TODO: check length of sitename, username, password!!
-        addPass = self.comm.addPassword(sitename, username, password)
+
+        ### encryption
+        cipher_text = crypto.encrypt(password, self.get_master_pw_hash())
+
+        addPass = self.comm.addPassword(sitename, username, cipher_text)
         while addPass['status'] != 0:
             if addPass["status"] == 1:
                 print("Authentification failure")
@@ -170,7 +183,7 @@ class PasswordView(tk.Frame):
                 print("Password already exists in db")
             else:
                 print("Unknown error")
-            addPass = self.comm.addPassword(sitename, username, password)
+            addPass = self.comm.addPassword(sitename, username, cipher_text)
 
         print(addPass)
 
@@ -201,9 +214,10 @@ class PasswordView(tk.Frame):
             print("Authentification failure")
             ret = self.comm.getPassword(sitename)
         print(ret)
-        pswd = ret['password']
-        pc.copy(pswd)
-        print("returned password: ", pswd)
+        cipher_text = ret['password']
+        plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
+        pc.copy(plain_text_pw)
+        print("returned password: ", plain_text_pw)
         return ret
 
     def changePassword(self, sitename):
