@@ -13,6 +13,7 @@ class PasswordView(tk.Frame):
     def __init__(self, parent, controller, s, commLink):
         tk.Frame.__init__(self, parent)
         self.s = s
+        self.controller = controller
         self.comm = commLink
         self.ledState = 1
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
@@ -102,18 +103,28 @@ class PasswordView(tk.Frame):
         _ , rows = self.rows.grid_size()
         # rows += 1
         print(site, self.rows.grid_size())
-        s = ttk.Entry(self.rows)
+
+        items = []
+
+        s = ttk.Entry(self.rows, font='bold')
         u = ttk.Button(self.rows, text="Get Username",
                        command=lambda: self.getUsername(site))
         g = ttk.Button(self.rows, text="Get Password",
                        command=lambda: self.getPassword(site))
         c = ttk.Button(
-            self.rows, text="Change", command=lambda: self.changePassword(site))
+            self.rows, text="Change", command=lambda: self.changePassword(site, items))
         d = ttk.Button(
-            self.rows, text="Delete", command=lambda: self.deletePassword(site))
+            self.rows, text="Delete", command=lambda: self.deletePassword(site, items))
+
+        items.append(s)
+        items.append(u)
+        items.append(g)
+        items.append(c)
+        items.append(d)
 
         s.grid(row=rows, column=0, sticky="new")
         s.insert(0, site)
+        s.config(state="readonly")
         u.grid(row=rows, column=1, sticky="new")
         #p.grid(row=i, column=2, sticky="new")
         g.grid(row=rows, column=2, sticky="new")
@@ -154,6 +165,8 @@ class PasswordView(tk.Frame):
         print(addPass)
         if addPass["status"] == 0:
             print("Added password")
+        elif addPass["status"] == 1:
+            print("Authentification failure")
         elif addPass["status"] == 5:
             print("Password already exists in db")
         else:
@@ -175,14 +188,36 @@ class PasswordView(tk.Frame):
 
     def getPassword(self, sitename):
         # Open dialog/copy to clipboard
+        ret = self.comm.getPassword(sitename)['status']
+        print(ret)
+        if ret == 1:
+            print("Authentification failure")
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
         pswd = self.comm.getPassword(sitename)['password']
         pc.copy(pswd)
         print("returned password: ", pswd)
 
     def changePassword(self, sitename):
         # Open dialog to change password
+
         pass
 
-    def deletePassword(self, sitename):
+    def deletePassword(self, sitename, items):
         # Delete and refresh interface
-        pass
+
+        # should probably prompt the user again to make sure they really meant
+        # to delete the password
+        ret = self.comm.removePassword(sitename)
+
+        if ret == 1:
+            print("unable to remove password")
+            return False
+        elif ret['status'] == 3:
+            print("error occurred while deleting")
+            return False
+
+        for i in items:
+            i.destroy()
+
+        return True
