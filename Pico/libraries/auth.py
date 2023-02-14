@@ -1,6 +1,8 @@
 import adafruit_fingerprint as af
 import time
 import hashlib
+import time
+from machine import Pin
 
 try:
     from typing import Tuple, Dict
@@ -14,11 +16,22 @@ class Auth:
     numAttempts: int
     hasSetup: bool
 
-    def __init__(self, fingerprint : af.Adafruit_Fingerprint):
+    def __init__(self, fingerprint: af.Adafruit_Fingerprint):
         self.finger = fingerprint
         self.hasSetup = False
         self.fingerTemplates = {}
         self.numAttempts = 5 # Number of attempts. TODO: initialize from settings
+        self.led = Pin(25, Pin.OUT)
+
+    def blink_yes(self):
+        for i in range(4):
+            self.led.toggle()
+            time.sleep(0.2)
+    
+    def blink_no(self):
+        for i in range(10):
+            self.led.toggle()
+            time.sleep(0.1)
 
     def setupFp(self, fpPasswd: Tuple[int, int, int, int]):
         """Initialize the fingerprint sensor with the password.
@@ -47,19 +60,19 @@ class Auth:
             return self.finger.set_password(newFpPasswd)
         return False
 
-    def verifyFingerprint(self, desiredId: int | None = None) -> Tuple[int, str] | None:
+    def verifyFingerprint(self) -> Tuple[int, str] | None:
         """Verify a fingerprint is present and matches (matches to id desiredId if not None).
         Returns None on failure, or otherwise a tuple of the fingerprint ID and the hexdigest of the template."""
         if not self.hasSetup:
             return None
-        for i in range(self.numAttempts):
-            if self.get_fingerprint():
-                if self.finger.finger_id is not None and self.finger.finger_id > 0:
-                    fpId = int(self.finger.finger_id)
-                    if fpId in self.fingerTemplates:
-                        if desiredId is None or fpId == desiredId:
-                            return (fpId, self.fingerTemplates[fpId])
-            time.sleep(2)
+
+        if self.get_fingerprint():
+            if self.finger.finger_id is not None and self.finger.finger_id > 0:
+                fpId = int(self.finger.finger_id)
+                self.blink_yes()
+                return (fpId, self.fingerTemplates[fpId])
+
+        self.blink_no()
         return None
 
     def authenticate(self) -> bool:
@@ -203,6 +216,17 @@ class Auth:
 
         return True
 
+    def get_num(self, max_number):
+        """Use input() to get a valid number from 0 to the maximum size
+        of the library. Retry till success!"""
+        i = -1
+        while (i > max_number - 1) or (i < 0):
+            try:
+                i = int(input("Enter ID # from 0-{}: ".format(max_number - 1)))
+            except ValueError:
+                pass
+        return i
+
     def main_loop(self, finger):
         """ Note: this is just used for testing. """
         """Credit: Adafruit"""
@@ -210,34 +234,38 @@ class Auth:
             print("----------------")
             if finger.read_templates() != af.OK:
                 raise RuntimeError("Failed to read templates")
-            print("Fingerprint templates:", finger.templates)
+            print("Fingerprint templates: ", finger.templates)
+            if finger.count_templates() != af.OK:
+                raise RuntimeError("Failed to read templates")
+            print("Number of templates found: ", finger.template_count)
+            if finger.read_sysparam() != af.OK:
+                raise RuntimeError("Failed to get system parameters")
+            print("Size of template library: ", finger.library_size)
             print("e) enroll print")
             print("f) find print")
             print("d) delete print")
+            print("r) reset library")
+            print("q) quit")
             print("----------------")
             c = input("> ")
 
-            if c == "e" or c == "d":
-                i = 0
-                while (i > 127) or (i < 1):
-                    try:
-                        i = int(input("Enter ID # from 1-127: "))
-                    except ValueError:
-                        pass
-                if c == "e":
-                    self.enroll_finger(i)
-                elif c == "d":
-                    if finger.delete_model(i) == af.OK:
-                        print("Deleted!")
-                    else:
-                        print("Failed to delete")
+            if c == "e":
+                self.enroll_finger(self.get_num(finger.library_size))
             if c == "f":
                 if self.get_fingerprint():
-                    print(
-                        "Detected #",
-                        finger.finger_id,
-                        "with confidence",
-                        finger.confidence,
-                    )
+                    print("Detected #", finger.finger_id, "with confidence", finger.confidence)
                 else:
                     print("Finger not found")
+            if c == "d":
+                if finger.delete_model(self.get_num(finger.library_size)) == af.OK:
+                    print("Deleted!")
+                else:
+                    print("Failed to delete")
+            if c == "r":
+                if finger.empty_library() == af.OK:
+                    print("Library empty!")
+                else:
+                    print("Failed to empty library")
+            if c == "q":
+                print("Exiting fingerprint example program")
+                raise SystemExit

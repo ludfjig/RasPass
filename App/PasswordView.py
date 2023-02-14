@@ -10,8 +10,9 @@ LARGEFONT = ("Arial", 35)
 
 
 class PasswordView(tk.Frame):
-    def __init__(self, parent, controller, s, commLink):
+    def __init__(self, parent, controller, s, commLink, master_pw):
         tk.Frame.__init__(self, parent)
+        self.master_pw = master_pw # access master password through self.master_pw.get()
         self.s = s
         self.controller = controller
         self.comm = commLink
@@ -162,41 +163,48 @@ class PasswordView(tk.Frame):
         # TODO: encrypt username, password
         # TODO: check length of sitename, username, password!!
         addPass = self.comm.addPassword(sitename, username, password)
+        while addPass['status'] != 0:
+            if addPass["status"] == 1:
+                print("Authentification failure")
+            elif addPass["status"] == 5:
+                print("Password already exists in db")
+            else:
+                print("Unknown error")
+            addPass = self.comm.addPassword(sitename, username, password)
+
         print(addPass)
-        if addPass["status"] == 0:
-            print("Added password")
-        elif addPass["status"] == 1:
-            print("Authentification failure")
-        elif addPass["status"] == 5:
-            print("Password already exists in db")
-        else:
-            print("Unknown error")
-            exit()
-        pswd = self.comm.getPassword(sitename)
+
+        # pswd = self.comm.getPassword(sitename)
         self.forget_input_row()
         self.add_row(sitename)
         self.clear_input_row()
         self.remember_input_row()
         print(self.rows.grid_size())
-        print("returned password: ", pswd)
+        # print("returned password: ", pswd)
 
     def getUsername(self, sitename):
         # Open dialog/copy to clipboard
-        username = self.comm.getPassword(sitename)['username']
-        pc.copy(username)
-        print("returned username: ", username)
+        ret = self.comm.getPassword(sitename)
+        while ret['status'] != 0:
+            print("Authentification failure")
+            ret = self.comm.getPassword(sitename)
+        print(ret)
+        uname = ret['username']
+        pc.copy(uname)
+        print("returned username: ", uname)
+        return ret
 
     def getPassword(self, sitename):
         # Open dialog/copy to clipboard
-        ret = self.comm.getPassword(sitename)['status']
-        print(ret)
-        if ret == 1:
+        ret = self.comm.getPassword(sitename)
+        while ret['status'] != 0:
             print("Authentification failure")
-            self.controller.show_frame(StartScreen.StartScreen)
-            return
-        pswd = self.comm.getPassword(sitename)['password']
+            ret = self.comm.getPassword(sitename)
+        print(ret)
+        pswd = ret['password']
         pc.copy(pswd)
         print("returned password: ", pswd)
+        return ret
 
     def changePassword(self, sitename):
         # Open dialog to change password

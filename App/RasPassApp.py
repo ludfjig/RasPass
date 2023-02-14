@@ -22,12 +22,12 @@ class RasPassApp(tk.Tk):
         # connect pages
         self.frames = {}
 
-        for page in (StartScreen, PasswordView):
-            frame = page(content, self, self.serial, commLink)
-
-        # initialize frame of each page object
-            self.frames[page] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
+        start_screen = StartScreen(content, self, self.serial, commLink)
+        password_view = PasswordView(content, self, self.serial, commLink, start_screen.master)
+        start_screen.grid(row=0, column=0, sticky="nsew")
+        password_view.grid(row=0, column=0, sticky="nsew")
+        self.frames[StartScreen] = start_screen
+        self.frames[PasswordView] = password_view
 
         self.show_frame(StartScreen)
 

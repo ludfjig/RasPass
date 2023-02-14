@@ -54,12 +54,19 @@ if False:
     print("Change password:", fp.changePswd((0,0,0,0),(0,0,0,0)))
 
 # setup sensor
-print("Setup:",fp.setupFp(FP_PSWD))
 time.sleep(0.25)
 
 # enter main loop
-fp.main_loop(finger)
 """
+
+print("Setup:",fp.setupFp((0,0,0,0))) # this requires fingerprint to already be enrolled
+# finger.initialize((0,0,0,0)) # don't think this does much rn except check pw
+# uncomment this to modify finger-prints
+# fp.main_loop(finger)
+
+# i = 0
+# while True:
+#     print(fp.verifyFingerprint())
 
 while True:
     req = comms.readRequest()

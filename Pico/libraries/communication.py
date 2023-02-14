@@ -4,6 +4,7 @@ import localdb
 import auth
 
 
+
 class PicoComm:
     """ Communication interface on Pico via USB """
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
@@ -273,7 +274,7 @@ class PicoComm:
         fpId = None
         if "fpId" in req and req["fpId"] > 0 and req["fpId"] < 127:
             fpId = req["fpId"]
-        res = self.auth.verifyFingerprint(fpId)
+        res = self.auth.verifyFingerprint()
         if res is not None:
             return {
                 "method": "verifyFpPswd",
