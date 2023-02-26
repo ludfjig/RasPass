@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import ImageTk, Image
 import StartScreen
 import pyperclip as pc
 import hashlib
@@ -20,21 +21,22 @@ class PasswordView(tk.Frame):
         self.ledState = 1
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
-        banner = ttk.Frame(content, borderwidth=5, relief="solid")
-        body = ttk.Frame(content, borderwidth=5, relief="solid")
+        banner = ttk.Frame(content, borderwidth=4, relief="solid")
+        body = ttk.Frame(content, borderwidth=5, relief="ridge")
 
-        column_names = ttk.Frame(body, borderwidth=5, relief="solid")
-        rows = ttk.Frame(body, borderwidth=5, relief="solid")
+        column_names = ttk.Frame(body, borderwidth=2, relief="solid")
+        rows = ttk.Frame(body, borderwidth=2, relief="solid")
         self.rows = rows
         # column names
-        site_label = ttk.Label(column_names, text="Site")
+        site_label = ttk.Label(column_names, width=20, text="Site")
         username_label = ttk.Label(
-            column_names, text="Username")
+            column_names, width=20, text="Username")
         password_label = ttk.Label(
-            column_names, text="Password")
+            column_names, width=20, text="Password")
 
         # banner
-        header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
+        #header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
+        header = self.open_img(banner, "./imgs/logo2.png")
 
         # ------------------ grid starts here -------------------------
 
@@ -83,6 +85,14 @@ class PasswordView(tk.Frame):
 
         btn1.grid(row=1, column=0, padx=10, pady=10)
 
+    def open_img(self, parent, picture):
+        img = Image.open(picture)
+        img = img.resize((550, 100), Image.ANTIALIAS)
+        img = ImageTk.PhotoImage(img)
+        panel = ttk.Label(parent, image=img)
+        panel.image = img
+        return panel
+
     def remember_input_row(self):
         rows = 100
         self.site_entry.grid(column=0, row=rows, sticky="new")
@@ -108,10 +118,10 @@ class PasswordView(tk.Frame):
 
         items = []
 
-        s = ttk.Entry(self.rows, font='bold')
-        u = ttk.Button(self.rows, text="Get Username",
+        s = ttk.Entry(self.rows, width=20, font='bold')
+        u = ttk.Button(self.rows, width=20, text="Get Username",
                        command=lambda: self.getUsername(site))
-        g = ttk.Button(self.rows, text="Get Password",
+        g = ttk.Button(self.rows, width=20, text="Get Password",
                        command=lambda: self.getPassword(site))
         c = ttk.Button(
             self.rows, text="Change", command=lambda: self.changePassword(site, items))
