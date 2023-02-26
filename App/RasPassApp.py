@@ -23,7 +23,8 @@ class RasPassApp(tk.Tk):
         self.frames = {}
 
         start_screen = StartScreen(content, self, self.serial, commLink)
-        password_view = PasswordView(content, self, self.serial, commLink, start_screen.master)
+        password_view = PasswordView(
+            content, self, self.serial, commLink, start_screen.master)
         start_screen.grid(row=0, column=0, sticky="nsew")
         password_view.grid(row=0, column=0, sticky="nsew")
         self.frames[StartScreen] = start_screen

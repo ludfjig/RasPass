@@ -1,13 +1,14 @@
-import sys
-sys.path.append('../')
-from Communication import CommunicationInterface
-import time
-import json
-import re
-from serial.tools import list_ports
 import serial
+from serial.tools import list_ports
+import re
+import json
+import time
+import sys
 
 # setting path
+sys.path.append('../')
+from Communication import CommunicationInterface
+
 
 
 class AppComm(CommunicationInterface):
@@ -51,7 +52,7 @@ class AppComm(CommunicationInterface):
         # failure on error reading
         # structure back to python object from json
         # return object to caller
-        while(1):
+        while (1):
             raw = self.s.readline()
             raw = raw.rstrip()
             decoded = raw.decode('utf-8')
@@ -177,7 +178,7 @@ class AppComm(CommunicationInterface):
         res = self.readResponse()
         if res == {}:
             print("Failure retrieving settings")
-            return{}
+            return {}
 
         return res
 

@@ -1,11 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 import StartScreen
-import serial
 import pyperclip as pc
-import json
 import hashlib
-import os
 import crypto
 
 
@@ -15,7 +12,8 @@ LARGEFONT = ("Arial", 35)
 class PasswordView(tk.Frame):
     def __init__(self, parent, controller, s, commLink, master_pw):
         tk.Frame.__init__(self, parent)
-        self.master_pw = master_pw # access master password through self.master_pw.get()
+        # access master password through self.master_pw.get()
+        self.master_pw = master_pw
         self.s = s
         self.controller = controller
         self.comm = commLink
@@ -104,7 +102,7 @@ class PasswordView(tk.Frame):
         self.password_entry.delete(0, 'end')
 
     def add_row(self, site):
-        _ , rows = self.rows.grid_size()
+        _, rows = self.rows.grid_size()
         # rows += 1
         print(site, self.rows.grid_size())
 
@@ -130,7 +128,7 @@ class PasswordView(tk.Frame):
         s.insert(0, site)
         s.config(state="readonly")
         u.grid(row=rows, column=1, sticky="new")
-        #p.grid(row=i, column=2, sticky="new")
+        # p.grid(row=i, column=2, sticky="new")
         g.grid(row=rows, column=2, sticky="new")
         c.grid(row=rows, column=3, sticky="new")
         d.grid(row=rows, column=4, sticky="new")
@@ -165,14 +163,13 @@ class PasswordView(tk.Frame):
             for i in range(len(sitenames)):
                 self.add_row(sitenames[i])
 
-
     def addPassword(self, sitename, username, password):
         # Add and refresh interface (e.g. show in list)
         print("Adding password", password)
         # TODO: encrypt username, password
         # TODO: check length of sitename, username, password!!
 
-        ### encryption
+        # encryption
         cipher_text = crypto.encrypt(password, self.get_master_pw_hash())
 
         addPass = self.comm.addPassword(sitename, username, cipher_text)
