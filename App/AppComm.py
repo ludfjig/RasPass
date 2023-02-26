@@ -148,7 +148,7 @@ class AppComm(CommunicationInterface):
 
         return True
 
-    def removePassword(self, site: str):
+    def removePassword(self, site: str) -> int:
         """Deletes a site, username, password entry from the password manager. Returns success/failure"""
         req = {
             "method": "removePassword",
@@ -158,8 +158,10 @@ class AppComm(CommunicationInterface):
         written = self.writeRequest(req)
         if not written:
             print("Failure to communicate with device\n")
-            return False
-        return True
+            return -1
+
+        res = self.readResponse()
+        return res['status']
 
     def getSettings(self):
         """Returns all the current settings"""

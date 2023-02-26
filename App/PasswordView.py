@@ -151,7 +151,7 @@ class PasswordView(tk.Frame):
         self.username_entry.grid(column=1, row=rows, sticky="new")
         self.password_entry.grid(column=2, row=rows, sticky="new")
         self.add_new_pswd.grid(column=3, row=rows, sticky="new", columnspan=2)
-    
+
     def get_master_pw_hash(self):
         m = hashlib.sha256()
         m.update(self.master_pw.get().encode('utf-8'))
@@ -235,7 +235,7 @@ class PasswordView(tk.Frame):
         if ret == 1:
             print("unable to remove password")
             return False
-        elif ret['status'] == 3:
+        elif ret == 3:
             print("error occurred while deleting")
             return False
 
