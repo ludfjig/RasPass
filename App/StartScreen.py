@@ -5,7 +5,7 @@ import PasswordView
 
 
 LARGEFONT = ("Courier", 20)
-SMALLFONT = ("Courier", 15)
+SMALLFONT = ("Courier", 14)
 
 
 class StartScreen(tk.Frame):

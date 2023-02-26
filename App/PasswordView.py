@@ -7,7 +7,9 @@ import hashlib
 import crypto
 
 
-LARGEFONT = ("Arial", 35)
+LARGEFONT = ("Courier", 20)
+MEDIUMFONT = ("Courier", 16)
+SMALLFONT = ("Courier", 14)
 
 
 class PasswordView(tk.Frame):
@@ -28,11 +30,11 @@ class PasswordView(tk.Frame):
         rows = ttk.Frame(body, borderwidth=2, relief="solid")
         self.rows = rows
         # column names
-        site_label = ttk.Label(column_names, width=20, text="Site")
+        site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site")
         username_label = ttk.Label(
-            column_names, width=20, text="Username")
+            column_names, width=20, font=MEDIUMFONT, text="Username")
         password_label = ttk.Label(
-            column_names, width=20, text="Password")
+            column_names, width=20, font=MEDIUMFONT, text="Password")
 
         # banner
         #header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
@@ -80,7 +82,7 @@ class PasswordView(tk.Frame):
 
         header.grid(column=0, row=0, columnspan=5)
 
-        btn1 = ttk.Button(self, text="Start Screen",
+        btn1 = tk.Button(self, text="Start Screen", font=MEDIUMFONT,
                           command=lambda: controller.show_frame(StartScreen.StartScreen))
 
         btn1.grid(row=1, column=0, padx=10, pady=10)
@@ -118,15 +120,15 @@ class PasswordView(tk.Frame):
 
         items = []
 
-        s = ttk.Entry(self.rows, width=20, font='bold')
-        u = ttk.Button(self.rows, width=20, text="Get Username",
+        s = ttk.Entry(self.rows, width=20, font=("Courier bold", 14))
+        u = tk.Button(self.rows, width=20, font=SMALLFONT, text="Get Username",
                        command=lambda: self.getUsername(site))
-        g = ttk.Button(self.rows, width=20, text="Get Password",
+        g = tk.Button(self.rows, width=20, font=SMALLFONT, text="Get Password",
                        command=lambda: self.getPassword(site))
-        c = ttk.Button(
-            self.rows, text="Change", command=lambda: self.changePassword(site, items))
-        d = ttk.Button(
-            self.rows, text="Delete", command=lambda: self.deletePassword(site, items))
+        c = tk.Button(
+            self.rows, text="Change", font=SMALLFONT, command=lambda: self.changePassword(site, items))
+        d = tk.Button(
+            self.rows, text="Delete", font=SMALLFONT, command=lambda: self.deletePassword(site, items))
 
         items.append(s)
         items.append(u)
@@ -147,8 +149,8 @@ class PasswordView(tk.Frame):
         self.site_entry = ttk.Entry(self.rows)
         self.username_entry = ttk.Entry(self.rows)
         self.password_entry = ttk.Entry(self.rows, show="*")
-        self.add_new_pswd = ttk.Button(
-            self.rows, text="Add", command=lambda: self.addPassword(
+        self.add_new_pswd = tk.Button(
+            self.rows, text="Add", font=SMALLFONT, command=lambda: self.addPassword(
                 self.site_entry.get(),
                 self.username_entry.get(),
                 self.password_entry.get()
