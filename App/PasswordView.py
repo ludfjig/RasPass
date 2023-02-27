@@ -83,9 +83,13 @@ class PasswordView(tk.Frame):
         header.grid(column=0, row=0, columnspan=5)
 
         btn1 = tk.Button(self, text="Start Screen", font=MEDIUMFONT,
-                          command=lambda: controller.show_frame(StartScreen.StartScreen))
+                          command=lambda: self.switch_to_start(controller))
 
         btn1.grid(row=1, column=0, padx=10, pady=10)
+
+    def switch_to_start(self, controller):
+        self.clear_input_row()
+        controller.show_frame(StartScreen.StartScreen)
 
     def open_img(self, parent, picture):
         img = Image.open(picture)
@@ -182,9 +186,10 @@ class PasswordView(tk.Frame):
         # TODO: check length of sitename, username, password!!
 
         # encryption
-        cipher_text = crypto.encrypt(password, self.get_master_pw_hash())
+        cipher_pass = crypto.encrypt(password, self.get_master_pw_hash())
+        cipher_usr = crypto.encrypt(username, self.get_master_pw_hash())
 
-        addPass = self.comm.addPassword(sitename, username, cipher_text)
+        addPass = self.comm.addPassword(sitename, cipher_usr, cipher_pass)
         while addPass['status'] != 0:
             if addPass["status"] == 1:
                 print("Authentification failure")
@@ -192,7 +197,7 @@ class PasswordView(tk.Frame):
                 print("Password already exists in db")
             else:
                 print("Unknown error")
-            addPass = self.comm.addPassword(sitename, username, cipher_text)
+            addPass = self.comm.addPassword(sitename, cipher_usr, cipher_pass)
 
         print(addPass)
 
@@ -211,9 +216,10 @@ class PasswordView(tk.Frame):
             print("Authentification failure")
             ret = self.comm.getPassword(sitename)
         print(ret)
-        uname = ret['username']
-        pc.copy(uname)
-        print("returned username: ", uname)
+        cipher_uname = ret['username']
+        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
+        pc.copy(plain_text_usr)
+        print("returned username: ", plain_text_usr)
         return ret
 
     def getPassword(self, sitename):

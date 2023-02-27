@@ -34,7 +34,6 @@ class StartScreen(tk.Frame):
         # in the raspass
         # if it does, switch to password view
         # if not, give 2 more attempts before 5min timeout (timing if pico disconnected?)
-        self.master.delete(0, 'end')
         controller.show_frame(PasswordView.PasswordView)
 
     def open_img(self, picture):
