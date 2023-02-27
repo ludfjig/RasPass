@@ -1,10 +1,8 @@
-# Library for communication via JSON requests/responses over standard IO
-# Copyright (c), 2023  RasPass
-
 import sys
 import json
 import localdb
 import auth
+
 
 
 class PicoComm:
@@ -313,6 +311,29 @@ class PicoComm:
                     "status": 2,
                     "error": "Failed to authenticate password"
                 }
+
+    def verifyMasterHash(self, req: dict) -> dict | None:
+        if self.db.master_hash == (4 * b"\x00"):
+            if self.db.addMasterHash(req["hash"]) == 0:
+                return {
+                    "method": "verifyMasterHash",
+                    "status": 0,
+                    "valid": False,
+                    "error": "Failed to add master password"
+                }
+            return {
+                "method": "verifyMasterHash",
+                "status": 2,
+                "valid": True,
+                "error": None
+            }
+        valid = (self.db.master_hash == req["hash"])
+        return {
+                "method": "verifyMasterHash",
+                "status": 1,
+                "valid": valid,
+                "error": None
+        }
 
     def changeMasterPswd(self, req: dict) -> dict | None:
         """Change the code for the fingerprint sensor"""
