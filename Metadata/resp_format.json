@@ -70,5 +70,11 @@
         "method": "changeMasterPswd",
         "status": "int",
         "error": "undefined OR str"
+    },
+    "verifyMasterHash": {
+        "method": "verifyMasterHash",
+        "status": 0,
+        "valid": "bool",
+        "error": "undefined OR str"
     }
 }
