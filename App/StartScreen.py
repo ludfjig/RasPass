@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 import PasswordView
+import hashlib
+import base64
 
 
 LARGEFONT = ("Courier", 20)
@@ -12,6 +14,7 @@ class StartScreen(tk.Frame):
     def __init__(self, parent, controller, s, commLink):
         tk.Frame.__init__(self, parent)
         self.s = s
+        self.comm = commLink
 
         self.open_img("./imgs/logo2.png")
 
@@ -34,7 +37,21 @@ class StartScreen(tk.Frame):
         # in the raspass
         # if it does, switch to password view
         # if not, give 2 more attempts before 5min timeout (timing if pico disconnected?)
+        pass_hash = self.get_master_pw_hash()
+
+        pass_hash = base64.b64encode(pass_hash).decode('ascii')
+
+        pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
+        print(pass_hash)
+        if not pass_check:
+            print("incorrect master password")
+            return
         controller.show_frame(PasswordView.PasswordView)
+
+    def get_master_pw_hash(self):
+        m = hashlib.sha256()
+        m.update(self.master.get().encode('utf-8'))
+        return m.digest()
 
     def open_img(self, picture):
         img = Image.open(picture)

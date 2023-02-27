@@ -4,6 +4,7 @@ import re
 import json
 import time
 import sys
+import base64
 
 # setting path
 sys.path.append('../')
@@ -62,6 +63,24 @@ class AppComm(CommunicationInterface):
 
     def getSerial(self):
         return self.s
+
+    def verifyMasterHash(self, pass_hash: str) -> bool:
+        req = {
+            "method": "verifyMasterHash",
+            "hash": pass_hash,
+            "authtoken": "1"
+        }
+        written = self.writeRequest(req)
+        if not written:
+            print("Failure to communicate with device\n")
+            return False
+
+        res = self.readResponse()
+        if res == {}:
+            print("Failure to verify master password")
+            return False
+        print(res)
+        return res["valid"]
 
     def getAllSiteNames(self):
         """Returns all site names stored in password manager"""
