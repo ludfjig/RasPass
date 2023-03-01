@@ -43,6 +43,8 @@ database = DataBase(frw)
 fp = Auth(finger)
 comms = PicoComm(database, fp)
 
+#database.master_hash = b"\x00\x00\x00\x00"
+
 """
 ########################### Note to analysis team
 # This section is used to experiment with the fingerprint sensor directly using
@@ -64,8 +66,8 @@ print("Setup sensor status:",fp.setupFp((0,0,0,0))) # this requires fingerprint 
 time.sleep(0.25)
 
 fp.main_loop(finger)
-"""
 
+"""
 fp.setupFp((0,0,0,0))
 
 while True:

@@ -72,7 +72,7 @@ class Auth:
             return None
 
         if self.get_fingerprint():
-            if self.finger.finger_id is not None and self.finger.finger_id > 0:
+            if self.finger.finger_id is not None and self.finger.finger_id >= 0:
                 fpId = int(self.finger.finger_id)
                 self.blink_yes()
                 return (fpId, self.fingerTemplates[fpId])
@@ -84,8 +84,8 @@ class Auth:
         """Require fingerprint authentication to continue"""
         if not self.hasSetup:
             return False
-        #return self.verifyFingerprint() != None
-        return True
+        return self.verifyFingerprint() != None
+        #return True
 
     def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""
