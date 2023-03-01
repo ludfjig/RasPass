@@ -72,7 +72,7 @@ class Auth:
             return None
 
         if self.get_fingerprint():
-            if self.finger.finger_id is not None and self.finger.finger_id > 0:
+            if self.finger.finger_id is not None and self.finger.finger_id >= 0:
                 fpId = int(self.finger.finger_id)
                 self.blink_yes()
                 return (fpId, self.fingerTemplates[fpId])

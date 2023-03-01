@@ -69,6 +69,7 @@ time.sleep(0.25)
 fp.main_loop(finger)
 '''
 
+
 fp.setupFp((0,0,0,0))
 
 while True:
