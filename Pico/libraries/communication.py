@@ -335,6 +335,16 @@ class PicoComm:
                 "error": None
         }
 
+    def softReset(self, req: dict) -> dict | None:
+        if "authtoken" not in req:
+            return {
+                "method": "verifyFpPswd",
+                "status": 1,
+                "error": "No auth token"
+            }
+        else:
+            self.auth.softreset()
+
     def changeMasterPswd(self, req: dict) -> dict | None:
         """Change the code for the fingerprint sensor"""
         if "oldauthtoken" not in req or "newauthtoken" not in req:

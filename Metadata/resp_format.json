@@ -76,5 +76,10 @@
         "status": 0,
         "valid": "bool",
         "error": "undefined OR str"
+    },
+    "softReset": {
+        "method": "softReset",
+        "status": "int",
+        "error": "undefined OR str"
     }
 }

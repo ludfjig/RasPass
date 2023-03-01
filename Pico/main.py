@@ -43,10 +43,13 @@ database = DataBase(frw)
 fp = Auth(finger)
 comms = PicoComm(database, fp)
 
-"""
+'''
 ########################### Note to analysis team
 # This section is used to experiment with the fingerprint sensor directly using
 # an Adafruit-provided user interface via the CLI for the sensor
+
+# set the master password hash to be null initially
+database.master_hash = (4 * b"\x00")
 
 # Use this to enroll and delete fingerprints
 
@@ -64,7 +67,7 @@ print("Setup sensor status:",fp.setupFp((0,0,0,0))) # this requires fingerprint 
 time.sleep(0.25)
 
 fp.main_loop(finger)
-"""
+'''
 
 fp.setupFp((0,0,0,0))
 

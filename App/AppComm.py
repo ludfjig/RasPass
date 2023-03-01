@@ -119,6 +119,22 @@ class AppComm(CommunicationInterface):
             print("Failure retrieving passwords")
             return {}
 
+        auth_failure_count = 0
+        while res != 0 and auth_failure_count < 5:
+            auth_failure_count += 1
+            print("Authentification failure, Attempt ", auth_failure_count, " of 5")
+            if auth_failure_count < 5:
+                print("Try again in 3 seconds")
+                time.sleep(3)
+
+        # send api command to reset otherwise they don't need to enter master password
+        if auth_failure_count >= 5: 
+            req = {
+                "method": "softReset",
+                "authtoken": "1"
+            }
+            written = self.writeRequest(req)
+        
         return res
 
     def addPassword(self, sitename: str, user: str, pswd: str):

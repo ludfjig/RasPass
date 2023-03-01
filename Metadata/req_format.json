@@ -68,5 +68,9 @@
         "method": "verifyMasterHash",
         "hash": "<Master password last 4 bytes hash",
         "authtoken": "<FP AUTH>"
+    },
+    "softReset": {
+        "method": "softReset",
+        "authtoken": "<FP AUTH>"
     }
 }

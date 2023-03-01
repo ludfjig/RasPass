@@ -5,6 +5,7 @@ import StartScreen
 import pyperclip as pc
 import hashlib
 import crypto
+import time
 
 
 LARGEFONT = ("Courier", 20)
@@ -212,9 +213,11 @@ class PasswordView(tk.Frame):
     def getUsername(self, sitename):
         # Open dialog/copy to clipboard
         ret = self.comm.getPassword(sitename)
-        while ret['status'] != 0:
+
+        if ret['status'] != 0:
             print("Authentification failure")
-            ret = self.comm.getPassword(sitename)
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
         print(ret)
         cipher_uname = ret['username']
         plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
@@ -225,9 +228,11 @@ class PasswordView(tk.Frame):
     def getPassword(self, sitename):
         # Open dialog/copy to clipboard
         ret = self.comm.getPassword(sitename)
-        while ret['status'] != 0:
+
+        if ret['status'] != 0:
             print("Authentification failure")
-            ret = self.comm.getPassword(sitename)
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
         print(ret)
         cipher_text = ret['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())

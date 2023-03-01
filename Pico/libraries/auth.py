@@ -84,8 +84,8 @@ class Auth:
         """Require fingerprint authentication to continue"""
         if not self.hasSetup:
             return False
-        #return self.verifyFingerprint() != None
-        return True
+        return self.verifyFingerprint() != None
+        #return True
 
     def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""
@@ -232,6 +232,9 @@ class Auth:
             except ValueError:
                 pass
         return i
+    
+    def softreset(self):
+        self.finger.soft_reset()
 
     def main_loop(self, finger):
         """ Note: this is just used for testing. """
