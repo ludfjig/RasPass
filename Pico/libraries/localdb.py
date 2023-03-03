@@ -18,8 +18,8 @@ class DataBase:
         """Parse db from flash"""
         self.db = {}
         raw = self.frw.readFlashDB()
-        for c in range(len(raw) // 256):
-            en = raw[c * 256: (c + 1) * 256]
+        for c in range(len(raw) // 2048):
+            en = raw[c * 2048: (c + 1) * 2048]
             sitename, username, password = self.getStorageSitnameUPPair(en)
             self.db[sitename] = (username, password)
 
@@ -27,7 +27,7 @@ class DataBase:
         """Store db in flash"""
         raw_block = bytes()
         raw_block += self.master_hash
-        raw_block += 252 * b"\x00"
+        raw_block += 2044 * b"\x00"
         for sn in self.db:
             raw_block += self.getStorageByteEntry(sn, self.db[sn])
         self.frw.writeFlashDB(raw_block)
@@ -40,17 +40,17 @@ class DataBase:
     def getStorageSitnameUPPair(self, entry: bytes) -> tuple[str, str, str]:
         """Returns (sitename, username, password)"""
         return (
-            self.__getUnPadded(entry[:128]),
-            self.__getUnPadded(entry[128: 128 + 64]),
-            self.__getUnPadded(entry[128 + 64:]),
+            self.__getUnPadded(entry[:1024]),
+            self.__getUnPadded(entry[1024: 1024 + 512]),
+            self.__getUnPadded(entry[1024 + 512:]),
         )
 
     def getStorageByteEntry(self, sn: str, up_pair: tuple[str, str]) -> bytes:
         """Returns padded sitename and encrypted_up in 256B format"""
         return (
-            self.__getPadded(sn, 128)
-            + self.__getPadded(up_pair[0], 64)
-            + self.__getPadded(up_pair[1], 64)
+            self.__getPadded(sn, 1024)
+            + self.__getPadded(up_pair[0], 512)
+            + self.__getPadded(up_pair[1], 512)
         )
 
     def __getPadded(self, toPad: str, padLen: int) -> bytes:

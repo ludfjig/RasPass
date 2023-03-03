@@ -1,10 +1,10 @@
 # Library to read/write from the Pico Flash
 # Copyright (c), 2023  RasPass
 
-PICO_FLASH_SIZE_BYTES = 2097152
-DATA_CHUNK = 256
 
 class FlashRW:
+    BLOCKSIZE : int = 2048
+
     def __init__(self):
         """Initialize the flash"""
         self.mode = ""
@@ -29,14 +29,14 @@ class FlashRW:
         """Read entire database in flash. Must be 256B-aligned.
         Returns None on failure"""
         self.openRead()
-        self.file.seek(256)
+        self.file.seek(self.BLOCKSIZE)
         bytes = bytearray(self.file.read())
         return bytes
 
     def writeFlashDB(self, raw_block: bytes) -> int:
         """Write the raw_block to flash (will be 256B aligned).
         Return 0 on failure, 1 on success."""
-        assert len(raw_block) % DATA_CHUNK == 0
+        assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
@@ -44,7 +44,7 @@ class FlashRW:
         return 0
 
     def storePasswordHash(self, pass_hash):
-        assert len(pass_hash) == DATA_CHUNK
+        assert len(pass_hash) == self.BLOCKSIZE
         self.openWrite()
         self.file.seek(0)
         if self.file.write(pass_hash) == len(pass_hash):
@@ -55,5 +55,6 @@ class FlashRW:
     def getPasswordHash(self):
         self.openRead()
         self.file.seek(0)
-        bytes = bytearray(self.file.read(4))
-        return bytes
+        rawb = self.file.read(4)
+        pswdhash = bytearray(rawb if rawb else b"\x00\x00\x00\x00")
+        return pswdhash

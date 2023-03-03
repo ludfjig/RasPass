@@ -317,20 +317,27 @@ class PicoComm:
             if self.db.addMasterHash(req["hash"]) == 0:
                 return {
                     "method": "verifyMasterHash",
-                    "status": 0,
+                    "status": 3,
                     "valid": False,
                     "error": "Failed to add master password"
                 }
+            """elif not self.auth.changePswd((0,0,0,0), req["hash"]):
+                return {
+                    "method": "verifyMasterHash",
+                    "status": 2,
+                    "valid": False,
+                    "error": "Failed to initialize sensor with new master password"
+                }"""
             return {
                 "method": "verifyMasterHash",
-                "status": 2,
+                "status": 0,
                 "valid": True,
                 "error": None
             }
-        valid = (self.db.master_hash == req["hash"])
+        valid = (self.db.master_hash == req["hash"]) and self.auth.setupFp((0,0,0,0))
         return {
                 "method": "verifyMasterHash",
-                "status": 1,
+                "status": 0,
                 "valid": valid,
                 "error": None
         }
@@ -338,12 +345,17 @@ class PicoComm:
     def softReset(self, req: dict) -> dict | None:
         if "authtoken" not in req:
             return {
-                "method": "verifyFpPswd",
+                "method": "softReset",
                 "status": 1,
                 "error": "No auth token"
             }
         else:
             self.auth.softreset()
+            return {
+                "method": "softReset",
+                "status": 0,
+                "error": None
+            }
 
     def changeMasterPswd(self, req: dict) -> dict | None:
         """Change the code for the fingerprint sensor"""
