@@ -23,6 +23,7 @@ class Auth:
     maxAttempts: int                # Maximum number of attempts before reset
     isDefaultPswd: bool             # Is the sensor using the default password?
     isVerified: bool                # Is this sensor active (verified password)?
+    isReset: bool                   # Is this sensor soft-reset (needs power cycle to work again)?
 
     def __init__(self, fingerprint: af.Adafruit_Fingerprint, maxAttempts : int = 5):
         self.finger = fingerprint
@@ -31,6 +32,8 @@ class Auth:
         self.maxAttempts = maxAttempts  # Number of attempts. TODO: initialize from settings
         self.led = Pin(25, Pin.OUT)
         self.isDefaultPswd = False
+        self.isVerified = False
+        self.isReset = False
         self.setupFp(self.DEFAULT_PSWD)
 
     def blink_yes(self):
@@ -47,6 +50,8 @@ class Auth:
         """Initialize the fingerprint sensor with the password.
         This must be called first, before any other API call.
         Returns true on success, or false on failed authentication/error"""
+        if self.isReset:
+            return False
         if self.finger.initialize(fpPasswd):
             self.fingerTemplates = {}
             if self.finger.read_templates() == af.OK:
@@ -65,16 +70,19 @@ class Auth:
     def changePswd(self, oldFpPasswd: Tuple[int, int, int, int],
                         newFpPasswd: Tuple[int, int, int, int]):
         """Change the fp password, if the old password is correct"""
-        if not self.isVerified:
+        if not self.isVerified or self.isReset:
             return False
         if self.finger.verify_password(oldFpPasswd):
-            return self.finger.set_password(newFpPasswd)
+            if self.finger.set_password(newFpPasswd):
+                self.isDefaultPswd = newFpPasswd == self.DEFAULT_PSWD
+                self.isVerified = False
+                return True
         return False
 
     def verifyFingerprint(self) -> Tuple[int, str] | None:
         """Verify a fingerprint is present and matches (matches to id desiredId if not None).
         Returns None on failure, or otherwise a tuple of the fingerprint ID and the hexdigest of the template."""
-        if not self.isVerified:
+        if not self.isVerified or self.isReset:
             return None
 
         if self.get_fingerprint():
@@ -88,7 +96,7 @@ class Auth:
 
     def authenticate(self) -> bool:
         """Require fingerprint authentication to continue"""
-        if not self.isVerified: # Not setup
+        if not self.isVerified or self.isReset: # Not setup
             return False
         elif self.numAttempts >= self.maxAttempts: # Too many attempts - reset
             self.softreset()
@@ -101,7 +109,7 @@ class Auth:
         """Get a finger print image, template it, and see if it matches!"""
         """Credit: Adafruit"""
         #print("Waiting for image...")
-        if not self.isVerified:
+        if not self.isVerified or self.isReset:
             return False
         while self.finger.get_image() != af.OK:
             pass
@@ -118,7 +126,7 @@ class Auth:
         """Get a finger print image, template it, and see if it matches!
         This time, print out each error instead of just returning on failure"""
         """Credit: Adafruit"""
-        if not self.isVerified:
+        if not self.isVerified or self.isReset:
             return False
         print("Getting image...", end="")
         i = self.finger.get_image()
@@ -163,7 +171,7 @@ class Auth:
     def enroll_finger(self, location):
         """Take a 2 finger images and template it, then store in 'location'"""
         """Credit: Adafruit"""
-        if not self.isVerified:
+        if not self.isVerified or self.isReset:
             return False
         for fingerimg in range(1, 3):
             if fingerimg == 1:
@@ -248,6 +256,8 @@ class Auth:
         Locks the sensor until setupFp is called again """
         self.finger.soft_reset()
         self.isVerified = False
+        self.isDefaultPswd = False
+        self.isReset = True
 
     def main_loop(self, finger):
         """ Note: this is just used for testing. """

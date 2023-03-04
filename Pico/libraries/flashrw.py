@@ -29,7 +29,6 @@ class FlashRW:
         """Read entire database in flash. Must be 256B-aligned.
         Returns None on failure"""
         self.openRead()
-        self.file.seek(self.BLOCKSIZE)
         bytes = bytearray(self.file.read())
         return bytes
 
@@ -38,24 +37,7 @@ class FlashRW:
         Return 0 on failure, 1 on success."""
         assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
-        self.file.seek(0)
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
             return 1
         return 0
-
-    def storePasswordHash(self, pass_hash):
-        assert len(pass_hash) == self.BLOCKSIZE
-        self.openWrite()
-        self.file.seek(0)
-        if self.file.write(pass_hash) == len(pass_hash):
-            self.file.flush()
-            return 1
-        return 0
-
-    def getPasswordHash(self):
-        self.openRead()
-        self.file.seek(0)
-        rawb = self.file.read(4)
-        pswdhash = bytearray(rawb if rawb else b"\x00\x00\x00\x00")
-        return pswdhash

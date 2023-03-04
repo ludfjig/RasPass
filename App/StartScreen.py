@@ -40,10 +40,11 @@ class StartScreen(tk.Frame):
         pass_hash = self.get_master_pw_hash()
 
         pass_hash = base64.b64encode(pass_hash).decode('ascii')
+        self.master.delete(0, tk.END)
 
+        print("[INFO] Password: %s. Hash: %s" %(self.master.get(), pass_hash))
         pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
-        print("[INFO] Password hash %s" %pass_hash)
-        if not pass_check:
+        if not pass_check or not pass_check["valid"]:
             print("[WARN] Incorrect master password")
             return
         controller.show_frame(PasswordView.PasswordView)

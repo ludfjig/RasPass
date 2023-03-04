@@ -62,7 +62,7 @@ time.sleep(0.25)
 fp.main_loop(finger)
 '''
 
-fp.setupFp((0,0,0,0))
+#fp.setupFp((0,0,0,0))
 
 # Boot status of Pico
 for i in range(5):
@@ -82,7 +82,6 @@ for i in range(5):
 while True:
     req = comms.readRequest()
     if req is not None:
-        #print("got a req")
         led.on()
         comms.processRequest(req)
         led.off()

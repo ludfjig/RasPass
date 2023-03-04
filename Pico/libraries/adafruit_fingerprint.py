@@ -502,7 +502,7 @@ class Adafruit_Fingerprint:
                 packet.append(_DATAPACKET)
 
             length = len(data[start:end]) + 2
-            self._print_debug("_send_data length:", length)
+            #self._print_debug("_send_data length:", length)
             packet.append(length >> 8)
             packet.append(length & 0xFF)
             if left <= 0:

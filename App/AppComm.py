@@ -6,14 +6,21 @@ import time
 import sys
 import base64
 
-# setting path
-sys.path.append('../')
-from Communication import CommunicationInterface
 
-FRAMESTART = b"\xff"
-FRAMESTOP = b"\xfe"
+class AppComm:
+    FRAMESTART : bytes = b"\xff"
+    FRAMESTOP : bytes = b"\xfe"
+    TOTAL_ATTEMPTS : int = 5        # Number of ARQ attempts before fatal error
+    STATUS_SUCCESS = 0
+    STATUS_MISSING_PARAM = 3        # Missing request parameter
+    STATUS_MALFORMED_REQ = 4        # Malformed request
+    STATUS_BAD_METHOD = 5           # Bad/nonexistent method
+    STATUS_FAILED_BIOMETRICS = 6    # Failed biometric, but not too many attempts
+    STATUS_NOT_VERIFIED = 7         # User must run verifyMasterHash
+    STATUS_UNKNOWN_ERR = 10         # Other (unhandled) exception thrown in code - traceback returned
+    STATUS_API_OTHER_ERROR = 11     # Other (handled) error in the API
+    STATUS_NOT_YET_IMPLEMENTED = 12 # API method exists, but not implemented
 
-class AppComm(CommunicationInterface):
     def __init__(self):
         self.s = None
         port = list_ports.comports()
@@ -37,15 +44,19 @@ class AppComm(CommunicationInterface):
 
         if self.s is None:
             exit('[ERR]  Failure establishing connection to Pico')
-        self.s.write(5*(FRAMESTART+b"hi"+FRAMESTOP))
+        self.s.write(5*(b"none"+self.FRAMESTOP))
 
     def writeRequest(self, req: dict) -> int:
         # will create correct json format to send later
         # right now just trying to set up basic framework
+
+        # first, dump out anything in the input buffer
+        self.s.reset_input_buffer()
+
         try:
             # should return number of bytes written
             jstr = json.dumps(req)
-            encoded = FRAMESTART + jstr.encode('utf-8') + FRAMESTOP
+            encoded = self.FRAMESTART + jstr.encode('utf-8') + self.FRAMESTOP
             print("[INFO] Sending JSON request %s" %jstr)
             size = self.s.write(encoded)
             self.s.flush()
@@ -62,16 +73,16 @@ class AppComm(CommunicationInterface):
         # return object to caller
         try:
             raw = bytearray()
-            while FRAMESTOP not in raw:
+            while self.FRAMESTOP not in raw:
                 b = self.s.read(1)
                 if not b:
                     return None
                 raw.extend(b)
-            if FRAMESTART not in raw:
+            if self.FRAMESTART not in raw:
                 self.s.reset_input_buffer()
                 return None
             else:
-                decoded = raw[raw.index(FRAMESTART)+len(FRAMESTART):raw.index(FRAMESTOP)].decode('utf-8')
+                decoded = raw[raw.index(self.FRAMESTART)+len(self.FRAMESTART):raw.index(self.FRAMESTOP)].decode('utf-8')
                 decoded = json.loads(decoded)
                 print("[INFO] JSON received:", decoded)
                 return decoded
@@ -81,20 +92,45 @@ class AppComm(CommunicationInterface):
     def communicateReq(self, req) -> dict | None:
         """ Communicate with the Pico by sending the request.
         Wait until a timeout and resend if no response from the Pico."""
-        TOTAL_ATTEMPTS = 5
-        for i in range(1,TOTAL_ATTEMPTS+1):
+        for i in range(1,self.TOTAL_ATTEMPTS+1):
             if self.writeRequest(req):
                 resp = self.readResponse()
                 if resp is not None:
                     return resp
-            print("[WARN] Failed to receive response from Pico. Retrying... (attempt %d of %d)" %(i, TOTAL_ATTEMPTS))
+            print("[WARN] Failed to receive response from Pico. Retrying... (attempt %d of %d)" %(i, self.TOTAL_ATTEMPTS))
             time.sleep(0.5)
-        exit("[ERR]  Failed to communicate with Pico")
+        exit("[ERR] Failed to communicate with Pico")
+
+    def communicateAuthenticatedReq(self, req) -> dict | None:
+        """ Communicate with Pico by sending this request that needs fingerprint authentication.
+        Will retry until device locks or success. Returns response or None on failure. """
+        # TODO: show popup that says to put finger on sensor when light turns green
+        while True:
+            res = self.communicateReq(req)
+            if res is None:
+                break
+
+            status = res["status"]
+            if status == self.STATUS_SUCCESS:
+                return res
+            elif status == self.STATUS_FAILED_BIOMETRICS:
+                # TODO: show popup that says to retry
+                pass
+            elif status == self.STATUS_NOT_VERIFIED:
+                # TODO: Show popup that says too many attempts, and return to homescreen (device will lock itself)
+                return res
+            else:
+                # Not an authentication issue, so just return it
+                return res
+        return None
 
     def getSerial(self):
         return self.s
 
-    def verifyMasterHash(self, pass_hash: str) -> bool:
+    def verifyMasterHash(self, pass_hash: str) -> dict | None:
+        """Verify the master password hash. Returns response or None on failure"""
+        assert len(pass_hash) == 4
+
         req = {
             "method": "verifyMasterHash",
             "hash": pass_hash,
@@ -102,32 +138,22 @@ class AppComm(CommunicationInterface):
         }
         res = self.communicateReq(req)
 
-        """written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
-            return False"""
-
         if res is None or "valid" not in res:
-            print("[WARN] Failure to verify master password")
-            return False
-        return res["valid"]
+            print("`[WARN] Failure to verify master password")
 
-    def getAllSiteNames(self):
-        """Returns all site names stored in password manager"""
+        return res
+
+    def getAllSiteNames(self) -> dict | None:
+        """Get all sitenames. Returns response or None on failure"""
         req = {
             "method": "getAllSiteNames",
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateReq(req)
 
-        if res is None:
-            return {}
-
-        return res
-
-    def getPassword(self, sitename: str):
-        """Returns username, password, or error on authentication failure/no entry"""
+    def getPassword(self, sitename: str) -> dict | None:
+        """Get the username,password. Returns response or None on failure"""
         # sanitize input
         print("[INFO] Get password request for sitename %s" %sitename)
         req = {
@@ -136,32 +162,10 @@ class AppComm(CommunicationInterface):
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None:
-            return {}
-
-        # TODO: fix this
-        auth_failure_count = 0
-        while res != 0 and auth_failure_count < 5:
-            auth_failure_count += 1
-            print("Authentification failure, Attempt ", auth_failure_count, " of 5")
-            if auth_failure_count < 5:
-                print("Try again in 3 seconds")
-                time.sleep(3)
-
-        # send api command to reset otherwise they don't need to enter master password
-        if auth_failure_count >= 5: 
-            req = {
-                "method": "softReset",
-                "authtoken": "1"
-            }
-            written = self.writeRequest(req)
-
-        return res
-
-    def addPassword(self, sitename: str, user: str, pswd: str):
-        """Adds a new username, password, site to the password manager. Returns success/failure"""
+    def addPassword(self, sitename: str, user: str, pswd: str) -> dict | None:
+        """Adds a new username, password, site to the password manager. Returns response or None on failure"""
         print("[INFO] Add password for sitename %s" %sitename)
         req = {
             "method": "addPassword",
@@ -171,14 +175,10 @@ class AppComm(CommunicationInterface):
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None:
-            return {}
-        return res
-
-    def changeUsername(self, site: str, user: str):
-        """Changes the username for a stored site in the password manager. Returns success/failure"""
+    def changeUsername(self, site: str, user: str) -> dict | None:
+        """Changes the username for a stored site in the password manager. Returns response or None on failure"""
         req = {
             "method": "changeUsername",
             "sitename": site,
@@ -186,16 +186,10 @@ class AppComm(CommunicationInterface):
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None:
-            return False
-
-        # TODO: fix
-        return True
-
-    def changePassword(self, site: str, pswd: str):
-        """Changes the password for a stored site in the password manager. Returns success/failure"""
+    def changePassword(self, site: str, pswd: str) -> dict | None:
+        """Changes the password for a stored site in the password manager. Returns response or None on failure"""
         req = {
             "method": "changePassword",
             "sitename": site,
@@ -203,54 +197,33 @@ class AppComm(CommunicationInterface):
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None:
-            return False
-
-        # TODO: fix
-        return True
-
-    def removePassword(self, site: str) -> int:
-        """Deletes a site, username, password entry from the password manager. Returns success/failure"""
+    def removePassword(self, site: str) -> dict | None:
+        """Deletes a site, username, password entry from the password manager. Returns response or None on failure"""
         req = {
             "method": "removePassword",
             "sitename": site,
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None or "status" not in res:
-            return False
-
-        return res['status']
-
-    def getSettings(self):
+    def getSettings(self) -> dict | None:
         """Returns all the current settings"""
         req = {
             "method": "getSettings",
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
+        return self.communicateAuthenticatedReq(req)
 
-        if res is None or "status" not in res:
-            return {}
-
-        return res
-
-    def setSettings(self, settings: str):
-        """Sets a setting in the password manager. Returns success/failure"""
+    def setSettings(self, settings: str) -> dict | None:
+        """Sets a setting in the password manager. Returns response or None on failure"""
         req = {
             "method": "setSettings",
             "settings": settings,
             "authtoken": "1"
         }
 
-        res = self.communicateReq(req)
-
-        if res is None or "status" not in res:
-            return False
-
-        return True
+        return self.communicateAuthenticatedReq(req)

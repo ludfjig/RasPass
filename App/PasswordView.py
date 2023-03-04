@@ -121,7 +121,7 @@ class PasswordView(tk.Frame):
     def add_row(self, site):
         _, rows = self.rows.grid_size()
         # rows += 1
-        print(site, self.rows.grid_size())
+        #print(site, self.rows.grid_size())
 
         items = []
 
@@ -174,70 +174,75 @@ class PasswordView(tk.Frame):
 
     def init_password_rows(self):
         site_reply = self.comm.getAllSiteNames()
-        if site_reply["status"] == 0:
+        if site_reply is not None and site_reply["status"] == self.comm.STATUS_SUCCESS:
             sitenames = site_reply["sitenames"]
             for i in range(len(sitenames)):
                 self.add_row(sitenames[i])
 
     def addPassword(self, sitename, username, password):
         # Add and refresh interface (e.g. show in list)
-        print("Adding password", password)
-        # TODO: encrypt username, password
-        # TODO: check length of sitename, username, password!!
+        #print("Adding password", password)
 
         # encryption
         cipher_pass = crypto.encrypt(password, self.get_master_pw_hash())
         cipher_usr = crypto.encrypt(username, self.get_master_pw_hash())
 
-        addPass = self.comm.addPassword(sitename, cipher_usr, cipher_pass)
-        while addPass['status'] != 0:
-            if addPass["status"] == 1:
-                print("Authentification failure")
-            elif addPass["status"] == 5:
-                print("Password already exists in db")
-            else:
-                print("Unknown error")
-            addPass = self.comm.addPassword(sitename, cipher_usr, cipher_pass)
+        resp = self.comm.addPassword(sitename, cipher_usr, cipher_pass)
+        if resp is None:
+            print("[ERR] Add password failed")
+            return
+        elif resp["status"] == self.comm.STATUS_API_OTHER_ERROR:
+            print("Password already exists in db")
+            return
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while adding password. Status=", resp["status"])
+            return
 
-        print(addPass)
-
-        # pswd = self.comm.getPassword(sitename)
         self.forget_input_row()
         self.add_row(sitename)
         self.clear_input_row()
         self.remember_input_row()
-        print(self.rows.grid_size())
-        # print("returned password: ", pswd)
+        #print(self.rows.grid_size())
 
     def getUsername(self, sitename):
         # Open dialog/copy to clipboard
-        ret = self.comm.getPassword(sitename)
+        resp = self.comm.getPassword(sitename)
 
-        if ret['status'] != 0:
-            print("Authentification failure")
-            self.controller.show_frame(StartScreen.StartScreen)
+        if resp is None:
+            print("[ERR] Get username failed")
             return
-        print(ret)
-        cipher_uname = ret['username']
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while getting username. Status=", resp["status"])
+            return
+
+        cipher_uname = resp['username']
         plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
         pc.copy(plain_text_usr)
-        print("returned username: ", plain_text_usr)
-        return ret
+        print("[INFO] Got username: ", plain_text_usr)
+        return resp
 
     def getPassword(self, sitename):
         # Open dialog/copy to clipboard
-        ret = self.comm.getPassword(sitename)
+        resp = self.comm.getPassword(sitename)
 
-        if ret['status'] != 0:
-            print("Authentification failure")
-            self.controller.show_frame(StartScreen.StartScreen)
+        if resp is None:
+            print("[ERR] Get password failed")
             return
-        print(ret)
-        cipher_text = ret['password']
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while getting password. Status=", resp["status"])
+            return
+
+        cipher_text = resp['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
         pc.copy(plain_text_pw)
-        print("returned password: ", plain_text_pw)
-        return ret
+        print("[INFO] Got password: ", plain_text_pw)
+        return resp
 
     def changePassword(self, sitename):
         # Open dialog to change password
@@ -249,13 +254,16 @@ class PasswordView(tk.Frame):
 
         # should probably prompt the user again to make sure they really meant
         # to delete the password
-        ret = self.comm.removePassword(sitename)
+        resp = self.comm.removePassword(sitename)
 
-        if ret == 1:
-            print("unable to remove password")
+        if resp is None:
+            print("[ERR] Remove password failed")
             return False
-        elif ret == 3:
-            print("error occurred while deleting")
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while removing password. Status=", resp["status"])
             return False
 
         for i in items:
