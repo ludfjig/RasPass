@@ -38,6 +38,7 @@ class FlashRW:
         Return 0 on failure, 1 on success."""
         assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
+        self.file.seek(0)
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
             return 1
