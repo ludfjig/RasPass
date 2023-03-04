@@ -10,7 +10,8 @@ import base64
 sys.path.append('../')
 from Communication import CommunicationInterface
 
-
+FRAMESTART = b"\xff"
+FRAMESTOP = b"\xfe"
 
 class AppComm(CommunicationInterface):
     def __init__(self):
@@ -19,47 +20,76 @@ class AppComm(CommunicationInterface):
         for p in port:
             if (p.vid == 11914):
                 device = p.device
+                print("[INFO] Found device %s" %p)
                 try:
-                    self.s = serial.Serial(device)
-                except serial.SerialException:
-                    # for some reason when I do list_ports.comports on my mac it always
-                    # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
-                    # so this is just forcing it to use tty for my computer if connecting
-                    # over cu fails
-                    device = re.sub(r'/cu', r'/tty', device)
-                    self.s = serial.Serial(device, 9600, timeout=None)
+                    try:
+                        self.s = serial.Serial(device, timeout=5)
+                    except serial.SerialException:
+                        # for some reason when I do list_ports.comports on my mac it always
+                        # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
+                        # so this is just forcing it to use tty for my computer if connecting
+                        # over cu fails
+                        device = re.sub(r'/cu', r'/tty', device)
+                        self.s = serial.Serial(device, 9600, timeout=5)
+                except:
+                    self.s = None
                 break
 
         if self.s is None:
-            exit('failure establishing connection\n')
+            exit('[ERR]  Failure establishing connection to Pico')
+        self.s.write(5*(FRAMESTART+b"hi"+FRAMESTOP))
 
     def writeRequest(self, req: dict) -> int:
         # will create correct json format to send later
         # right now just trying to set up basic framework
         try:
             # should return number of bytes written
-            print(req)
-            encoded = json.dumps(req).encode('utf-8') + b'\0'
+            jstr = json.dumps(req)
+            encoded = FRAMESTART + jstr.encode('utf-8') + FRAMESTOP
+            print("[INFO] Sending JSON request %s" %jstr)
             size = self.s.write(encoded)
-            # time.sleep(2)
+            self.s.flush()
             return (size == len(encoded))
         except serial.SerialTimeoutException:
             # timed out, something went wrong, return -1 to indicate error
             return False
 
     # expects a json response from pico
-    def readResponse(self) -> dict:
+    def readResponse(self) -> dict | None:
         # while there is a next line to read from pico, read data
         # failure on error reading
         # structure back to python object from json
         # return object to caller
-        while (1):
-            raw = self.s.readline()
-            raw = raw.rstrip()
-            decoded = raw.decode('utf-8')
-            decoded = json.loads(decoded[2:-1])
-            return decoded
-        return {}
+        try:
+            raw = bytearray()
+            while FRAMESTOP not in raw:
+                b = self.s.read(1)
+                if not b:
+                    return None
+                raw.extend(b)
+            if FRAMESTART not in raw:
+                self.s.reset_input_buffer()
+                return None
+            else:
+                decoded = raw[raw.index(FRAMESTART)+len(FRAMESTART):raw.index(FRAMESTOP)].decode('utf-8')
+                decoded = json.loads(decoded)
+                print("[INFO] JSON received:", decoded)
+                return decoded
+        except:
+            return None
+
+    def communicateReq(self, req) -> dict | None:
+        """ Communicate with the Pico by sending the request.
+        Wait until a timeout and resend if no response from the Pico."""
+        TOTAL_ATTEMPTS = 5
+        for i in range(1,TOTAL_ATTEMPTS+1):
+            if self.writeRequest(req):
+                resp = self.readResponse()
+                if resp is not None:
+                    return resp
+            print("[WARN] Failed to receive response from Pico. Retrying... (attempt %d of %d)" %(i, TOTAL_ATTEMPTS))
+            time.sleep(0.5)
+        exit("[ERR]  Failed to communicate with Pico")
 
     def getSerial(self):
         return self.s
@@ -70,16 +100,16 @@ class AppComm(CommunicationInterface):
             "hash": pass_hash,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
+        res = self.communicateReq(req)
+
+        """written = self.writeRequest(req)
         if not written:
             print("Failure to communicate with device\n")
-            return False
+            return False"""
 
-        res = self.readResponse()
-        if res == {}:
-            print("Failure to verify master password")
+        if res is None or "valid" not in res:
+            print("[WARN] Failure to verify master password")
             return False
-        print(res)
         return res["valid"]
 
     def getAllSiteNames(self):
@@ -88,14 +118,10 @@ class AppComm(CommunicationInterface):
             "method": "getAllSiteNames",
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
-            return {}
 
-        res = self.readResponse()
-        if res == {}:
-            print("Failure retrieving sitenames")
+        res = self.communicateReq(req)
+
+        if res is None:
             return {}
 
         return res
@@ -103,22 +129,19 @@ class AppComm(CommunicationInterface):
     def getPassword(self, sitename: str):
         """Returns username, password, or error on authentication failure/no entry"""
         # sanitize input
-        print("get pass")
+        print("[INFO] Get password request for sitename %s" %sitename)
         req = {
             "method": "getPassword",
             "sitename": sitename,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
+
+        res = self.communicateReq(req)
+
+        if res is None:
             return {}
 
-        res = self.readResponse()
-        if res == {}:
-            print("Failure retrieving passwords")
-            return {}
-
+        # TODO: fix this
         auth_failure_count = 0
         while res != 0 and auth_failure_count < 5:
             auth_failure_count += 1
@@ -134,12 +157,12 @@ class AppComm(CommunicationInterface):
                 "authtoken": "1"
             }
             written = self.writeRequest(req)
-        
+
         return res
 
     def addPassword(self, sitename: str, user: str, pswd: str):
         """Adds a new username, password, site to the password manager. Returns success/failure"""
-        print("add pass")
+        print("[INFO] Add password for sitename %s" %sitename)
         req = {
             "method": "addPassword",
             "sitename": sitename,
@@ -147,11 +170,11 @@ class AppComm(CommunicationInterface):
             "password": pswd,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
+
+        res = self.communicateReq(req)
+
+        if res is None:
             return {}
-        res = self.readResponse()
         return res
 
     def changeUsername(self, site: str, user: str):
@@ -162,11 +185,13 @@ class AppComm(CommunicationInterface):
             "username": user,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
+
+        res = self.communicateReq(req)
+
+        if res is None:
             return False
 
+        # TODO: fix
         return True
 
     def changePassword(self, site: str, pswd: str):
@@ -177,11 +202,13 @@ class AppComm(CommunicationInterface):
             "password": pswd,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
+
+        res = self.communicateReq(req)
+
+        if res is None:
             return False
 
+        # TODO: fix
         return True
 
     def removePassword(self, site: str) -> int:
@@ -191,12 +218,12 @@ class AppComm(CommunicationInterface):
             "sitename": site,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
-            return -1
 
-        res = self.readResponse()
+        res = self.communicateReq(req)
+
+        if res is None or "status" not in res:
+            return False
+
         return res['status']
 
     def getSettings(self):
@@ -205,14 +232,10 @@ class AppComm(CommunicationInterface):
             "method": "getSettings",
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
-            return {}
 
-        res = self.readResponse()
-        if res == {}:
-            print("Failure retrieving settings")
+        res = self.communicateReq(req)
+
+        if res is None or "status" not in res:
             return {}
 
         return res
@@ -224,8 +247,10 @@ class AppComm(CommunicationInterface):
             "settings": settings,
             "authtoken": "1"
         }
-        written = self.writeRequest(req)
-        if not written:
-            print("Failure to communicate with device\n")
+
+        res = self.communicateReq(req)
+
+        if res is None or "status" not in res:
             return False
+
         return True

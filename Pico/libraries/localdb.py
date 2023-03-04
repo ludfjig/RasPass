@@ -11,7 +11,7 @@ class DataBase:
     def __init__(self, flashRWI: flashrw.FlashRW):
         """Initialize the database. Reads and parses database from flash"""
         self.frw = flashRWI
-        self.master_hash = self.frw.getPasswordHash()
+        #self.master_hash = self.frw.getPasswordHash()
         self.__parseFlashDB()
 
     def __parseFlashDB(self):
@@ -26,15 +26,15 @@ class DataBase:
     def __storeFlashDB(self):
         """Store db in flash"""
         raw_block = bytes()
-        raw_block += self.master_hash
-        raw_block += 2044 * b"\x00"
+        #raw_block += self.master_hash
+        #raw_block += 2044 * b"\x00"
         for sn in self.db:
             raw_block += self.getStorageByteEntry(sn, self.db[sn])
         self.frw.writeFlashDB(raw_block)
 
     def addMasterHash(self, pass_hash: bytes):
         """Add hash of last 4 bytes of master password to database"""
-        self.master_hash = pass_hash
+        #self.master_hash = pass_hash
         self.__storeFlashDB()
 
     def getStorageSitnameUPPair(self, entry: bytes) -> tuple[str, str, str]:

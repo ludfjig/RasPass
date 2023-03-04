@@ -408,24 +408,24 @@ class Adafruit_Fingerprint:
         and _ENDDATAPACKET.  Alternate method for getting data such
         as fingerprint image, etc.  Returns the data payload."""
         res = self._uart.read(expected)
-        self._print_debug("_get_data received data:", res, data_type="hex")
+        #self._print_debug("_get_data received data:", res, data_type="hex")
         if (not res) or (len(res) != expected):
             raise RuntimeError("Failed to read data from sensor")
 
         # first two bytes are start code
         start = struct.unpack(">H", res[0:2])[0]
-        self._print_debug("_get_data received start pos:", start)
+        #self._print_debug("_get_data received start pos:", start)
         if start != _STARTCODE:
             raise RuntimeError("Incorrect packet data")
         # next 4 bytes are address
         addr = list(i for i in res[2:6])
-        self._print_debug("_get_data received address:", addr)
+        #self._print_debug("_get_data received address:", addr)
         if addr != self.address:
             raise RuntimeError("Incorrect address")
 
         packet_type, length = struct.unpack(">BH", res[6:9])
-        self._print_debug("_get_data received packet_type:", packet_type)
-        self._print_debug("_get_data received length:", length)
+        #self._print_debug("_get_data received packet_type:", packet_type)
+        #self._print_debug("_get_data received length:", length)
 
         # todo: check checksum
 
@@ -438,17 +438,17 @@ class Adafruit_Fingerprint:
             # todo: we should really inspect the headers and checksum
             reply = list(i for i in res[0:length])
             received_checksum = struct.unpack(">H", self._uart.read(2))
-            self._print_debug("_get_data received checksum:", received_checksum)
+            #self._print_debug("_get_data received checksum:", received_checksum)
             reply += self._get_data(9)
         elif packet_type == _ENDDATAPACKET:
             res = self._uart.read(length - 2)
             # todo: we should really inspect the headers and checksum
             reply = list(i for i in res[0:length])
             received_checksum = struct.unpack(">H", self._uart.read(2))
-            self._print_debug("_get_data received checksum:", received_checksum)
+            #self._print_debug("_get_data received checksum:", received_checksum)
 
-        self._print_debug("_get_data reply length:", len(reply))
-        self._print_debug("_get_data reply:", reply, data_type="hex")
+        #self._print_debug("_get_data reply length:", len(reply))
+        #self._print_debug("_get_data reply:", reply, data_type="hex")
         return reply
 
     def _send_packet(self, data: List[int]):
@@ -466,13 +466,13 @@ class Adafruit_Fingerprint:
         packet.append(checksum >> 8)
         packet.append(checksum & 0xFF)
 
-        self._print_debug("_send_packet length:", len(packet))
-        self._print_debug("_send_packet data:", packet, data_type="hex")
+        #self._print_debug("_send_packet length:", len(packet))
+        #self._print_debug("_send_packet data:", packet, data_type="hex")
         self._uart.write(bytearray(packet))
 
     def _send_data(self, data: List[int]):
-        self._print_debug("_send_data length:", len(data))
-        self._print_debug("_send_data data:", data, data_type="hex")
+        #self._print_debug("_send_data length:", len(data))
+        #self._print_debug("_send_data data:", data, data_type="hex")
         # self.read_sysparam() #moved this to init
         if self.data_packet_size == 0:
             data_length = 32
@@ -482,16 +482,16 @@ class Adafruit_Fingerprint:
             data_length = 128
         elif self.data_packet_size == 3:
             data_length = 256
-        self._print_debug("_send_data sensor data length:", data_length)
+        #self._print_debug("_send_data sensor data length:", data_length)
         i = 0
         left = len(data)
         for i in range(int(len(data) / data_length)):
             start = i * data_length
             end = (i + 1) * data_length
             left = left - data_length
-            self._print_debug("_send_data data start:", start)
-            self._print_debug("_send_data data end:", end)
-            self._print_debug("_send_data i:", i)
+            #self._print_debug("_send_data data start:", start)
+            #self._print_debug("_send_data data end:", end)
+            #self._print_debug("_send_data i:", i)
 
             packet = [_STARTCODE >> 8, _STARTCODE & 0xFF]
             packet = packet + self.address
@@ -518,7 +518,7 @@ class Adafruit_Fingerprint:
             packet.append(checksum >> 8)
             packet.append(checksum & 0xFF)
 
-            self._print_debug("_send_data sending packet:", packet, data_type="hex")
+            #self._print_debug("_send_data sending packet:", packet, data_type="hex")
             self._uart.write(packet)
 
     def soft_reset(self):

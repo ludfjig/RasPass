@@ -174,7 +174,6 @@ class PasswordView(tk.Frame):
 
     def init_password_rows(self):
         site_reply = self.comm.getAllSiteNames()
-        print(site_reply)
         if site_reply["status"] == 0:
             sitenames = site_reply["sitenames"]
             for i in range(len(sitenames)):

@@ -15,6 +15,7 @@ from libraries.localdb import DataBase  # noqa: E402
 import libraries.adafruit_fingerprint as af  # noqa: E402
 
 
+
 # Fingerprint Sensor UART
 # Wiring:
 # yellow = Sensor TX -> Pico GPIO 5
@@ -30,12 +31,6 @@ finger = af.Adafruit_Fingerprint(uart)
 # On-board LED
 led = Pin(25, Pin.OUT)
 
-# Boot status of Pico
-for i in range(5):
-    led.on()
-    time.sleep(0.2)
-    led.off()
-    time.sleep(0.2)
 
 # Initialize libraries
 frw = FlashRW()
@@ -67,8 +62,14 @@ time.sleep(0.25)
 fp.main_loop(finger)
 '''
 
-
 fp.setupFp((0,0,0,0))
+
+# Boot status of Pico
+for i in range(5):
+    led.on()
+    time.sleep(0.2)
+    led.off()
+    time.sleep(0.2)
 
 # First time setting up - still need to set hash
 # set the master password hash to be null initially
@@ -81,6 +82,7 @@ fp.setupFp((0,0,0,0))
 while True:
     req = comms.readRequest()
     if req is not None:
+        #print("got a req")
         led.on()
         comms.processRequest(req)
         led.off()

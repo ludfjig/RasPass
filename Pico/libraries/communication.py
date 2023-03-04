@@ -2,45 +2,82 @@ import sys
 import json
 import localdb
 import auth
+import uselect
+import time
+import io
 
-
+# Delimit byte frames with byte stuffing
+# Data is encoded utf-8
+# Since 0xfe and 0xff are not used in utf-8, these delimit a frame
+FRAMESTART = b"\xff"
+FRAMESTOP = b"\xfe"
 
 class PicoComm:
     """ Communication interface on Pico via USB """
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
         self.db = db
         self.auth = auth
+        self.inpoll = uselect.poll()
+        self.inpoll.register(sys.stdin, uselect.POLLIN)
+        self.rawbuf = bytearray()
 
     def writeResponse(self, resp: dict) -> int:
         """ Send response to app """
         res = json.dumps(resp).encode('utf-8')
-        print(res)
+        sys.stdout.buffer.write(FRAMESTART + res + FRAMESTOP)
         return 0
 
     def readRequest(self) -> dict | None:
         """ Receieve a request from the app. Blocking call.
         Returns request or None on error. """
-        raw = bytearray()
-        byte = sys.stdin.buffer.read(1)
-        while (byte != b'\0'):
-            raw.extend(byte)
-            byte = sys.stdin.buffer.read(1)
+        while FRAMESTOP not in self.rawbuf:
+            if not self.inpoll.poll(0):
+                time.sleep(0.5)
+                return None
+            else:
+                self.rawbuf.extend(sys.stdin.buffer.read(1))
+
+        stopi = self.rawbuf.index(FRAMESTOP)
+        if FRAMESTART not in self.rawbuf:
+            self.rawbuf = self.rawbuf[stopi+len(FRAMESTOP):] # delete malformed packet
+            #print("cleared buf. curr: ", self.rawbuf)
+            return None # Invalid packet
+
+        starti = self.rawbuf.index(FRAMESTART)
+        rawPkt = self.rawbuf[starti+len(FRAMESTART):stopi]
+        self.rawbuf = self.rawbuf[stopi+len(FRAMESTOP):] # Crop out packet
+        #print("raw pkt: ", rawPkt)
+        #print("raw buf: ", self.rawbuf)
         try:
-            decoded = json.loads(raw.decode('utf-8'))
+            decoded = json.loads(rawPkt.decode('utf-8'))
+            #print("json: ", decoded)
             return decoded
-        except ValueError:
+        except:
             return None
 
     def processRequest(self, req) -> bool:
         """ Process a request, sending a response to the device. Returns true
         if req was successfully processed, and false otherwise. """
-        method = req["method"]
-        handler = getattr(PicoComm, method)
-        resp = handler(self, req)
-        if resp is None:
-            return False
-        self.writeResponse(resp)
-        return True
+        if "method" in req:
+            method = req["method"]
+            try:
+                handler = getattr(PicoComm, method)
+                resp = handler(self, req)
+                if resp is None:
+                    return False
+                self.writeResponse(resp)
+            except Exception as e:
+                errMsg = {}
+                errMsg["method"] = req["method"]
+                errMsg["status"] = 100
+                with io.StringIO() as f:
+                    sys.print_exception(e, f)
+                    f.seek(0)
+                    errMsg["error"] = f.read()
+                self.writeResponse(errMsg)
+            return True
+        return False
+
 
     def getAllSiteNames(self, req: dict) -> dict | None:
         """Returns all site names stored in password manager"""
@@ -57,7 +94,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "getPassword",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         elif "sitename" not in req:
@@ -90,7 +127,7 @@ class PicoComm:
         if not self.auth.authenticate():
             res = {
                 "method": "addPassword",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
             return res
@@ -134,7 +171,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "changeUsername",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         elif "sitename" not in req:
@@ -169,7 +206,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "changePassword",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         elif "sitename" not in req:
@@ -204,7 +241,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "removePassword",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         elif "sitename" not in req:
@@ -232,7 +269,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "getSettings",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         else:
@@ -249,7 +286,7 @@ class PicoComm:
         if not self.auth.authenticate():
             return {
                 "method": "getSettings",
-                "status": 1,
+                "status": 1 if self.auth.isVerified else 5,
                 "error": "Failed biometric authentication"
             }
         else:
@@ -313,49 +350,29 @@ class PicoComm:
                 }
 
     def verifyMasterHash(self, req: dict) -> dict | None:
-        if self.db.master_hash == (4 * b"\x00"):
-            if self.db.addMasterHash(req["hash"]) == 0:
+        if "hash" not in req or len(req["hash"]) != 4:
+            return  {
+                "method": "verifyMasterHash",
+                "status": 4,
+                "valid": False,
+                "error": "No hash supplied, or hash incorrect length"
+            }
+        hashBytes = tuple(req["hash"].encode('utf-8'))
+        if self.auth.isDefaultPswd:
+            if not self.auth.changePswd(self.auth.DEFAULT_PSWD, hashBytes):
                 return {
                     "method": "verifyMasterHash",
                     "status": 3,
                     "valid": False,
-                    "error": "Failed to add master password"
+                    "error": "Failed to set new master password from default"
                 }
-            """elif not self.auth.changePswd((0,0,0,0), req["hash"]):
-                return {
-                    "method": "verifyMasterHash",
-                    "status": 2,
-                    "valid": False,
-                    "error": "Failed to initialize sensor with new master password"
-                }"""
-            return {
-                "method": "verifyMasterHash",
-                "status": 0,
-                "valid": True,
-                "error": None
-            }
-        valid = (self.db.master_hash == req["hash"]) and self.auth.setupFp((0,0,0,0))
+        valid = self.auth.setupFp(hashBytes)
         return {
                 "method": "verifyMasterHash",
                 "status": 0,
                 "valid": valid,
                 "error": None
         }
-
-    def softReset(self, req: dict) -> dict | None:
-        if "authtoken" not in req:
-            return {
-                "method": "softReset",
-                "status": 1,
-                "error": "No auth token"
-            }
-        else:
-            self.auth.softreset()
-            return {
-                "method": "softReset",
-                "status": 0,
-                "error": None
-            }
 
     def changeMasterPswd(self, req: dict) -> dict | None:
         """Change the code for the fingerprint sensor"""
@@ -366,7 +383,7 @@ class PicoComm:
                 "error": "No new/old auth token"
             }
         else:
-            if self.auth.changePswd(req["oldauthtoken"], req["newauthtoken"]):
+            if self.auth.changePswd(tuple(req["oldauthtoken"]), tuple(req["newauthtoken"])):
                 return {
                     "method": "changeMasterPswd",
                     "status": 0,
