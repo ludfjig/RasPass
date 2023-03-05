@@ -297,7 +297,7 @@ class PasswordView(tk.Frame):
         frame = tk.Frame(popup, width=25)
         frame.grid(column=0, row=rw, padx=25)
 
-        change = tk.Entry(frame, width=15, font=SMALLFONT)
+        change = tk.Entry(frame, width=15, font=SMALLFONT, show="*")
         change.grid(column=0, row=0)
 
         submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: self.initiateChange(popup, field, change, site))
