@@ -323,21 +323,18 @@ class PasswordView(tk.Frame):
         # should probably prompt the user again to make sure they really meant
         # to delete the password
         resp = self.comm.removePassword(sitename)
-        try:
-            if resp is None:
-                print("[ERR] Remove password failed")
-                return False
-            elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-                print("[ERR] Too many attempts for biometrics")
-                self.controller.show_frame(StartScreen.StartScreen)
-            elif resp["status"] != self.comm.STATUS_SUCCESS:
-                print("Unknown error while removing password. Status=", resp["status"])
-                return False
 
-            for i in items:
-                i.destroy()
-        except ValueError:
-            print("[ERR] RasPass currently only supports removing one password per session")
+        if resp is None:
+            print("[ERR] Remove password failed")
             return False
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while removing password. Status=", resp["status"])
+            return False
+
+        for i in items:
+            i.destroy()
 
         return True
