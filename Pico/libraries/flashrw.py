@@ -9,28 +9,30 @@ class FlashRW:
         """Initialize the flash"""
         self.mode = ""
         self.file = open("storage.bin", "a")
-        self.openRead()
+        self.close()
 
     def openRead(self):
         """Open file in read mode, if not already opened in read mode"""
         if self.mode != "r":
-            self.file.close()
             self.mode = "r"
             self.file = open("storage.bin", "r+b")
 
     def openWrite(self):
         """Open file in write mode, if not already opened in write mode"""
         if self.mode != "w":
-            self.file.close()
             self.mode = "w"
             self.file = open("storage.bin", "w+b")
+
+    def close(self):
+        self.file.close()
 
     def readFlashDB(self) -> bytes:
         """Read entire database in flash. Must be 256B-aligned.
         Returns None on failure"""
         self.openRead()
-        bytes = bytearray(self.file.read())
-        return bytes
+        readBytes = bytearray(self.file.read())
+        self.close()
+        return readBytes
 
     def writeFlashDB(self, raw_block: bytes) -> int:
         """Write the raw_block to flash (will be 256B aligned).
@@ -39,5 +41,7 @@ class FlashRW:
         self.openWrite()
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
+            self.close()
             return 1
+        self.close()
         return 0

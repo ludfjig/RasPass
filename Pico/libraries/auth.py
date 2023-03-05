@@ -102,8 +102,9 @@ class Auth:
             self.softreset()
             return False
         else:
-            self.numAttempts += 1
-            return self.verifyFingerprint() != None
+            verifiedUser = self.verifyFingerprint() != None
+            self.numAttempts = 0 if verifiedUser else self.numAttempts + 1
+            return verifiedUser
 
     def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""

@@ -10,7 +10,10 @@ import base64
 class AppComm:
     FRAMESTART: bytes = b"\xff"
     FRAMESTOP: bytes = b"\xfe"
-    TOTAL_ATTEMPTS: int = 5        # Number of ARQ attempts before fatal error
+    TOTAL_ATTEMPTS: int = 5         # Number of ARQ attempts before fatal error
+    DEFAULT_READ_TIMEOUT: int = 5   # Default read timeout (s)
+    DEFAULT_WRITE_TIMEOUT: int = 1  # Default read timeout (s)
+    AUTH_READ_TIMEOUT: int = 25     # Read timeout for authentication calls (s)
     STATUS_SUCCESS = 0
     STATUS_MISSING_PARAM = 3        # Missing request parameter
     STATUS_MALFORMED_REQ = 4        # Malformed request
@@ -24,6 +27,9 @@ class AppComm:
 
     def __init__(self):
         self.s = None
+
+    def initConn(self) -> bool:
+        """ Initialize a connection to the Pico. Returns success/failure. """
         port = list_ports.comports()
         for p in port:
             if (p.vid == 11914):
@@ -31,23 +37,37 @@ class AppComm:
                 print("[INFO] Found device %s" % p)
                 try:
                     try:
-                        self.s = serial.Serial(device, timeout=5)
+                        self.s = serial.Serial(device, timeout=self.DEFAULT_READ_TIMEOUT,
+                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
                     except serial.SerialException:
                         # for some reason when I do list_ports.comports on my mac it always
                         # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
                         # so this is just forcing it to use tty for my computer if connecting
                         # over cu fails
                         device = re.sub(r'/cu', r'/tty', device)
-                        self.s = serial.Serial(device, 9600, timeout=5)
+                        self.s = serial.Serial(device, 9600, timeout=self.DEFAULT_READ_TIMEOUT,
+                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
                 except:
                     self.s = None
                 break
 
         if self.s is None:
-            exit('[ERR]  Failure establishing connection to Pico')
-        self.s.write(5*(b"none"+self.FRAMESTOP))
+            print('[ERR]  Failure establishing connection to Pico')
+            return False
+        try:
+            self.s.write(5*(b"none"+self.FRAMESTOP))  # Clear connection
+            return True
+        except:
+            self.s.close()
+            return False
+
+    def disconnect(self):
+        self.s.close()
+        self.s = None
 
     def writeRequest(self, req: dict) -> int:
+        if self.s is None:
+            return -1
         # will create correct json format to send later
         # right now just trying to set up basic framework
 
@@ -109,7 +129,9 @@ class AppComm:
         Will retry until device locks or success. Returns response or None on failure. """
         # TODO: show popup that says to put finger on sensor when light turns green
         while True:
+            self.s.timeout = self.AUTH_READ_TIMEOUT
             res = self.communicateReq(req)
+            self.s.timeout = self.DEFAULT_READ_TIMEOUT
             if res is None:
                 break
 

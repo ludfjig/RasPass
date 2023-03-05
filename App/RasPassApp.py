@@ -4,6 +4,8 @@ import time
 
 import tkinter as tk
 from tkinter import ttk
+import sv_ttk
+
 from PasswordView import PasswordView
 from StartScreen import StartScreen
 from AppComm import AppComm
@@ -15,9 +17,12 @@ class RasPassApp(tk.Tk):
         self.serial = commLink.s
         self.title("RasPass Password Manager")
 
+        self.iconbitmap("imgs/logo.ico")
+
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
         content.grid(column=0, row=0, sticky="nsew")
         content.columnconfigure(0, weight=1)
+        content.rowconfigure(0, weight=1)
 
         # connect pages
         self.frames = {}
@@ -35,6 +40,7 @@ class RasPassApp(tk.Tk):
     def show_frame(self, page):
         """Changes the view to the frame of the page passed in to parameter"""
         frame = self.frames[page]
+        frame.onShowFrame()
         frame.tkraise()
 
 
@@ -42,6 +48,8 @@ def main():
     commLink = AppComm()
 
     rasPassApp = RasPassApp(commLink)
+
+    sv_ttk.set_theme("light")
 
     rasPassApp.mainloop()
 

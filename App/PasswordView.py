@@ -6,6 +6,7 @@ import pyperclip as pc
 import hashlib
 import crypto
 import time
+import sv_ttk
 
 
 LARGEFONT = ("Courier", 20)
@@ -22,20 +23,23 @@ class PasswordView(tk.Frame):
         self.controller = controller
         self.comm = commLink
         self.ledState = 1
+        self.addedRows = False
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
-        banner = ttk.Frame(content, borderwidth=4, relief="solid")
-        body = ttk.Frame(content, borderwidth=5, relief="ridge")
+        banner = ttk.Frame(content)
+        body = ttk.Frame(content)
 
-        column_names = ttk.Frame(body, borderwidth=2, relief="solid")
-        rows = ttk.Frame(body, borderwidth=2, relief="solid")
+        column_names = ttk.Frame(body)
+        rows = ttk.Frame(body)
         self.rows = rows
         # column names
-        site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site")
-        username_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Username")
-        password_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Password")
+        #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site")
+        #username_label = ttk.Label(
+        #    column_names, width=20, font=MEDIUMFONT, text="Username")
+        #password_label = ttk.Label(
+        #    column_names, width=20, font=MEDIUMFONT, text="Password")
+        #main_label = ttk.Label(
+        #    column_names, width=20, font=MEDIUMFONT, text="Passwords")
 
         # banner
         #header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
@@ -51,13 +55,11 @@ class PasswordView(tk.Frame):
         rows.grid(column=0, row=1, sticky="nsew")
 
         # column names
-        site_label.grid(column=0, row=0)
-        username_label.grid(column=1, row=0)
-        password_label.grid(column=2, row=0)
+        #main_label.grid(column=0, columnspan=5)
+        #site_label.grid(column=0, row=0, sticky="nsew")
+        #username_label.grid(column=1, row=0, sticky="nsew")
+        #password_label.grid(column=2, row=0, sticky="nsew")
 
-        # entires
-        self.init_password_rows()
-        self.init_input_row()
 
         # new password button
 
@@ -83,10 +85,20 @@ class PasswordView(tk.Frame):
 
         header.grid(column=0, row=0, columnspan=5)
 
-        btn1 = tk.Button(self, text="Start Screen", font=MEDIUMFONT,
+        btn1 = ttk.Button(self, text="Lock Pico" , #font=MEDIUMFONT, height=20,
                           command=lambda: self.switch_to_start(controller))
 
-        btn1.grid(row=1, column=0, padx=10, pady=10)
+        btn1.grid(row=1, column=0, padx=10, pady=10, sticky="nesw")
+
+        sv_ttk.set_theme("light")
+
+    def onShowFrame(self):
+        """ Event handler for show frame """
+        # entires
+        if not self.addedRows:
+            self.init_password_rows()
+            self.init_input_row()
+            self.addedRows = True
 
     def switch_to_start(self, controller):
         self.clear_input_row()
@@ -126,14 +138,16 @@ class PasswordView(tk.Frame):
         items = []
 
         s = ttk.Entry(self.rows, width=20, font=("Courier bold", 14))
-        u = tk.Button(self.rows, width=20, font=SMALLFONT, text="Get Username",
+        u = ttk.Button(self.rows, width=20, text="Get Username", #font=SMALLFONT,
                        command=lambda: self.getUsername(site))
-        g = tk.Button(self.rows, width=20, font=SMALLFONT, text="Get Password",
+        g = ttk.Button(self.rows, width=20, text="Get Password", #font=SMALLFONT,
                        command=lambda: self.getPassword(site))
-        c = tk.Button(
-            self.rows, text="Change", font=SMALLFONT, command=lambda: self.changePassword(site, items))
-        d = tk.Button(
-            self.rows, text="Delete", font=SMALLFONT, command=lambda: self.deletePassword(site, items))
+        c = ttk.Button(
+            self.rows, text="Change", #font=SMALLFONT,
+                        command=lambda: self.changePassword(site, items))
+        d = ttk.Button(
+            self.rows, text="Delete", #font=SMALLFONT,
+                        command=lambda: self.deletePassword(site, items))
 
         items.append(s)
         items.append(u)
@@ -141,31 +155,32 @@ class PasswordView(tk.Frame):
         items.append(c)
         items.append(d)
 
-        s.grid(row=rows, column=0, sticky="new")
+        s.grid(row=rows, column=0, sticky="nesw")
         s.insert(0, site)
         s.config(state="readonly")
-        u.grid(row=rows, column=1, sticky="new")
+        u.grid(row=rows, column=1, sticky="nesw")
         # p.grid(row=i, column=2, sticky="new")
-        g.grid(row=rows, column=2, sticky="new")
-        c.grid(row=rows, column=3, sticky="new")
-        d.grid(row=rows, column=4, sticky="new")
+        g.grid(row=rows, column=2, sticky="nesw")
+        c.grid(row=rows, column=3, sticky="nesw")
+        d.grid(row=rows, column=4, sticky="nesw")
 
     def init_input_row(self):
         self.site_entry = ttk.Entry(self.rows)
         self.username_entry = ttk.Entry(self.rows)
         self.password_entry = ttk.Entry(self.rows, show="*")
-        self.add_new_pswd = tk.Button(
-            self.rows, text="Add", font=SMALLFONT, command=lambda: self.addPassword(
+        self.add_new_pswd = ttk.Button(
+            self.rows, text="Add", #font=SMALLFONT,
+            command=lambda: self.addPassword(
                 self.site_entry.get(),
                 self.username_entry.get(),
                 self.password_entry.get()
             ))
 
         rows = 100  # any large number
-        self.site_entry.grid(column=0, row=rows, sticky="new")
-        self.username_entry.grid(column=1, row=rows, sticky="new")
-        self.password_entry.grid(column=2, row=rows, sticky="new")
-        self.add_new_pswd.grid(column=3, row=rows, sticky="new", columnspan=2)
+        self.site_entry.grid(column=0, row=rows, sticky="nesw")
+        self.username_entry.grid(column=1, row=rows, sticky="nesw")
+        self.password_entry.grid(column=2, row=rows, sticky="nesw")
+        self.add_new_pswd.grid(column=3, row=rows, sticky="nesw", columnspan=2)
 
     def get_master_pw_hash(self):
         m = hashlib.sha256()
