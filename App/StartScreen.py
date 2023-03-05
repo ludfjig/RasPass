@@ -22,19 +22,23 @@ class StartScreen(tk.Frame):
 
         self.open_img("./imgs/logo2.png")
 
+
+        self.style = ttk.Style()
+        self.style.configure('Style.TButton', font=SMALLFONT)
+
         # check if master password has already been set up
         # if not, ask to set password instead of enter master password
         self.statusMsg = tk.Label(
             self, text="Status: Not connected", fg="red", font=SMALLFONT)
         self.statusMsg.grid(row=3, column=0, columnspan=2, pady=5)
 
-        self.connBtn = tk.Button(self, text="Connect to Pico", width=20, font=SMALLFONT,
+        self.connBtn = ttk.Button(self, text="Connect to Pico", width=20, style='Style.TButton',
                          command=self.togglePicoConn)
         self.connBtn.grid(row=4, column=0, columnspan=2, pady=20)
 
         self.entryFrame = tk.Frame(self, width=50)
         self.entryFrame.grid(row=5, column=0)
-        self.checkPwBtn = tk.Button(self.entryFrame, text="Check Master Password", font=SMALLFONT,
+        self.checkPwBtn = ttk.Button(self.entryFrame, text="Check Master Password", style='Style.TButton',
                          command=lambda: self.checkMasterPass(controller, s))
         self.checkPwBtn.grid(row=0, column=1, padx=10)
         self.checkPwBtn["state"] = "disabled"

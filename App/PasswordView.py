@@ -16,7 +16,6 @@ SMALLFONT = ("Courier", 14)
 class PasswordView(tk.Frame):
     def __init__(self, parent, controller, s, commLink, master_pw):
         tk.Frame.__init__(self, parent)
-        # access master password through self.master_pw.get()
         self.master_pw = master_pw
         self.s = s
         self.controller = controller
@@ -27,10 +26,12 @@ class PasswordView(tk.Frame):
 
         banner = ttk.Frame(content)
         body = ttk.Frame(content, borderwidth=5)
+        btnFrame = tk.Frame(content, width=40)
 
         column_names = ttk.Frame(body)
         rows = ttk.Frame(body)
         self.rows = rows
+
         # column names
         #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site")
         #username_label = ttk.Label(
@@ -41,7 +42,6 @@ class PasswordView(tk.Frame):
         #    column_names, width=20, font=MEDIUMFONT, text="Passwords")
 
         # banner
-        #header = ttk.Label(banner, text="RasPass", font=("Arial", 25))
         header = self.open_img(banner, "./imgs/logo2.png")
 
         # ------------------ grid starts here -------------------------
@@ -52,6 +52,7 @@ class PasswordView(tk.Frame):
         body.grid(column=0, row=3, sticky="nsew")
         column_names.grid(column=0, row=0, sticky="nsew")
         rows.grid(column=0, row=1, sticky="nsew")
+        btnFrame.grid(column=0, row=6, pady=10)
 
         # column names
         #main_label.grid(column=0, columnspan=5)
@@ -69,6 +70,7 @@ class PasswordView(tk.Frame):
         body.columnconfigure(0, weight=1)
         column_names.columnconfigure(0, weight=1)
         rows.columnconfigure(0, weight=1)
+        btnFrame.columnconfigure(0, weight=1)
 
         column_names.columnconfigure(0, weight=1)
         column_names.columnconfigure(1, weight=1)
@@ -84,12 +86,19 @@ class PasswordView(tk.Frame):
 
         header.grid(column=0, row=0, columnspan=5)
 
-        btn1 = ttk.Button(self, text="Lock Pico" , #font=MEDIUMFONT, height=20,
+        self.style = ttk.Style()
+        self.style.configure('Style.TButton', font=SMALLFONT)
+
+        btn1 = ttk.Button(btnFrame, text="Lock Pico", style='Style.TButton',
                           command=lambda: self.switch_to_start(controller))
 
-        btn1.grid(row=1, column=0, padx=10, pady=10, sticky="nesw")
+        btn1.grid(row=0, column=0, padx=10, ipady=5)
+
+        btn2 = ttk.Button(btnFrame, text="Settings", style='Style.TButton',)
+        btn2.grid(row=0, column=1, padx=10, ipady=5)
 
         sv_ttk.set_theme("light")
+
 
     def onShowFrame(self):
         """ Event handler for show frame """
@@ -137,15 +146,15 @@ class PasswordView(tk.Frame):
         items = []
 
         s = ttk.Entry(self.rows, width=20, font=("Courier bold", 14))
-        u = ttk.Button(self.rows, width=20, text="Get Username", #font=SMALLFONT,
+        u = ttk.Button(self.rows, width=20, text="Get Username", style='Style.TButton',
                        command=lambda: self.getUsername(site))
-        g = ttk.Button(self.rows, width=20, text="Get Password", #font=SMALLFONT,
+        g = ttk.Button(self.rows, width=20, text="Get Password", style='Style.TButton',
                        command=lambda: self.getPassword(site))
         c = ttk.Button(
-            self.rows, text="Change", #font=SMALLFONT,
+            self.rows, text="Change", style='Style.TButton',
                         command=lambda: self.changePswdUsr(site))
         d = ttk.Button(
-            self.rows, text="Delete", #font=SMALLFONT,
+            self.rows, text="Delete",style='Style.TButton',
                         command=lambda: self.deletePassword(site, items))
 
         items.append(s)
@@ -168,7 +177,7 @@ class PasswordView(tk.Frame):
         self.username_entry = ttk.Entry(self.rows)
         self.password_entry = ttk.Entry(self.rows, show="*")
         self.add_new_pswd = ttk.Button(
-            self.rows, text="Add", #font=SMALLFONT,
+            self.rows, text="Add", style='Style.TButton',
             command=lambda: self.addPassword(
                 self.site_entry.get(),
                 self.username_entry.get(),
