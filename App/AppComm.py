@@ -204,7 +204,7 @@ class AppComm:
 
     def changeUsername(self, site: str, user: str) -> dict | None:
         """Changes the username for a stored site in the password manager. Returns response or None on failure"""
-        print("in change user")
+        print("[INFO] Changing username for %s" % site)
         req = {
             "method": "changeUsername",
             "sitename": site,
@@ -216,6 +216,7 @@ class AppComm:
 
     def changePassword(self, site: str, pswd: str) -> dict | None:
         """Changes the password for a stored site in the password manager. Returns response or None on failure"""
+        print("[INFO] Changing password for %s" % site)
         req = {
             "method": "changePassword",
             "sitename": site,
@@ -227,6 +228,7 @@ class AppComm:
 
     def removePassword(self, site: str) -> dict | None:
         """Deletes a site, username, password entry from the password manager. Returns response or None on failure"""
+        print("[INFO] Removing password entry for %s" % site)
         req = {
             "method": "removePassword",
             "sitename": site,

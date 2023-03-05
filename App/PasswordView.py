@@ -140,8 +140,6 @@ class PasswordView(tk.Frame):
 
     def add_row(self, site):
         _, rows = self.rows.grid_size()
-        # rows += 1
-        #print(site, self.rows.grid_size())
 
         items = []
 
@@ -167,7 +165,6 @@ class PasswordView(tk.Frame):
         s.insert(0, site)
         s.config(state="readonly")
         u.grid(row=rows, column=1, sticky="nesw")
-        # p.grid(row=i, column=2, sticky="new")
         g.grid(row=rows, column=2, sticky="nesw")
         c.grid(row=rows, column=3, sticky="nesw")
         d.grid(row=rows, column=4, sticky="nesw")
@@ -204,7 +201,6 @@ class PasswordView(tk.Frame):
 
     def addPassword(self, sitename, username, password):
         # Add and refresh interface (e.g. show in list)
-        #print("Adding password", password)
 
         # encryption
         cipher_pass = crypto.encrypt(password, self.get_master_pw_hash())
@@ -327,18 +323,21 @@ class PasswordView(tk.Frame):
         # should probably prompt the user again to make sure they really meant
         # to delete the password
         resp = self.comm.removePassword(sitename)
+        try:
+            if resp is None:
+                print("[ERR] Remove password failed")
+                return False
+            elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+                print("[ERR] Too many attempts for biometrics")
+                self.controller.show_frame(StartScreen.StartScreen)
+            elif resp["status"] != self.comm.STATUS_SUCCESS:
+                print("Unknown error while removing password. Status=", resp["status"])
+                return False
 
-        if resp is None:
-            print("[ERR] Remove password failed")
+            for i in items:
+                i.destroy()
+        except ValueError:
+            print("[ERR] RasPass currently only supports removing one password per session")
             return False
-        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-            print("[ERR] Too many attempts for biometrics")
-            self.controller.show_frame(StartScreen.StartScreen)
-        elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while removing password. Status=", resp["status"])
-            return False
-
-        for i in items:
-            i.destroy()
 
         return True

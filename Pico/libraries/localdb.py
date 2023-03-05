@@ -46,7 +46,7 @@ class DataBase:
         )
 
     def getStorageByteEntry(self, sn: str, up_pair: tuple[str, str]) -> bytes:
-        """Returns padded sitename and encrypted_up in 256B format"""
+        """Returns padded sitename and encrypted_up in 2048B format"""
         return (
             self.__getPadded(sn, 1024)
             + self.__getPadded(up_pair[0], 512)
@@ -56,12 +56,12 @@ class DataBase:
     def __getPadded(self, toPad: str, padLen: int) -> bytes:
         """Encodes ASCII string <toPad> into bytes and
         then pads to length <padLen> with null characters"""
-        return toPad.encode("ascii") + (padLen - len(toPad)) * b"\x00"
+        return toPad.encode("utf-8") + (padLen - len(toPad)) * b"\x00"
 
     def __getUnPadded(self, toUnPad: bytes) -> str:
         """Decodes to ASCII string and removes all
         but the last null character in toUnPad"""
-        return toUnPad.decode("ascii").rstrip("\x00")
+        return toUnPad.decode("utf-8").rstrip("\x00")
 
     def add(self, sitename: str, username: str, password: str):
         """Inserts a new entry into the database.

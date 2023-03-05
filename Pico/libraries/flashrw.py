@@ -13,15 +13,13 @@ class FlashRW:
 
     def openRead(self):
         """Open file in read mode, if not already opened in read mode"""
-        if self.mode != "r":
-            self.mode = "r"
-            self.file = open("storage.bin", "r+b")
+        self.mode = "r"
+        self.file = open("storage.bin", "r+b")
 
     def openWrite(self):
         """Open file in write mode, if not already opened in write mode"""
-        if self.mode != "w":
-            self.mode = "w"
-            self.file = open("storage.bin", "w+b")
+        self.mode = "w"
+        self.file = open("storage.bin", "w+b")
 
     def close(self):
         self.file.close()
@@ -39,6 +37,7 @@ class FlashRW:
         Return 0 on failure, 1 on success."""
         assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
+        self.file.seek(0)
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
             self.close()
