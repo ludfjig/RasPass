@@ -144,10 +144,10 @@ class PasswordView(tk.Frame):
                        command=lambda: self.getPassword(site))
         c = ttk.Button(
             self.rows, text="Change", #font=SMALLFONT,
-                        command=lambda: self.changePassword(site, items))
+                        command=lambda: self.changePswdUsr(site))
         d = ttk.Button(
             self.rows, text="Delete", #font=SMALLFONT,
-                        command=lambda: self.deletePassword(site, items))
+                        command=lambda: self.changePswdUsr(site))
 
         items.append(s)
         items.append(u)
@@ -259,10 +259,39 @@ class PasswordView(tk.Frame):
         print("[INFO] Got password: ", plain_text_pw)
         return resp
 
-    def changePassword(self, sitename):
-        # Open dialog to change password
+    def changePswdUsr(self, sitename):
+        # Open dialog to change password or username
+        #self.button_showinfo = ttk.Button(self, text="Show Info", command=lambda: showinfo("Window", "Test"))
+        #self.button_showinfo.grid(column=0, row=0, sticky="nsew")
 
-        pass
+        top = tk.Toplevel(self)
+        top.geometry("350x150")
+        top.title("Update %s info" % sitename)
+        site = ttk.Label(top, text="Update info for %s" % sitename, font=LARGEFONT)
+        site.grid(column=0, row=0, padx=25, pady=15)
+
+        usrbtn = tk.Button(top, width=15, text="Change Username", font=SMALLFONT)
+        usrbtn.grid(column=0, row=2, padx=25)
+        usrbtn['command'] = lambda: self.changeField(top, usrbtn, 2)
+
+        pswdbtn = tk.Button(top, width=15, text="Change Password", font=SMALLFONT)
+        pswdbtn.grid(column=0, row=4, padx=25)
+        pswdbtn['command'] = lambda: self.changeField(top, pswdbtn, 4)
+        tk.Button(top, width=10, text="Cancel", font=SMALLFONT, command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
+        return True
+
+    def changeField(self, popup, btn, rw):
+        btn.grid_forget()
+        frame = tk.Frame(popup, width=25)
+        frame.grid(column=0, row=rw, padx=25)
+
+        change = tk.Entry(frame, width=15, font=SMALLFONT)
+        change.grid(column=0, row=0)
+
+        submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: popup.destroy())
+        submit.grid(column=1, row=0)
+
+        return True
 
     def deletePassword(self, sitename, items):
         # Delete and refresh interface
