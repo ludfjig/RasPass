@@ -271,15 +271,19 @@ class PasswordView(tk.Frame):
 
         usrbtn = tk.Button(top, width=15, text="Change Username", font=SMALLFONT)
         usrbtn.grid(column=0, row=2, padx=25)
-        usrbtn['command'] = lambda: self.changeField(top, usrbtn, 2)
+        usrbtn['command'] = lambda: self.changeField(top, usrbtn, 2, sitename)
 
         pswdbtn = tk.Button(top, width=15, text="Change Password", font=SMALLFONT)
         pswdbtn.grid(column=0, row=4, padx=25)
-        pswdbtn['command'] = lambda: self.changeField(top, pswdbtn, 4)
+        pswdbtn['command'] = lambda: self.changeField(top, pswdbtn, 4, sitename)
         tk.Button(top, width=10, text="Cancel", font=SMALLFONT, command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
-        return True
 
-    def changeField(self, popup, btn, rw):
+    def changeField(self, popup, btn, rw, site):
+        if btn['text'] == "Change Username":
+            field = "usr"
+        else:
+            field = "pass"
+
         btn.grid_forget()
         frame = tk.Frame(popup, width=25)
         frame.grid(column=0, row=rw, padx=25)
@@ -287,8 +291,18 @@ class PasswordView(tk.Frame):
         change = tk.Entry(frame, width=15, font=SMALLFONT)
         change.grid(column=0, row=0)
 
-        submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: popup.destroy())
+        submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: self.initiateChange(popup, field, change, site))
         submit.grid(column=1, row=0)
+
+    def initiateChange(self, popup, field, change, site):
+        new = change.get().strip()
+        if field == "usr":
+            cipher_usr = crypto.encrypt(new, self.get_master_pw_hash())
+            self.comm.changeUsername(site, cipher_usr)
+        else:
+            cipher_pass = crypto.encrypt(new, self.get_master_pw_hash())
+            self.comm.changePassword(site, cipher_pass)
+        popup.destroy()
 
     def deletePassword(self, sitename, items):
         # Delete and refresh interface

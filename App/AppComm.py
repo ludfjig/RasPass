@@ -204,10 +204,11 @@ class AppComm:
 
     def changeUsername(self, site: str, user: str) -> dict | None:
         """Changes the username for a stored site in the password manager. Returns response or None on failure"""
+        print("in change user")
         req = {
             "method": "changeUsername",
             "sitename": site,
-            "username": user,
+            "newusername": user,
             "authtoken": "1"
         }
 
@@ -218,7 +219,7 @@ class AppComm:
         req = {
             "method": "changePassword",
             "sitename": site,
-            "password": pswd,
+            "newpassword": pswd,
             "authtoken": "1"
         }
 
