@@ -16,6 +16,9 @@ class StartScreen(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.s = s
         self.comm = commLink
+        self.grid(sticky="we")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         self.open_img("./imgs/logo2.png")
 
@@ -23,18 +26,21 @@ class StartScreen(tk.Frame):
         # if not, ask to set password instead of enter master password
         self.statusMsg = tk.Label(
             self, text="Status: Not connected", fg="red", font=SMALLFONT)
-        self.statusMsg.grid(row=3, column=0, columnspan=2, pady=10)
+        self.statusMsg.grid(row=3, column=0, columnspan=2, pady=5)
 
-        self.connBtn = ttk.Button(self, text="Connect to Pico", #font=SMALLFONT,
+        self.connBtn = tk.Button(self, text="Connect to Pico", width=20, font=SMALLFONT,
                          command=self.togglePicoConn)
-        self.connBtn.grid(row=4, column=0, columnspan=2, sticky="nesw")
-        self.checkPwBtn = ttk.Button(self, text="Check Master Password", #font=SMALLFONT,
+        self.connBtn.grid(row=4, column=0, columnspan=2, pady=20)
+
+        self.entryFrame = tk.Frame(self, width=50)
+        self.entryFrame.grid(row=5, column=0)
+        self.checkPwBtn = tk.Button(self.entryFrame, text="Check Master Password", font=SMALLFONT,
                          command=lambda: self.checkMasterPass(controller, s))
-        self.checkPwBtn.grid(row=5, column=1, sticky="nesw")
+        self.checkPwBtn.grid(row=0, column=1, padx=10)
         self.checkPwBtn["state"] = "disabled"
 
-        self.master = ttk.Entry(self, width=30, show="*", font=SMALLFONT)
-        self.master.grid(row=5, column=0, columnspan=1, sticky="nesw")
+        self.master = ttk.Entry(self.entryFrame, width=35, show="*", font=SMALLFONT)
+        self.master.grid(row=0, column=0, padx=10)
 
         sv_ttk.set_theme("light")
         controller.bind('<Return>', lambda event: self.checkMasterPass(controller, s))

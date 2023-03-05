@@ -5,7 +5,6 @@ import StartScreen
 import pyperclip as pc
 import hashlib
 import crypto
-import time
 import sv_ttk
 
 
@@ -27,7 +26,7 @@ class PasswordView(tk.Frame):
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
         banner = ttk.Frame(content)
-        body = ttk.Frame(content)
+        body = ttk.Frame(content, borderwidth=5)
 
         column_names = ttk.Frame(body)
         rows = ttk.Frame(body)
@@ -48,7 +47,7 @@ class PasswordView(tk.Frame):
         # ------------------ grid starts here -------------------------
 
         # frames
-        content.grid(column=0, row=0, sticky="nsew")
+        content.grid(column=0, row=0)
         banner.grid(column=0, row=0, sticky="nsew")
         body.grid(column=0, row=3, sticky="nsew")
         column_names.grid(column=0, row=0, sticky="nsew")
@@ -147,7 +146,7 @@ class PasswordView(tk.Frame):
                         command=lambda: self.changePswdUsr(site))
         d = ttk.Button(
             self.rows, text="Delete", #font=SMALLFONT,
-                        command=lambda: self.changePswdUsr(site))
+                        command=lambda: self.deletePassword(site, items))
 
         items.append(s)
         items.append(u)
@@ -290,8 +289,6 @@ class PasswordView(tk.Frame):
 
         submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: popup.destroy())
         submit.grid(column=1, row=0)
-
-        return True
 
     def deletePassword(self, sitename, items):
         # Delete and refresh interface

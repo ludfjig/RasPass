@@ -16,7 +16,7 @@ class RasPassApp(tk.Tk):
         tk.Tk.__init__(self, parent)
         self.serial = commLink.s
         self.title("RasPass Password Manager")
-
+        self.geometry("850x350")
         self.iconbitmap("imgs/logo.ico")
 
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
