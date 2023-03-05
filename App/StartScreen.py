@@ -45,17 +45,14 @@ class StartScreen(tk.Frame):
 
         print("[INFO] Password: %s. Hash: %s" %(self.master.get(), pass_hash))
         pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
-        print("verified pass")
         if not pass_check or not pass_check["valid"]:
             print("[WARN] Incorrect master password")
             return
-        print("about to show frame")
         controller.show_frame(PasswordView.PasswordView)
 
     def get_master_pw_hash(self):
         m = hashlib.sha256()
-        print(self.master.get())
-        m.update(self.master.get().strip().encode('utf-8'))
+        m.update(self.master.get().encode('utf-8'))
         return m.digest()
 
     def open_img(self, picture):
