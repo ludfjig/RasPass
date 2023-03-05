@@ -94,11 +94,11 @@ class PasswordView(tk.Frame):
 
         btn1.grid(row=0, column=0, padx=10, ipady=5)
 
-        btn2 = ttk.Button(btnFrame, text="Settings", style='Style.TButton',)
+        btn2 = ttk.Button(btnFrame, text="Settings", style='Style.TButton',
+                          command=lambda: self.settingsPopup())
         btn2.grid(row=0, column=1, padx=10, ipady=5)
 
         sv_ttk.set_theme("light")
-
 
     def onShowFrame(self):
         """ Event handler for show frame """
@@ -267,25 +267,32 @@ class PasswordView(tk.Frame):
         print("[INFO] Got password: ", plain_text_pw)
         return resp
 
+    def settingsPopup(self):
+        # Open dialog to change password or username
+        top = tk.Toplevel(self)
+        top.geometry("350x150")
+        top.title("RasPass Settings")
+
+        storage = ttk.Label(top, text="Storage available: ")
+        storage.grid(column=0, row=0, padx=25, pady=25)
+
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
-        #self.button_showinfo = ttk.Button(self, text="Show Info", command=lambda: showinfo("Window", "Test"))
-        #self.button_showinfo.grid(column=0, row=0, sticky="nsew")
-
         top = tk.Toplevel(self)
         top.geometry("350x150")
         top.title("Update %s info" % sitename)
         site = ttk.Label(top, text="Update info for %s" % sitename, font=LARGEFONT)
         site.grid(column=0, row=0, padx=25, pady=15)
 
-        usrbtn = tk.Button(top, width=15, text="Change Username", font=SMALLFONT)
+        usrbtn = ttk.Button(top, width=15, text="Change Username", style='Style.TButton',)
         usrbtn.grid(column=0, row=2, padx=25)
         usrbtn['command'] = lambda: self.changeField(top, usrbtn, 2, sitename)
 
-        pswdbtn = tk.Button(top, width=15, text="Change Password", font=SMALLFONT)
+        pswdbtn = ttk.Button(top, width=15, text="Change Password", style='Style.TButton',)
         pswdbtn.grid(column=0, row=4, padx=25)
         pswdbtn['command'] = lambda: self.changeField(top, pswdbtn, 4, sitename)
-        tk.Button(top, width=10, text="Cancel", font=SMALLFONT, command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
+        ttk.Button(top, width=10, text="Cancel", style='Style.TButton',
+                   command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
 
     def changeField(self, popup, btn, rw, site):
         if btn['text'] == "Change Username":
@@ -300,7 +307,8 @@ class PasswordView(tk.Frame):
         change = tk.Entry(frame, width=15, font=SMALLFONT, show="*")
         change.grid(column=0, row=0)
 
-        submit = tk.Button(frame, width=8, text="submit", font=SMALLFONT, command=lambda: self.initiateChange(popup, field, change, site))
+        submit = ttk.Button(frame, width=8, text="submit", style='Style.TButton',
+                            command=lambda: self.initiateChange(popup, field, change, site))
         submit.grid(column=1, row=0)
 
     def initiateChange(self, popup, field, change, site):
