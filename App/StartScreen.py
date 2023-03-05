@@ -31,6 +31,7 @@ class StartScreen(tk.Frame):
 
         self.master = ttk.Entry(self, width=30, show="*", font=SMALLFONT)
         self.master.grid(row=4, column=0, pady=10, columnspan=1)
+        controller.bind('<Return>', lambda event: self.checkMasterPass(controller, s))
 
     def checkMasterPass(self, controller, s):
         # check that the entered password hash matches the password hash stored
@@ -44,14 +45,17 @@ class StartScreen(tk.Frame):
 
         print("[INFO] Password: %s. Hash: %s" %(self.master.get(), pass_hash))
         pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
+        print("verified pass")
         if not pass_check or not pass_check["valid"]:
             print("[WARN] Incorrect master password")
             return
+        print("about to show frame")
         controller.show_frame(PasswordView.PasswordView)
 
     def get_master_pw_hash(self):
         m = hashlib.sha256()
-        m.update(self.master.get().encode('utf-8'))
+        print(self.master.get())
+        m.update(self.master.get().strip().encode('utf-8'))
         return m.digest()
 
     def open_img(self, picture):

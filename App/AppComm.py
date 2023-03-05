@@ -8,18 +8,19 @@ import base64
 
 
 class AppComm:
-    FRAMESTART : bytes = b"\xff"
-    FRAMESTOP : bytes = b"\xfe"
-    TOTAL_ATTEMPTS : int = 5        # Number of ARQ attempts before fatal error
+    FRAMESTART: bytes = b"\xff"
+    FRAMESTOP: bytes = b"\xfe"
+    TOTAL_ATTEMPTS: int = 5        # Number of ARQ attempts before fatal error
     STATUS_SUCCESS = 0
     STATUS_MISSING_PARAM = 3        # Missing request parameter
     STATUS_MALFORMED_REQ = 4        # Malformed request
     STATUS_BAD_METHOD = 5           # Bad/nonexistent method
     STATUS_FAILED_BIOMETRICS = 6    # Failed biometric, but not too many attempts
     STATUS_NOT_VERIFIED = 7         # User must run verifyMasterHash
-    STATUS_UNKNOWN_ERR = 10         # Other (unhandled) exception thrown in code - traceback returned
+    # Other (unhandled) exception thrown in code - traceback returned
+    STATUS_UNKNOWN_ERR = 10
     STATUS_API_OTHER_ERROR = 11     # Other (handled) error in the API
-    STATUS_NOT_YET_IMPLEMENTED = 12 # API method exists, but not implemented
+    STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
 
     def __init__(self):
         self.s = None
@@ -27,7 +28,7 @@ class AppComm:
         for p in port:
             if (p.vid == 11914):
                 device = p.device
-                print("[INFO] Found device %s" %p)
+                print("[INFO] Found device %s" % p)
                 try:
                     try:
                         self.s = serial.Serial(device, timeout=5)
@@ -57,7 +58,7 @@ class AppComm:
             # should return number of bytes written
             jstr = json.dumps(req)
             encoded = self.FRAMESTART + jstr.encode('utf-8') + self.FRAMESTOP
-            print("[INFO] Sending JSON request %s" %jstr)
+            print("[INFO] Sending JSON request %s" % jstr)
             size = self.s.write(encoded)
             self.s.flush()
             return (size == len(encoded))
@@ -82,7 +83,8 @@ class AppComm:
                 self.s.reset_input_buffer()
                 return None
             else:
-                decoded = raw[raw.index(self.FRAMESTART)+len(self.FRAMESTART):raw.index(self.FRAMESTOP)].decode('utf-8')
+                decoded = raw[raw.index(
+                    self.FRAMESTART)+len(self.FRAMESTART):raw.index(self.FRAMESTOP)].decode('utf-8')
                 decoded = json.loads(decoded)
                 print("[INFO] JSON received:", decoded)
                 return decoded
@@ -92,12 +94,13 @@ class AppComm:
     def communicateReq(self, req) -> dict | None:
         """ Communicate with the Pico by sending the request.
         Wait until a timeout and resend if no response from the Pico."""
-        for i in range(1,self.TOTAL_ATTEMPTS+1):
+        for i in range(1, self.TOTAL_ATTEMPTS+1):
             if self.writeRequest(req):
                 resp = self.readResponse()
                 if resp is not None:
                     return resp
-            print("[WARN] Failed to receive response from Pico. Retrying... (attempt %d of %d)" %(i, self.TOTAL_ATTEMPTS))
+            print("[WARN] Failed to receive response from Pico. Retrying... (attempt %d of %d)" % (
+                i, self.TOTAL_ATTEMPTS))
             time.sleep(0.5)
         exit("[ERR] Failed to communicate with Pico")
 
@@ -155,7 +158,7 @@ class AppComm:
     def getPassword(self, sitename: str) -> dict | None:
         """Get the username,password. Returns response or None on failure"""
         # sanitize input
-        print("[INFO] Get password request for sitename %s" %sitename)
+        print("[INFO] Get password request for sitename %s" % sitename)
         req = {
             "method": "getPassword",
             "sitename": sitename,
@@ -166,7 +169,7 @@ class AppComm:
 
     def addPassword(self, sitename: str, user: str, pswd: str) -> dict | None:
         """Adds a new username, password, site to the password manager. Returns response or None on failure"""
-        print("[INFO] Add password for sitename %s" %sitename)
+        print("[INFO] Add password for sitename %s" % sitename)
         req = {
             "method": "addPassword",
             "sitename": sitename,
