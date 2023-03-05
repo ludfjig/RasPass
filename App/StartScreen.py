@@ -16,7 +16,7 @@ class StartScreen(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.s = s
         self.comm = commLink
-        self.grid(sticky="we")
+        self.grid(row=0, column=0, sticky="ne")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -96,6 +96,8 @@ class StartScreen(tk.Frame):
         panel = ttk.Label(self, image=img)
         panel.image = img
         panel.grid(column=0, row=0, padx=10, pady=5, columnspan=2, rowspan=1)
+        panel.columnconfigure(0, weight=1)
+        panel.rowconfigure(0, weight=1)
 
     def onShowFrame(self):
         """ Event handler for show frame """

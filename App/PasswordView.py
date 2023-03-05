@@ -22,6 +22,11 @@ class PasswordView(tk.Frame):
         self.comm = commLink
         self.ledState = 1
         self.addedRows = False
+
+        self.grid(row=0, column=0, sticky="nsew")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
         banner = ttk.Frame(content)

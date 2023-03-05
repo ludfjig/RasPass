@@ -18,6 +18,8 @@ class RasPassApp(tk.Tk):
         self.title("RasPass Password Manager")
         self.geometry("850x350")
         self.iconbitmap("imgs/logo.ico")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
         content.grid(column=0, row=0, sticky="nsew")
