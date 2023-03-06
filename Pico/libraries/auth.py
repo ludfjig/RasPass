@@ -122,6 +122,10 @@ class Auth:
         if self.finger.finger_search() != af.OK:
             return False
         return True
+    
+    def get_fingerprints(self) -> list[int] | None:
+        """Return list of fingerprint IDs"""
+        return self.finger.templates
 
     # pylint: disable=too-many-branches
     def get_fingerprint_detail(self):
