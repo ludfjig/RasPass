@@ -244,7 +244,7 @@ class PasswordView(tk.Frame):
         cipher_uname = resp['username']
         plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
         pc.copy(plain_text_usr)
-        print("[INFO] Got username: ", plain_text_usr)
+        print("[INFO] Got username")
         return resp
 
     def getPassword(self, sitename):
@@ -264,7 +264,7 @@ class PasswordView(tk.Frame):
         cipher_text = resp['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
         pc.copy(plain_text_pw)
-        print("[INFO] Got password: ", plain_text_pw)
+        print("[INFO] Got password")
         return resp
 
     def settingsPopup(self):
