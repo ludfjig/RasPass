@@ -286,23 +286,3 @@ class AppComm:
         }
 
         return self.communicateAuthenticatedReq(req)
-
-    def enrollFingerprint(self, name) -> dict | None:
-        """Enrolls a new fingerprint for authentification"""
-        req = {
-            "method": "enrollFingerprint",
-            "fpName": name,
-            "authtoken": "1"
-        }
-
-        return self.communicateAuthenticatedReq(req)
-
-    def deleteFingerprint(self, id) -> dict | None:
-        """Deletes a previously enrolled fingerprint"""
-        req = {
-            "method": "deleteFingerprint",
-            "fpId": id,
-            "authtoken": "1"
-        }
-
-        return self.communicateAuthenticatedReq(req)

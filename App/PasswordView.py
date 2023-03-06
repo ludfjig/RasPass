@@ -11,7 +11,7 @@ from tkinter.messagebox import askyesno
 LARGEFONT = ("Courier", 20)
 MEDIUMFONT = ("Courier", 16)
 SMALLFONT = ("Courier", 14)
-BOLDFONT = ('Courier bold', 20)
+BOLDFONT = ('Courier bold', 16)
 
 STATUS_SUCCESS = 0
 STATUS_MISSING_PARAM = 3        # Missing request parameter
@@ -312,7 +312,7 @@ class PasswordView(tk.Frame):
             return
 
         top = tk.Toplevel(self)
-        top.geometry("550x300")
+        top.geometry("550x400")
         top.title("RasPass Settings")
 
         image = self.open_img(top, (400, 75), "./imgs/Settings.png")
@@ -333,17 +333,68 @@ class PasswordView(tk.Frame):
         storage.grid(column=0, row=0, sticky='nw')
 
         style = ttk.Style()
-        style.configure('Settings.TButton', font=LARGEFONT)
+        style.configure('Settings.TButton', font=MEDIUMFONT)
         enrollBtn = ttk.Button(top, text="Enroll New Fingerprint", style='Settings.TButton',
-                              command=lambda: self.enrollFinger("test"))
+                              command=lambda: self.enrollFinger(top, enrollBtn))
         enrollBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
         regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
         regFingers.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
 
-    def enrollFinger(self, name):
-        print("[INFO] Enrolling new fingerprint '%s'" % name)
-        self.comm.enrollFingerprint(name)
+        rows = ttk.Frame(top)
+        rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
+
+        if len(fingerPrints) == 0:
+            tk.Label(rows, text='No fingerprints registered', fg='red', font=MEDIUMFONT).grid()
+        for finger in fingerPrints:
+            self.initFingerprintEntry(rows, finger)
+
+    def enrollFinger(self, parent, btn):
+        btn.grid_forget()
+        frame = tk.Frame(parent)
+        frame.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
+
+        name = tk.Entry(frame, fg='grey', font=SMALLFONT)
+        name.insert(0, "Fingerprint name")
+        name.grid(column=0, row=0)
+
+        name.bind("<FocusIn>", lambda event: self.focus_entry(name, 'Fingerprint name'))
+
+        submit = ttk.Button(frame, width=8, text="submit", style='Style.TButton',
+                            command=lambda: self.comm.enrollFingerprint(name.get()))
+        submit.grid(column=1, row=0)
+
+        #cancel = ttk.Button(frame, width=8, text="cancel", style='Style.TButton',
+        #                    command=lambda: self.cancelEnroll(btn, submit, cancel, name))
+        #cancel.grid(column=2, row=0)
+
+    """
+    def cancelEnroll(self, btn, submit, cancel, name):
+        submit.grid_remove()
+        cancel.grid_remove()
+        name.grid_remove()
+        btn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
+    """
+
+    def initFingerprintEntry(self, rows, name):
+        _, rownum = rows.grid_size()
+        items = []
+
+        entry = tk.Entry(rows,  width=20, font=("Courier bold", 14))
+        delete = ttk.Button(rows, width=20, text="Delete", style='Style.TButton',
+                       command=lambda: self.deleteFingerprint)
+
+        items.append(entry)
+        items.append(delete)
+
+        entry.insert(0, name)
+        entry.config(state="readonly")
+
+        entry.grid(row=rownum, column=0, sticky="nesw")
+        delete.grid(row=rownum, column=1, sticky="nesw")
+
+    def deleteFingerprint(self):
+        pass
 
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
