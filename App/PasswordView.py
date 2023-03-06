@@ -58,9 +58,9 @@ class PasswordView(tk.Frame):
         btnFrame.grid(column=0, row=6, pady=10)
 
         # column names
-        site_label.grid(column=0, row=0, sticky="nsew")
-        username_label.grid(column=1, row=0, sticky="nsew")
-        password_label.grid(column=2, row=0, sticky="nsew")
+        site_label.grid(column=0, row=0)
+        username_label.grid(column=1, row=0)
+        password_label.grid(column=2, row=0)
 
         # new password button
 
@@ -100,6 +100,9 @@ class PasswordView(tk.Frame):
         btn2.grid(row=0, column=1, padx=10, ipady=5)
 
         sv_ttk.set_theme("light")
+
+    def returnEvent(self):
+        pass
 
     def onShowFrame(self):
         """ Event handler for show frame """

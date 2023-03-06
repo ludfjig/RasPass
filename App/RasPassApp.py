@@ -45,6 +45,7 @@ class RasPassApp(tk.Tk):
         frame = self.frames[page]
         frame.onShowFrame()
         frame.tkraise()
+        self.bind('<Return>', lambda event: frame.returnEvent())
 
 
 def main():

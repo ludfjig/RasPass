@@ -50,7 +50,9 @@ class StartScreen(tk.Frame):
         self.master.config(state="disabled")
 
         sv_ttk.set_theme("light")
-        controller.bind('<Return>', lambda event: self.checkMasterPass(controller, s))
+
+    def returnEvent(self):
+        self.checkMasterPass(self.window, self.s)
 
     def checkMasterPass(self, controller, s):
         # check that the entered password hash matches the password hash stored
