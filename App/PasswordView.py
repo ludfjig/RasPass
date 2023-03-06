@@ -159,7 +159,7 @@ class PasswordView(tk.Frame):
 
         items = []
 
-        s = ttk.Entry(self.rows, width=20, font=("Courier bold", 14))
+        s = tk.Entry(self.rows, width=20, font=("Courier bold", 14))
         u = ttk.Button(self.rows, width=20, text="Get Username", style='Style.TButton',
                        command=lambda: self.getUsername(site))
         g = ttk.Button(self.rows, width=20, text="Get Password", style='Style.TButton',
