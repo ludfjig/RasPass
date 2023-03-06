@@ -34,15 +34,15 @@ class FlashRW:
         self.close()
         return readBytes
 
-    def writeFlashDB(self, raw_block: bytes) -> int:
+    def writeFlashDB(self, raw_block: bytes) -> bool:
         """Write the raw_block to flash (will be block aligned).
-        Return 0 on failure, 1 on success."""
+        Return success/failure """
         assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
         self.file.seek(0)
         if self.file.write(raw_block) == len(raw_block):
             self.file.flush()
             self.close()
-            return 1
+            return True
         self.close()
-        return 0
+        return False

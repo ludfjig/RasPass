@@ -39,9 +39,9 @@ class DataBase:
             self.settings = json.loads(self.__getUnPadded(rawSettings))
         except:
             self.settings = {}
-        rawSites = raw[self.PSWDS_START:] #self.PSWDS_END]
+        rawSites = raw[self.SETTINGS_END:] #self.PSWDS_END]
         for c in range(len(rawSites) // FlashRW.BLOCKSIZE):
-            en = raw[c * FlashRW.BLOCKSIZE: (c + 1) * FlashRW.BLOCKSIZE]
+            en = rawSites[c * FlashRW.BLOCKSIZE: (c + 1) * FlashRW.BLOCKSIZE]
             sitename, username, password = self.getStorageSitnameUPPair(en)
             self.db[sitename] = (username, password)
 
@@ -129,15 +129,15 @@ class DataBase:
         but the last null character in toUnPad"""
         return toUnPad.decode(self.ENCODING).rstrip("\x00")
 
-    def add(self, sitename: str, username: str, password: str):
+    def add(self, sitename: str, username: str, password: str) -> bool:
         """Inserts a new entry into the database.
         Will return error and not insert if sitename already exists
-        (should use update). Returns 0 for success, -1 for error."""
+        (should use update). Returns success/failure."""
         if sitename in self.db:
-            return -1
+            return False
         self.db[sitename] = (username, password)
         self.__storeFlashDB()
-        return 0
+        return True
 
     def get(self, sitename: str) -> tuple[str, str] | None:
         """Gets a (username, password) tuple corresponding to sitename.
@@ -146,30 +146,30 @@ class DataBase:
             return None
         return self.db[sitename]
 
-    def update(self, sitename: str, user: str | None, pswd: str | None):
+    def update(self, sitename: str, user: str | None, pswd: str | None) -> bool:
         """Update username and/or password for given sitename.
         Will return error if sitename is not part of the db, or if both
         username and password are None
-        Returns 0 on success, -1 on failure."""
+        Returns success/failure."""
         if sitename not in self.db or (user is None and pswd is None):
-            return -1
+            return False
         orig_username, orig_password = self.db[sitename]
         new_username = orig_username if user is None else user
         new_password = orig_password if pswd is None else pswd
         self.db[sitename] = (new_username, new_password)
         self.__storeFlashDB()
-        return 0
+        return True
 
-    def delete(self, sitename: str):
+    def delete(self, sitename: str) -> bool:
         """Delete the sitename.
         Will return error if sitename does not exist
-        Returns 0 on success, -1 on failure."""
+        Returns success/failure."""
         if sitename not in self.db:
-            return -1
+            return False
         del self.db[sitename]
         self.__storeFlashDB()
-        return 0
+        return True
 
     def getAllSites(self) -> list[str]:
         """Get list of all sitename strs"""
-        return list(self.db.keys())
+        return list(filter(None, self.db.keys()))

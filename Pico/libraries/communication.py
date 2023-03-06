@@ -85,7 +85,7 @@ class PicoComm:
                 "method": req["method"],
                 "status": self.STATUS_UNKNOWN_ERR
             }
-            with io.StringIO() as f:
+            with io.StringIO() as f:  # type: ignore
                 sys.print_exception(e, f)
                 f.seek(0)
                 errMsg["error"] = f.read()
@@ -152,7 +152,7 @@ class PicoComm:
             }
         else:
             if self.db.add(
-                    req["sitename"], req["username"], req["password"]) == 0:
+                    req["sitename"], req["username"], req["password"]):
                 res = {
                     "method": "addPassword",
                     "status": self.STATUS_SUCCESS,
@@ -182,7 +182,7 @@ class PicoComm:
                 "error": "No sitename/newusername"
             }
         else:
-            if self.db.update(req["sitename"], req["newusername"], None) == 0:
+            if self.db.update(req["sitename"], req["newusername"], None):
                 return {
                     "method": "changeUsername",
                     "status": self.STATUS_SUCCESS,
@@ -211,7 +211,7 @@ class PicoComm:
                 "error": "No sitename/newpassword"
             }
         else:
-            if self.db.update(req["sitename"], None, req["newpassword"]) == 0:
+            if self.db.update(req["sitename"], None, req["newpassword"]):
                 return {
                     "method": "changePassword",
                     "status": self.STATUS_SUCCESS,
@@ -240,7 +240,7 @@ class PicoComm:
                 "error": "No sitename"
             }
         else:
-            if self.db.delete(req["sitename"]) == 0:
+            if self.db.delete(req["sitename"]):
                 return {
                     "method": "removePassword",
                     "status": self.STATUS_SUCCESS,
