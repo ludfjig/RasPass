@@ -273,7 +273,7 @@ class PicoComm:
                 "method": "getSettings",
                 "status": self.STATUS_SUCCESS,
                 "error": None,
-                "settings": self.db.getSettings()
+                "settings": self.db.getSettings(self.auth.getFingerprintIds())
             }
 
     def setSettings(self, req: dict) -> dict | None:

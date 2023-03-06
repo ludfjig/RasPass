@@ -347,7 +347,7 @@ class PasswordView(tk.Frame):
         if len(fingerPrints) == 0:
             tk.Label(rows, text='No fingerprints registered', fg='red', font=MEDIUMFONT).grid()
         for finger in fingerPrints:
-            self.initFingerprintEntry(rows, finger)
+            self.initFingerprintEntry(rows, fingerPrints[finger])
 
     def enrollFinger(self, parent, btn):
         btn.grid_forget()

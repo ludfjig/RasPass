@@ -47,6 +47,12 @@ class Auth:
             self.led.toggle()
             time.sleep(0.1)
 
+    def getFingerprintIds(self):
+        """ Get a list of fingerprint IDs. Returns emtpy list on error. """
+        if not self.isReset and self.isVerified:
+            return list(self.fingerTemplates.keys())
+        return []
+
     def setupFp(self, fpPasswd: Tuple[int, int, int, int]):
         """Initialize the fingerprint sensor with the password.
         This must be called first, before any other API call.
@@ -122,7 +128,7 @@ class Auth:
         if self.finger.finger_search() != af.OK:
             return False
         return True
-    
+
     def get_fingerprints(self) -> list[int] | None:
         """Return list of fingerprint IDs"""
         return self.finger.templates
