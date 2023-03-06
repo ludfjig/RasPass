@@ -11,6 +11,18 @@ from tkinter.messagebox import askyesno
 LARGEFONT = ("Courier", 20)
 MEDIUMFONT = ("Courier", 16)
 SMALLFONT = ("Courier", 14)
+BOLDFONT = ('Courier bold', 16)
+
+STATUS_SUCCESS = 0
+STATUS_MISSING_PARAM = 3        # Missing request parameter
+STATUS_MALFORMED_REQ = 4        # Malformed request
+STATUS_BAD_METHOD = 5           # Bad/nonexistent method
+STATUS_FAILED_BIOMETRICS = 6    # Failed biometric, but not too many attempts
+STATUS_NOT_VERIFIED = 7         # User must run verifyMasterHash
+# Other (unhandled) exception thrown in code - traceback returned
+STATUS_UNKNOWN_ERR = 10
+STATUS_API_OTHER_ERROR = 11     # Other (handled) error in the API
+STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
 
 
 class PasswordView(tk.Frame):
@@ -191,7 +203,7 @@ class PasswordView(tk.Frame):
         self.password_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.password_entry, 'Password'))
 
         self.add_new_pswd = ttk.Button(
-            self.rows, text="Add",
+            self.rows, text="Add", style="Style.TButton",
             command=lambda: self.addPassword(
                 self.site_entry.get(),
                 self.username_entry.get(),
@@ -249,7 +261,6 @@ class PasswordView(tk.Frame):
         self.add_row(sitename)
         self.clear_input_row()
         self.remember_input_row()
-        #print(self.rows.grid_size())
 
     def getUsername(self, sitename):
         # Open dialog/copy to clipboard
@@ -295,12 +306,32 @@ class PasswordView(tk.Frame):
 
     def settingsPopup(self):
         # Open dialog to change password or username
+        res = self.comm.getSettings()
+        if res['status'] != STATUS_SUCCESS:
+            print("[ERR] Authentification failure")
+            return
+
         top = tk.Toplevel(self)
-        top.geometry("350x150")
+        top.geometry("500x300")
         top.title("RasPass Settings")
 
-        storage = ttk.Label(top, text="Storage available: ")
-        storage.grid(column=0, row=0, padx=25, pady=25)
+        settings = res['settings']
+        fingerPrints = settings['fingerprints']
+        passwordsAvail = settings['numPswdAvail']
+
+        storageWrapper = tk.Frame(top, width=500, height=30)
+        storageWrapper.grid(column=0, row=0, padx=25, pady=10, sticky='nw')
+        storageWrapper.grid_propagate(False)
+        storage = tk.Text(storageWrapper, font=MEDIUMFONT)
+        storage.tag_configure("bold", font=BOLDFONT)
+        storage.insert("end", "Storage Available: ", "bold")
+        storage.insert("end", "%s password entries" % passwordsAvail)
+        storage.config(state="disabled", borderwidth=0, highlightthickness=0)
+        storage.grid(column=0, row=0, sticky='nw')
+
+        regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
+        regFingers.grid(column=0, row=2, padx=25, pady=15, sticky='nw')
+
 
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
