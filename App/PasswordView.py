@@ -237,6 +237,7 @@ class PasswordView(tk.Frame):
         elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
             print("[ERR] Too many attempts for biometrics")
             self.controller.show_frame(StartScreen.StartScreen)
+            return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
             print("Unknown error while getting username. Status=", resp["status"])
             return
@@ -257,6 +258,7 @@ class PasswordView(tk.Frame):
         elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
             print("[ERR] Too many attempts for biometrics")
             self.controller.show_frame(StartScreen.StartScreen)
+            return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
             print("Unknown error while getting password. Status=", resp["status"])
             return
@@ -334,6 +336,7 @@ class PasswordView(tk.Frame):
         elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
             print("[ERR] Too many attempts for biometrics")
             self.controller.show_frame(StartScreen.StartScreen)
+            return False
         elif resp["status"] != self.comm.STATUS_SUCCESS:
             print("Unknown error while removing password. Status=", resp["status"])
             return False

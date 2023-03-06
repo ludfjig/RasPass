@@ -15,6 +15,7 @@ class RasPassApp(tk.Tk):
     def __init__(self, commLink, parent=None):
         tk.Tk.__init__(self, parent)
         self.serial = commLink.s
+        commLink.setWindow(self)
         self.title("RasPass Password Manager")
         self.geometry("850x350")
         self.iconbitmap("imgs/logo.ico")
@@ -47,9 +48,11 @@ class RasPassApp(tk.Tk):
 
 
 def main():
+
     commLink = AppComm()
 
     rasPassApp = RasPassApp(commLink)
+
 
     sv_ttk.set_theme("light")
 

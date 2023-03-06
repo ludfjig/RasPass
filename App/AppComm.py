@@ -5,6 +5,7 @@ import json
 import time
 import sys
 import base64
+from Popup import Popup
 
 
 class AppComm:
@@ -27,6 +28,10 @@ class AppComm:
 
     def __init__(self):
         self.s = None
+
+    def setWindow(self, tkWindow):
+        """ Set the window for this app """
+        self.window = tkWindow
 
     def initConn(self) -> bool:
         """ Initialize a connection to the Pico. Returns success/failure. """
@@ -128,6 +133,8 @@ class AppComm:
         """ Communicate with Pico by sending this request that needs fingerprint authentication.
         Will retry until device locks or success. Returns response or None on failure. """
         # TODO: show popup that says to put finger on sensor when light turns green
+        p = Popup(self.window, "Fingerprint Authentication", "Place finger on fingerprint sensor when light turns green.")
+        attempts = 1
         while True:
             self.s.timeout = self.AUTH_READ_TIMEOUT
             res = self.communicateReq(req)
@@ -137,15 +144,20 @@ class AppComm:
 
             status = res["status"]
             if status == self.STATUS_SUCCESS:
+                p.changeMsg("Successfully authenticated", "green")
+                p.destroy(1)
                 return res
             elif status == self.STATUS_FAILED_BIOMETRICS:
-                # TODO: show popup that says to retry
-                pass
+                p.changeMsg("Please try again when light turns green (attempt %d)." %attempts, "orange")
+                attempts += 1
             elif status == self.STATUS_NOT_VERIFIED:
-                # TODO: Show popup that says too many attempts, and return to homescreen (device will lock itself)
+                p.changeMsg("Maximum number of attempts reached. Locking device... disconnect power to recover.", "red")
+                p.destroy(3)
+                self.disconnect()
                 return res
             else:
-                # Not an authentication issue, so just return it
+                p.changeMsg("Unexpected error occurred", "red")
+                p.destroy(3)
                 return res
         return None
 

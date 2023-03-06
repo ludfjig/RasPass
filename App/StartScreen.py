@@ -5,6 +5,7 @@ import PasswordView
 import hashlib
 import base64
 import sv_ttk
+import time
 
 
 LARGEFONT = ("Courier", 20)
@@ -15,6 +16,7 @@ class StartScreen(tk.Frame):
     def __init__(self, parent, controller, s, commLink):
         tk.Frame.__init__(self, parent)
         self.s = s
+        self.window = controller
         self.comm = commLink
         self.grid(row=0, column=0, sticky="ne")
         self.grid_columnconfigure(0, weight=1)
@@ -45,6 +47,7 @@ class StartScreen(tk.Frame):
 
         self.master = ttk.Entry(self.entryFrame, width=35, show="*", font=SMALLFONT)
         self.master.grid(row=0, column=0, padx=10)
+        self.master.config(state="disabled")
 
         sv_ttk.set_theme("light")
         controller.bind('<Return>', lambda event: self.checkMasterPass(controller, s))
@@ -72,17 +75,27 @@ class StartScreen(tk.Frame):
     def togglePicoConn(self):
         """ Connect to a Pico, if available """
         if self.comm.s is None:
-            if self.comm.initConn():
-                self.statusMsg.config(text="Status: Connected", fg="green")
-                self.connBtn.config(text="Disconnect from Pico")
-                self.checkPwBtn["state"] = "normal"
-                return
-            self.statusMsg.config(text="Status: Failed to connect", fg="red")
+            if not self.comm.initConn():
+                self.statusMsg.config(text="Status: Failed to connect", fg="red")
+                self.statusMsg.update()
+                time.sleep(1)
         else:
             self.comm.disconnect()
+        self.checkPicoConn()
+
+    def checkPicoConn(self):
+        """ Check the connection to the Pico and update the UI """
+        if self.comm.s is not None:
+            self.statusMsg.config(text="Status: Connected", fg="green")
+            self.connBtn.config(text="Disconnect from Pico")
+            self.checkPwBtn["state"] = "normal"
+            self.master.config(state="normal")
+            return
+        else:
             self.statusMsg.config(text="Status: Not connected", fg="red")
         self.connBtn.config(text="Connect to Pico")
         self.checkPwBtn["state"] = "disabled"
+        self.master.config(state="disabled")
 
     def get_master_pw_hash(self):
         m = hashlib.sha256()
@@ -101,7 +114,4 @@ class StartScreen(tk.Frame):
 
     def onShowFrame(self):
         """ Event handler for show frame """
-        if self.comm.s is not None:
-            self.statusMsg.config(text="Status: Connected", fg="green")
-        else:
-            self.statusMsg.config(text="Status: Not connected", fg="red")
+        self.checkPicoConn()
