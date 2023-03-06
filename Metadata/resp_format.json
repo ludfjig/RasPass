@@ -66,13 +66,6 @@
         "status": "int",
         "error": "undefined OR str"
     },
-    "getFingerprint": {
-        "method": "getFp",
-        "status": "int",
-        "fpId": "undefined OR int",
-        "fpHash": "byte hash of fingerprint template",
-        "error": "undefined OR str"
-    },
     "changeMasterPswd": {
         "method": "changeMasterPswd",
         "status": "int",
