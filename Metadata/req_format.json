@@ -59,11 +59,6 @@
         "method": "verifyFpPswd",
         "authtoken": "<FP AUTH>"
     },
-    "getFingerprint": {
-        "method": "getFp",
-        "fpId": "<integer ID> or undefined",
-        "authtoken": "<FP AUTH>"
-    },
     "changeMasterPswd": {
         "method": "changeMasterPswd",
         "oldauthtoken": "<OLD FP AUTH>",
