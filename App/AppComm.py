@@ -132,7 +132,6 @@ class AppComm:
     def communicateAuthenticatedReq(self, req) -> dict | None:
         """ Communicate with Pico by sending this request that needs fingerprint authentication.
         Will retry until device locks or success. Returns response or None on failure. """
-        # TODO: show popup that says to put finger on sensor when light turns green
         p = Popup(self.window, "Fingerprint Authentication", "Place finger on fingerprint sensor when light turns green.")
         attempts = 1
         while True:
@@ -256,7 +255,7 @@ class AppComm:
             "authtoken": "1"
         }
 
-        return self.communicateAuthenticatedReq(req)
+        return self.communicateReq(req)
 
     def setSettings(self, settings: str) -> dict | None:
         """Sets a setting in the password manager. Returns response or None on failure"""
@@ -266,4 +265,4 @@ class AppComm:
             "authtoken": "1"
         }
 
-        return self.communicateAuthenticatedReq(req)
+        return self.communicateReq(req)
