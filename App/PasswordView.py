@@ -50,11 +50,11 @@ class PasswordView(tk.Frame):
         self.rows = rows
 
         # column names
-        site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
-        username_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Username")
-        password_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Password")
+        #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
+       # username_label = ttk.Label(
+           #column_names, width=20, font=MEDIUMFONT, text="Username")
+        #password_label = ttk.Label(
+            #column_names, width=20, font=MEDIUMFONT, text="Password")
 
         # banner
         header = self.open_img(banner, (550, 100), "./imgs/logo2.png")
@@ -70,9 +70,9 @@ class PasswordView(tk.Frame):
         btnFrame.grid(column=0, row=6, pady=10)
 
         # column names
-        site_label.grid(column=0, row=0)
-        username_label.grid(column=1, row=0)
-        password_label.grid(column=2, row=0)
+        #site_label.grid(column=0, row=0)
+        #username_label.grid(column=1, row=0)
+        #password_label.grid(column=2, row=0)
 
         # new password button
 
