@@ -11,6 +11,7 @@ import io
 # Since 0xfe and 0xff are not used in utf-8, these delimit a frame
 
 
+
 class PicoComm:
     FRAMESTART = b"\xff"
     FRAMESTOP = b"\xfe"
@@ -254,36 +255,54 @@ class PicoComm:
 
     def getSettings(self, req: dict) -> dict | None:
         """Returns all the current settings"""
-        if not self.auth.authenticate():
+        """if not self.auth.authenticate():
             return {
                 "method": "getSettings",
                 "status": self.STATUS_FAILED_BIOMETRICS if self.auth.isVerified else self.STATUS_NOT_VERIFIED,
                 "error": "Authentication error"
             }
-        else:
-            # TODO: implement settings
+        else:"""
+        if not self.auth.isVerified:
             return {
                 "method": "getSettings",
-                "status": self.STATUS_NOT_YET_IMPLEMENTED,
+                "status": self.STATUS_NOT_VERIFIED,
+                "error": "Not authenticated"
+            }
+        else:
+            return {
+                "method": "getSettings",
+                "status": self.STATUS_SUCCESS,
                 "error": None,
-                "settings": {}
+                "settings": self.db.getSettings()
             }
 
     def setSettings(self, req: dict) -> dict | None:
         """Sets a setting in the password manager. Returns success/failure"""
-        if not self.auth.authenticate():
-            return {
-                "method": "getSettings",
-                "status": self.STATUS_FAILED_BIOMETRICS if self.auth.isVerified else self.STATUS_NOT_VERIFIED,
-                "error": "Authentication error"
-            }
-        else:
-            # TODO: implement settings
+        if not self.auth.isVerified:
             return {
                 "method": "setSettings",
-                "status": self.STATUS_NOT_YET_IMPLEMENTED,
-                "error": None
+                "status": self.STATUS_NOT_VERIFIED,
+                "error": "Not authenticated"
             }
+        elif "settings" not in req:
+            return {
+                "method": "setSettings",
+                "status": self.STATUS_MISSING_PARAM,
+                "error": "Missing new settings"
+            }
+        else:
+            if self.db.setSettings(req["settings"]):
+                return {
+                    "method": "setSettings",
+                    "status": self.STATUS_SUCCESS,
+                    "error": None
+                }
+            else:
+                return {
+                    "method": "setSettings",
+                    "status": self.STATUS_API_OTHER_ERROR,
+                    "error": "Failed to set settings"
+                }
 
     def enrollFingerprint(self, req: dict) -> dict | None:
         """ Enroll a new fingerprint """

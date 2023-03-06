@@ -65,7 +65,6 @@ class PasswordView(tk.Frame):
         #username_label.grid(column=1, row=0, sticky="nsew")
         #password_label.grid(column=2, row=0, sticky="nsew")
 
-
         # new password button
 
         # ----------  fill   starts here ---------------------------

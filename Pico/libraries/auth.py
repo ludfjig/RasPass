@@ -3,6 +3,7 @@
 
 # Sections of this code are credited to Adafruit under the MIT license
 
+
 import adafruit_fingerprint as af
 import time
 import hashlib
