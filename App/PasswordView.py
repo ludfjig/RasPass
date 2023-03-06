@@ -6,7 +6,7 @@ import pyperclip as pc
 import hashlib
 import crypto
 import sv_ttk
-
+from tkinter.messagebox import askyesno
 
 LARGEFONT = ("Courier", 20)
 MEDIUMFONT = ("Courier", 16)
@@ -43,8 +43,6 @@ class PasswordView(tk.Frame):
             column_names, width=20, font=MEDIUMFONT, text="Username")
         password_label = ttk.Label(
             column_names, width=20, font=MEDIUMFONT, text="Password")
-        #main_label = ttk.Label(
-        #    column_names, width=20, font=MEDIUMFONT, text="Passwords")
 
         # banner
         header = self.open_img(banner, "./imgs/logo2.png")
@@ -60,7 +58,6 @@ class PasswordView(tk.Frame):
         btnFrame.grid(column=0, row=6, pady=10)
 
         # column names
-        #main_label.grid(column=0, columnspan=5)
         site_label.grid(column=0, row=0, sticky="nsew")
         username_label.grid(column=1, row=0, sticky="nsew")
         password_label.grid(column=2, row=0, sticky="nsew")
@@ -90,8 +87,8 @@ class PasswordView(tk.Frame):
 
         header.grid(column=0, row=0, columnspan=5)
 
-        self.style = ttk.Style()
-        self.style.configure('Style.TButton', font=SMALLFONT)
+        style = ttk.Style()
+        style.configure('Style.TButton', font=SMALLFONT)
 
         btn1 = ttk.Button(btnFrame, text="Lock Pico", style='Style.TButton',
                           command=lambda: self.switch_to_start(controller))
@@ -174,11 +171,24 @@ class PasswordView(tk.Frame):
         d.grid(row=rows, column=4, sticky="nesw")
 
     def init_input_row(self):
-        self.site_entry = ttk.Entry(self.rows)
-        self.username_entry = ttk.Entry(self.rows)
-        self.password_entry = ttk.Entry(self.rows, show="*")
+        self.site_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
+        self.username_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
+        self.password_entry = tk.Entry(self.rows, show="*", fg='grey', font=SMALLFONT)
+
+        self.site_entry.insert(0, 'Sitename')
+        self.username_entry.insert(0, 'Username')
+        self.password_entry.insert(0, 'Password')
+
+        self.site_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.site_entry, 'Sitename'))
+        self.username_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.username_entry, 'Username'))
+        self.password_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.password_entry, 'Password'))
+
+        self.site_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.site_entry, 'Sitename'))
+        self.username_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.username_entry, 'Username'))
+        self.password_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.password_entry, 'Password'))
+
         self.add_new_pswd = ttk.Button(
-            self.rows, text="Add", style='Style.TButton',
+            self.rows, text="Add",
             command=lambda: self.addPassword(
                 self.site_entry.get(),
                 self.username_entry.get(),
@@ -190,6 +200,17 @@ class PasswordView(tk.Frame):
         self.username_entry.grid(column=1, row=rows, sticky="nesw")
         self.password_entry.grid(column=2, row=rows, sticky="nesw")
         self.add_new_pswd.grid(column=3, row=rows, sticky="nesw", columnspan=2)
+
+    def focus_entry(self, entry, msg):
+        if entry.get() == msg:
+            entry.delete(0, tk.END)
+            entry.insert(0, '')
+            entry.config(fg='black')
+
+    def unfocus_entry(self, entry, msg):
+        if entry.get() == '':
+            entry.insert(0, msg)
+            entry.config(fg='grey')
 
     def get_master_pw_hash(self):
         m = hashlib.sha256()
