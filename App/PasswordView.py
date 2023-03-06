@@ -38,11 +38,11 @@ class PasswordView(tk.Frame):
         self.rows = rows
 
         # column names
-        #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site")
-        #username_label = ttk.Label(
-        #    column_names, width=20, font=MEDIUMFONT, text="Username")
-        #password_label = ttk.Label(
-        #    column_names, width=20, font=MEDIUMFONT, text="Password")
+        site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
+        username_label = ttk.Label(
+            column_names, width=20, font=MEDIUMFONT, text="Username")
+        password_label = ttk.Label(
+            column_names, width=20, font=MEDIUMFONT, text="Password")
         #main_label = ttk.Label(
         #    column_names, width=20, font=MEDIUMFONT, text="Passwords")
 
@@ -61,9 +61,9 @@ class PasswordView(tk.Frame):
 
         # column names
         #main_label.grid(column=0, columnspan=5)
-        #site_label.grid(column=0, row=0, sticky="nsew")
-        #username_label.grid(column=1, row=0, sticky="nsew")
-        #password_label.grid(column=2, row=0, sticky="nsew")
+        site_label.grid(column=0, row=0, sticky="nsew")
+        username_label.grid(column=1, row=0, sticky="nsew")
+        password_label.grid(column=2, row=0, sticky="nsew")
 
         # new password button
 
