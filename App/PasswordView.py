@@ -11,7 +11,7 @@ from tkinter.messagebox import askyesno
 LARGEFONT = ("Courier", 20)
 MEDIUMFONT = ("Courier", 16)
 SMALLFONT = ("Courier", 14)
-BOLDFONT = ('Courier bold', 16)
+BOLDFONT = ('Courier bold', 20)
 
 STATUS_SUCCESS = 0
 STATUS_MISSING_PARAM = 3        # Missing request parameter
@@ -50,14 +50,14 @@ class PasswordView(tk.Frame):
         self.rows = rows
 
         # column names
-        site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
-        username_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Username")
-        password_label = ttk.Label(
-            column_names, width=20, font=MEDIUMFONT, text="Password")
+        #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
+       # username_label = ttk.Label(
+           #column_names, width=20, font=MEDIUMFONT, text="Username")
+        #password_label = ttk.Label(
+            #column_names, width=20, font=MEDIUMFONT, text="Password")
 
         # banner
-        header = self.open_img(banner, "./imgs/logo2.png")
+        header = self.open_img(banner, (550, 100), "./imgs/logo2.png")
 
         # ------------------ grid starts here -------------------------
 
@@ -70,9 +70,9 @@ class PasswordView(tk.Frame):
         btnFrame.grid(column=0, row=6, pady=10)
 
         # column names
-        site_label.grid(column=0, row=0)
-        username_label.grid(column=1, row=0)
-        password_label.grid(column=2, row=0)
+        #site_label.grid(column=0, row=0)
+        #username_label.grid(column=1, row=0)
+        #password_label.grid(column=2, row=0)
 
         # new password button
 
@@ -128,9 +128,9 @@ class PasswordView(tk.Frame):
         self.clear_input_row()
         controller.show_frame(StartScreen.StartScreen)
 
-    def open_img(self, parent, picture):
+    def open_img(self, parent, dim, picture):
         img = Image.open(picture)
-        img = img.resize((550, 100), Image.ANTIALIAS)
+        img = img.resize((dim[0], dim[1]), Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img)
         panel = ttk.Label(parent, image=img)
         panel.image = img
@@ -312,26 +312,38 @@ class PasswordView(tk.Frame):
             return
 
         top = tk.Toplevel(self)
-        top.geometry("500x300")
+        top.geometry("550x300")
         top.title("RasPass Settings")
+
+        image = self.open_img(top, (400, 75), "./imgs/Settings.png")
+        image.grid(column=0, row=0)
 
         settings = res['settings']
         fingerPrints = settings['fingerprints']
         passwordsAvail = settings['numPswdAvail']
 
         storageWrapper = tk.Frame(top, width=500, height=30)
-        storageWrapper.grid(column=0, row=0, padx=25, pady=10, sticky='nw')
+        storageWrapper.grid(column=0, row=2, padx=25, pady=20, sticky='nw')
         storageWrapper.grid_propagate(False)
-        storage = tk.Text(storageWrapper, font=MEDIUMFONT)
+        storage = tk.Text(storageWrapper, font=LARGEFONT)
         storage.tag_configure("bold", font=BOLDFONT)
         storage.insert("end", "Storage Available: ", "bold")
         storage.insert("end", "%s password entries" % passwordsAvail)
         storage.config(state="disabled", borderwidth=0, highlightthickness=0)
         storage.grid(column=0, row=0, sticky='nw')
 
-        regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
-        regFingers.grid(column=0, row=2, padx=25, pady=15, sticky='nw')
+        style = ttk.Style()
+        style.configure('Settings.TButton', font=LARGEFONT)
+        enrollBtn = ttk.Button(top, text="Enroll New Fingerprint", style='Settings.TButton',
+                              command=lambda: self.enrollFinger("test"))
+        enrollBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
+        regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
+        regFingers.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
+
+    def enrollFinger(self, name):
+        print("[INFO] Enrolling new fingerprint '%s'" % name)
+        self.comm.enrollFingerprint(name)
 
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
