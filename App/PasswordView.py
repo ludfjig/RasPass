@@ -257,92 +257,37 @@ class PasswordView(tk.Frame):
         self.add_row(sitename)
         self.clear_input_row()
         self.remember_input_row()
-
-    def copyToClipboardUsername(self, sitename):
-        # Open dialog/copy to clipboard
-        resp = self.comm.getPassword(sitename)
-
-        if resp is None:
-            print("[ERR] Get username failed")
-            return
-        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-            print("[ERR] Too many attempts for biometrics")
-            self.controller.show_frame(StartScreen.StartScreen)
-            return
-        elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while getting username. Status=", resp["status"])
-            return
-
-        cipher_uname = resp['username']
-        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
-        pc.copy(plain_text_usr)
-        print("[INFO] Got username")
-        return resp
-
-    def copyToClipboardPassword(self, sitename):
-        # Open dialog/copy to clipboard
-        resp = self.comm.getPassword(sitename)
-
-        if resp is None:
-            print("[ERR] Get password failed")
-            return
-        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-            print("[ERR] Too many attempts for biometrics")
-            self.controller.show_frame(StartScreen.StartScreen)
-            return
-        elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while getting password. Status=", resp["status"])
-            return
-
-        cipher_text = resp['password']
-        plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
-        pc.copy(plain_text_pw)
-        print("[INFO] Got password")
-        return resp
     
-    def revealUsername(self, sitename, btn):
-        # Open dialog/copy to clipboard
-        resp = self.comm.getPassword(sitename)
-
-        if resp is None:
-            print("[ERR] Get username failed")
-            return
-        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-            print("[ERR] Too many attempts for biometrics")
-            self.controller.show_frame(StartScreen.StartScreen)
-            return
-        elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while getting username. Status=", resp["status"])
-            return
-
-        cipher_uname = resp['username']
-        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
-        btn.configure(text = plain_text_usr)
-        print("[INFO] Revealed username")
-        return resp
-    
-    def revealPassword(self, sitename, btn):
-        # Open dialog/copy to clipboard
-        resp = self.comm.getPassword(sitename)
-
-        if resp is None:
-            print("[ERR] Get password failed")
-            return
-        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
-            print("[ERR] Too many attempts for biometrics")
-            self.controller.show_frame(StartScreen.StartScreen)
-            return
-        elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while getting password. Status=", resp["status"])
-            return
-
-        cipher_text = resp['password']
-        plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
-        btn.configure(text = plain_text_pw)
-        print("[INFO] Revealed password")
-        return resp
+    def revealUsrPw(self, cipher_text, label):
+        current_text= label.cget('text')
+        if current_text == '*****':
+            plain_text = crypto.decrypt(cipher_text, self.get_master_pw_hash())
+            label.config(text = plain_text)
+            print("[INFO] Revealed")
+        else:
+            label.config(text = '*****')
+            print("[INFO] Hidden")
+        return
     
     def getInfo(self, sitename):
+        resp = self.comm.getPassword(sitename)
+
+        if resp is None:
+            print("[ERR] Get password failed")
+            return
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while getting password. Status=", resp["status"])
+            return
+        
+        cipher_text = resp['password']
+        plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
+
+        cipher_uname = resp['username']
+        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
 
         top = tk.Toplevel(self)
         top.geometry("550x400")
@@ -359,26 +304,28 @@ class PasswordView(tk.Frame):
 
         style = ttk.Style()
         style.configure('Settings.TButton', font=MEDIUMFONT)
+        usernameLabel = ttk.Label(top, text='*****', font=MEDIUMFONT)
+        usernameLabel.grid(column=0, row=3, padx=25, pady=10, sticky='nw')
         usernameRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
-                              command=lambda: self.revealUsername(sitename, usernameRevealBtn))
-        usernameRevealBtn.grid(column=0, row=3, padx=25, pady=10, sticky='nw')
+                              command=lambda: self.revealUsrPw(cipher_uname, usernameLabel))
+        usernameRevealBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
         usernameGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
-                              command=lambda: self.copyToClipboardUsername(sitename))
-        usernameGetBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
+                              command=lambda: pc.copy(plain_text_usr))
+        usernameGetBtn.grid(column=0, row=5, padx=25, pady=10, sticky='nw')
 
         password = tk.Label(top, font=BOLDFONT, text="Password:")
         password.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
 
-        style = ttk.Style()
-        style.configure('Settings.TButton', font=MEDIUMFONT)
+        passwordLabel = ttk.Label(top, text='*****', font=MEDIUMFONT)
+        passwordLabel.grid(column=0, row=10, padx=25, pady=10, sticky='nw')
         passwordRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
-                              command=lambda: self.revealPassword(sitename, passwordRevealBtn))
-        passwordRevealBtn.grid(column=0, row=10, padx=25, pady=10, sticky='nw')
+                              command=lambda: self.revealUsrPw(cipher_text, passwordLabel))
+        passwordRevealBtn.grid(column=0, row=11, padx=25, pady=10, sticky='nw')
 
         passwordGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
-                              command=lambda: self.copyToClipboardPassword(sitename))
-        passwordGetBtn.grid(column=0, row=11, padx=25, pady=10, sticky='nw')
+                              command=lambda: pc.copy(plain_text_pw))
+        passwordGetBtn.grid(column=0, row=12, padx=25, pady=10, sticky='nw')
 
         rows = ttk.Frame(top)
         rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
