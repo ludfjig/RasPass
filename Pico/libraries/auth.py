@@ -179,6 +179,15 @@ class Auth:
             else:
                 print("Other error")"""
             return False
+        
+    def template_finger(self, slot):
+        """Take a 2 finger images and template it, then store in 'location'"""
+        """Credit: Adafruit"""
+        i = self.get_image()
+        if i == af.OK:
+            return self.template(slot)
+        return -5
+
 
     def enroll_finger(self, location):
         """Take a 2 finger images and template it, then store in 'location'"""
@@ -251,6 +260,24 @@ class Auth:
             return False
 
         return True
+    
+    def create_image(self, location):
+        i = self.finger.create_model()
+        if i == af.OK:
+            i = self.finger.store_model(location)
+        return i
+
+    def get_image(self):
+        # blocking, but only until a finger is placed on the sensor
+        while True:
+            i = self.finger.get_image()
+            if i == af.NOFINGER:
+                continue # keep trying until finger is placed on sensor
+            return i
+            
+    def template(self, fingerimg):
+        i = self.finger.image_2_tz(fingerimg)
+        return i
 
     def get_num(self, max_number):
         """Use input() to get a valid number from 0 to the maximum size

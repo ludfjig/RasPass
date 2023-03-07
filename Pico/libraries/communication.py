@@ -306,18 +306,27 @@ class PicoComm:
 
     def enrollFingerprint(self, req: dict) -> dict | None:
         """ Enroll a new fingerprint """
-        if not self.auth.authenticate():
+        #success = self.auth.template_finger(self.auth.get_num(self.auth.finger.library_size), req['fpName'])
+        
+        if req['phase'] < 2:
+            i = self.auth.template_finger(req['phase']+1)
             return {
                 "method": "enrollFingerprint",
-                "status": self.STATUS_FAILED_BIOMETRICS if self.auth.isVerified else self.STATUS_NOT_VERIFIED,
-                "error": "Authentication error"
+                "status": i,
+                "error": None
+            }
+        elif req["phase"] == 2:
+            i = self.auth.create_image(len(self.auth.finger.templates))
+            return {
+                "method": "enrollFingerprint",
+                "status": i,
+                "error": len(self.auth.finger.templates)
             }
         else:
-            # TODO: implement enroll
             return {
                 "method": "enrollFingerprint",
-                "status": self.STATUS_NOT_YET_IMPLEMENTED,
-                "error": None
+                "status": self.STATUS_MALFORMED_REQ,
+                "error": "Invalid phase"
             }
 
     def deleteFingerprint(self, req: dict) -> dict | None:

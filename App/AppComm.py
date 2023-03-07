@@ -269,13 +269,41 @@ class AppComm:
 
     def enrollFingerprint(self, name) -> dict | None:
         """Enrolls a new fingerprint for authentification"""
+        p = Popup(self.window, "Fingerprint Enrollment", "Place and then remove finger from fingerprint sensor.")
         req = {
             "method": "enrollFingerprint",
             "fpName": name,
+            "phase": 0,
             "authtoken": "1"
         }
 
-        return self.communicateAuthenticatedReq(req)
+        response = self.communicateReq(req)
+        if response['status'] == self.STATUS_SUCCESS:
+            p.destroy(1)
+            p = Popup(self.window, "Fingerprint Enrollment", "Replace same finger on fingerprint sensor")
+            req2 = {
+                "method": "enrollFingerprint",
+                "fpName": name,
+                "phase": 1,
+                "authtoken": "1"
+            }
+            response = self.communicateReq(req2)
+            if response['status'] == self.STATUS_SUCCESS:
+                p.destroy(1)
+                req3 = {
+                "method": "enrollFingerprint",
+                "fpName": name,
+                "phase": 2,
+                "authtoken": "1"
+                }
+                response = self.communicateReq(req3)
+                if (response['status'] == self.STATUS_SUCCESS):
+
+                    print("[INFO] Successfully enrolled fingerprint")
+                    return True
+        p.destroy(1)
+        print("[WARN] Failed to enroll fingerprint")
+        return False
 
     def deleteFingerprint(self, id) -> dict | None:
         """Deletes a previously enrolled fingerprint"""

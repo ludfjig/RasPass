@@ -95,6 +95,11 @@ fp.main_loop(finger)
 #fp.changePswd((0,0,0,0), tuple(b'P8K='))
 
 led, finger = setupIO()
+print("Starting")
+# led, finger = setupIO()
+# fp = Auth(finger)
+# fp.main_loop(finger)
+
 
 try:
     # Run project

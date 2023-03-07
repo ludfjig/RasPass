@@ -368,6 +368,7 @@ class PasswordView(tk.Frame):
         #                    command=lambda: self.cancelEnroll(btn, submit, cancel, name))
         #cancel.grid(column=2, row=0)
 
+    
     """
     def cancelEnroll(self, btn, submit, cancel, name):
         submit.grid_remove()
