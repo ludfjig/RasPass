@@ -160,10 +160,8 @@ class PasswordView(tk.Frame):
         items = []
 
         s = tk.Entry(self.rows, width=20, font=("Courier bold", 14))
-        u = ttk.Button(self.rows, width=20, text="Get Username", style='Style.TButton',
-                       command=lambda: self.getUsername(site))
-        g = ttk.Button(self.rows, width=20, text="Get Password", style='Style.TButton',
-                       command=lambda: self.getPassword(site))
+        u = ttk.Button(self.rows, width=20, text="Get Info", style='Style.TButton',
+                       command=lambda: self.getInfo(site))
         c = ttk.Button(
             self.rows, text="Change", style='Style.TButton',
                         command=lambda: self.changePswdUsr(site))
@@ -173,7 +171,6 @@ class PasswordView(tk.Frame):
 
         items.append(s)
         items.append(u)
-        items.append(g)
         items.append(c)
         items.append(d)
 
@@ -181,9 +178,8 @@ class PasswordView(tk.Frame):
         s.insert(0, site)
         s.config(state="readonly")
         u.grid(row=rows, column=1, sticky="nesw")
-        g.grid(row=rows, column=2, sticky="nesw")
-        c.grid(row=rows, column=3, sticky="nesw")
-        d.grid(row=rows, column=4, sticky="nesw")
+        c.grid(row=rows, column=2, sticky="nesw")
+        d.grid(row=rows, column=3, sticky="nesw")
 
     def init_input_row(self):
         self.site_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
@@ -214,7 +210,7 @@ class PasswordView(tk.Frame):
         self.site_entry.grid(column=0, row=rows, sticky="nesw")
         self.username_entry.grid(column=1, row=rows, sticky="nesw")
         self.password_entry.grid(column=2, row=rows, sticky="nesw")
-        self.add_new_pswd.grid(column=3, row=rows, sticky="nesw", columnspan=2)
+        self.add_new_pswd.grid(column=3, row=rows, sticky="nesw")
 
     def focus_entry(self, entry, msg):
         if entry.get() == msg:
@@ -262,7 +258,7 @@ class PasswordView(tk.Frame):
         self.clear_input_row()
         self.remember_input_row()
 
-    def getUsername(self, sitename):
+    def copyToClipboardUsername(self, sitename):
         # Open dialog/copy to clipboard
         resp = self.comm.getPassword(sitename)
 
@@ -283,7 +279,7 @@ class PasswordView(tk.Frame):
         print("[INFO] Got username")
         return resp
 
-    def getPassword(self, sitename):
+    def copyToClipboardPassword(self, sitename):
         # Open dialog/copy to clipboard
         resp = self.comm.getPassword(sitename)
 
@@ -303,7 +299,90 @@ class PasswordView(tk.Frame):
         pc.copy(plain_text_pw)
         print("[INFO] Got password")
         return resp
+    
+    def revealUsername(self, sitename, btn):
+        # Open dialog/copy to clipboard
+        resp = self.comm.getPassword(sitename)
 
+        if resp is None:
+            print("[ERR] Get username failed")
+            return
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while getting username. Status=", resp["status"])
+            return
+
+        cipher_uname = resp['username']
+        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
+        btn.configure(text = plain_text_usr)
+        print("[INFO] Revealed username")
+        return resp
+    
+    def revealPassword(self, sitename, btn):
+        # Open dialog/copy to clipboard
+        resp = self.comm.getPassword(sitename)
+
+        if resp is None:
+            print("[ERR] Get password failed")
+            return
+        elif resp["status"] == self.comm.STATUS_NOT_VERIFIED:
+            print("[ERR] Too many attempts for biometrics")
+            self.controller.show_frame(StartScreen.StartScreen)
+            return
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("Unknown error while getting password. Status=", resp["status"])
+            return
+
+        cipher_text = resp['password']
+        plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
+        btn.configure(text = plain_text_pw)
+        print("[INFO] Revealed password")
+        return resp
+    
+    def getInfo(self, sitename):
+
+        top = tk.Toplevel(self)
+        top.geometry("550x400")
+        top.title("RasPass Get Info")
+
+        usernameWrapper = tk.Frame(top, width=500, height=30)
+        usernameWrapper.grid(column=0, row=2, padx=25, pady=20, sticky='nw')
+        usernameWrapper.grid_propagate(False)
+        username = tk.Text(usernameWrapper, font=LARGEFONT)
+        username.tag_configure("bold", font=BOLDFONT)
+        username.insert("end", "Username: ", "bold")
+        username.config(state="disabled", borderwidth=0, highlightthickness=0)
+        username.grid(column=0, row=0, sticky='nw')
+
+        style = ttk.Style()
+        style.configure('Settings.TButton', font=MEDIUMFONT)
+        usernameRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
+                              command=lambda: self.revealUsername(sitename, usernameRevealBtn))
+        usernameRevealBtn.grid(column=0, row=3, padx=25, pady=10, sticky='nw')
+
+        usernameGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
+                              command=lambda: self.copyToClipboardUsername(sitename))
+        usernameGetBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
+
+        password = tk.Label(top, font=BOLDFONT, text="Password:")
+        password.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
+
+        style = ttk.Style()
+        style.configure('Settings.TButton', font=MEDIUMFONT)
+        passwordRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
+                              command=lambda: self.revealPassword(sitename, passwordRevealBtn))
+        passwordRevealBtn.grid(column=0, row=10, padx=25, pady=10, sticky='nw')
+
+        passwordGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
+                              command=lambda: self.copyToClipboardPassword(sitename))
+        passwordGetBtn.grid(column=0, row=11, padx=25, pady=10, sticky='nw')
+
+        rows = ttk.Frame(top)
+        rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
+    
     def settingsPopup(self):
         # Open dialog to change password or username
         res = self.comm.getSettings()
