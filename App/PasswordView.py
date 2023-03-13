@@ -7,11 +7,13 @@ import hashlib
 import crypto
 import sv_ttk
 from tkinter.messagebox import askyesno
+from Popup import Popup
 
 LARGEFONT = ("Courier", 20)
 MEDIUMFONT = ("Courier", 16)
 SMALLFONT = ("Courier", 14)
 BOLDFONT = ('Courier bold', 16)
+LARGEBOLDFONT = ('Courier bold', 20)
 
 STATUS_SUCCESS = 0
 STATUS_MISSING_PARAM = 3        # Missing request parameter
@@ -158,7 +160,7 @@ class PasswordView(tk.Frame):
             self.rows, text="Change", style='Style.TButton',
                         command=lambda: self.changePswdUsr(site))
         d = ttk.Button(
-            self.rows, text="Delete",style='Style.TButton',
+            self.rows, text="Delete", style='Style.TButton',
                         command=lambda: self.deletePassword(site, items))
 
         items.append(s)
@@ -238,11 +240,12 @@ class PasswordView(tk.Frame):
         if resp is None:
             print("[ERR] Add password failed")
             return
+        # switch this to a better return status message (not always password already in db
         elif resp["status"] == self.comm.STATUS_API_OTHER_ERROR:
             print("Password already exists in db")
             return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while adding password. Status=", resp["status"])
+            print("[ERR] Unknown error while adding password. Status=", resp["status"])
             return
 
         self.forget_input_row()
@@ -250,16 +253,29 @@ class PasswordView(tk.Frame):
         self.clear_input_row()
         self.remember_input_row()
 
-    def revealUsrPw(self, cipher_text, label):
-        current_text= label.cget('text')
+    def revealUsrPw(self, cipher_text, label, btn):
+        current_text = label.cget('text')
         if current_text == '*****':
             plain_text = crypto.decrypt(cipher_text, self.get_master_pw_hash())
-            label.config(text = plain_text)
+            label.config(text=plain_text)
+            btn.configure(text='Hide')
             print("[INFO] Revealed")
         else:
-            label.config(text = '*****')
+            self.hideUsrPw(label, btn)
+        return
+
+    def hideUsrPw(self, label, btn):
+        current_text = label.cget('text')
+        if current_text != '*****':
+            label.config(text='*****')
+            btn.configure(text='Reveal')
             print("[INFO] Hidden")
         return
+
+    def copyField(self, window, pswd):
+        popup = Popup(window, "", "Copied!", color="green")
+        pc.copy(pswd)
+        popup.destroy(1)
 
     def getInfo(self, sitename):
         resp = self.comm.getPassword(sitename)
@@ -272,7 +288,7 @@ class PasswordView(tk.Frame):
             self.controller.show_frame(StartScreen.StartScreen)
             return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while getting password. Status=", resp["status"])
+            print("[ERR] Unknown error while getting username and password. Status=", resp["status"])
             return
 
         cipher_text = resp['password']
@@ -283,41 +299,41 @@ class PasswordView(tk.Frame):
 
         top = tk.Toplevel(self)
         top.geometry("550x400")
-        top.title("RasPass Get Info")
-
-        usernameWrapper = tk.Frame(top, width=500, height=30)
-        usernameWrapper.grid(column=0, row=2, padx=25, pady=20, sticky='nw')
-        usernameWrapper.grid_propagate(False)
-        username = tk.Text(usernameWrapper, font=LARGEFONT)
-        username.tag_configure("bold", font=BOLDFONT)
-        username.insert("end", "Username: ", "bold")
-        username.config(state="disabled", borderwidth=0, highlightthickness=0)
-        username.grid(column=0, row=0, sticky='nw')
+        top.title("RasPass Site Entry Info")
 
         style = ttk.Style()
-        style.configure('Settings.TButton', font=MEDIUMFONT)
-        usernameLabel = ttk.Label(top, text='*****', font=MEDIUMFONT)
-        usernameLabel.grid(column=0, row=3, padx=25, pady=10, sticky='nw')
-        usernameRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
-                              command=lambda: self.revealUsrPw(cipher_uname, usernameLabel))
-        usernameRevealBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
+        style.configure('GetInfo.TButton', font=MEDIUMFONT)
+        username = tk.Label(top, font=LARGEBOLDFONT, text="Username:")
+        username.grid(column=0, row=0, padx=15, pady=10, sticky='nw')
 
-        usernameGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
-                              command=lambda: pc.copy(plain_text_usr))
-        usernameGetBtn.grid(column=0, row=5, padx=25, pady=10, sticky='nw')
+        usernameWrapper = ttk.Frame(top)
+        usernameWrapper.grid(column=0, row=3, padx=25, pady=25, sticky='nw')
 
-        password = tk.Label(top, font=BOLDFONT, text="Password:")
-        password.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
+        usernameLabel = ttk.Label(usernameWrapper, text='*****', font=MEDIUMFONT)
+        usernameLabel.grid(column=0, row=0, padx=5, sticky='nw')
+        usernameRevealBtn = ttk.Button(usernameWrapper, text="Reveal", style='GetInfo.TButton',
+                              command=lambda: self.revealUsrPw(cipher_uname, usernameLabel, usernameRevealBtn))
+        usernameRevealBtn.grid(column=3, row=0, padx=5, sticky='nw')
 
-        passwordLabel = ttk.Label(top, text='*****', font=MEDIUMFONT)
-        passwordLabel.grid(column=0, row=10, padx=25, pady=10, sticky='nw')
-        passwordRevealBtn = ttk.Button(top, text="Reveal", style='Settings.TButton',
-                              command=lambda: self.revealUsrPw(cipher_text, passwordLabel))
-        passwordRevealBtn.grid(column=0, row=11, padx=25, pady=10, sticky='nw')
+        usernameGetBtn = ttk.Button(usernameWrapper, text="Copy", style='GetInfo.TButton',
+                              command=lambda: self.copyField(top, plain_text_usr))
+        usernameGetBtn.grid(column=6, row=0, padx=5, sticky='nw')
 
-        passwordGetBtn = ttk.Button(top, text="Copy", style='Settings.TButton',
-                              command=lambda: pc.copy(plain_text_pw))
-        passwordGetBtn.grid(column=0, row=12, padx=25, pady=10, sticky='nw')
+        password = tk.Label(top, font=LARGEBOLDFONT, text="Password:")
+        password.grid(column=0, row=6, padx=15, pady=10, sticky='nw')
+
+        passwordWrapper = ttk.Frame(top)
+        passwordWrapper.grid(column=0, row=9, padx=25, pady=25, sticky='nw')
+
+        passwordLabel = ttk.Label(passwordWrapper, text='*****', font=MEDIUMFONT)
+        passwordLabel.grid(column=0, row=0, padx=5, sticky='nw')
+        passwordRevealBtn = ttk.Button(passwordWrapper, text="Reveal", style='GetInfo.TButton',
+                              command=lambda: self.revealUsrPw(cipher_text, passwordLabel, passwordRevealBtn))
+        passwordRevealBtn.grid(column=3, row=0, padx=5, sticky='nw')
+
+        passwordGetBtn = ttk.Button(passwordWrapper, text="Copy", style='GetInfo.TButton',
+                              command=lambda: self.copyField(top, plain_text_pw))
+        passwordGetBtn.grid(column=6, row=0, padx=5, sticky='nw')
 
         rows = ttk.Frame(top)
         rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
