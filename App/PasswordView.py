@@ -49,13 +49,6 @@ class PasswordView(tk.Frame):
         rows = ttk.Frame(body)
         self.rows = rows
 
-        # column names
-        #site_label = ttk.Label(column_names, width=20, font=MEDIUMFONT, text="Site", anchor=tk.CENTER)
-       # username_label = ttk.Label(
-           #column_names, width=20, font=MEDIUMFONT, text="Username")
-        #password_label = ttk.Label(
-            #column_names, width=20, font=MEDIUMFONT, text="Password")
-
         # banner
         header = self.open_img(banner, (550, 100), "./imgs/logo2.png")
 
@@ -68,11 +61,6 @@ class PasswordView(tk.Frame):
         column_names.grid(column=0, row=0, sticky="nsew")
         rows.grid(column=0, row=1, sticky="nsew")
         btnFrame.grid(column=0, row=6, pady=10)
-
-        # column names
-        #site_label.grid(column=0, row=0)
-        #username_label.grid(column=1, row=0)
-        #password_label.grid(column=2, row=0)
 
         # new password button
 
@@ -142,6 +130,10 @@ class PasswordView(tk.Frame):
         self.username_entry.grid(column=1, row=rows, sticky="new")
         self.password_entry.grid(column=2, row=rows, sticky="new")
         self.add_new_pswd.grid(column=3, row=rows, sticky="new", columnspan=2)
+
+        self.unfocus_entry(self.site_entry, 'Sitename')
+        self.unfocus_entry(self.username_entry, 'Username')
+        self.unfocus_entry(self.password_entry, 'Password')
 
     def forget_input_row(self):
         self.username_entry.grid_forget()
@@ -257,7 +249,7 @@ class PasswordView(tk.Frame):
         self.add_row(sitename)
         self.clear_input_row()
         self.remember_input_row()
-    
+
     def revealUsrPw(self, cipher_text, label):
         current_text= label.cget('text')
         if current_text == '*****':
@@ -268,7 +260,7 @@ class PasswordView(tk.Frame):
             label.config(text = '*****')
             print("[INFO] Hidden")
         return
-    
+
     def getInfo(self, sitename):
         resp = self.comm.getPassword(sitename)
 
@@ -282,7 +274,7 @@ class PasswordView(tk.Frame):
         elif resp["status"] != self.comm.STATUS_SUCCESS:
             print("Unknown error while getting password. Status=", resp["status"])
             return
-        
+
         cipher_text = resp['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
 
@@ -329,7 +321,7 @@ class PasswordView(tk.Frame):
 
         rows = ttk.Frame(top)
         rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
-    
+
     def settingsPopup(self):
         # Open dialog to change password or username
         res = self.comm.getSettings()
@@ -394,7 +386,7 @@ class PasswordView(tk.Frame):
         #                    command=lambda: self.cancelEnroll(btn, submit, cancel, name))
         #cancel.grid(column=2, row=0)
 
-    
+
     """
     def cancelEnroll(self, btn, submit, cancel, name):
         submit.grid_remove()
