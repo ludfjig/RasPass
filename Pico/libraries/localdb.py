@@ -7,7 +7,6 @@
 from flashrw import FlashRW
 import json
 
-
 class DataBase:
     SETTINGS_START: int = 0
     SETTINGS_END: int = FlashRW.BLOCKSIZE*3
@@ -52,9 +51,11 @@ class DataBase:
             raw_block += self.__getPadded(json.dumps(self.settings), self.SETTINGS_END-self.SETTINGS_START)
         except:
             raw_block += b"\x00" * (self.SETTINGS_END-self.SETTINGS_START)
-        for sn in self.db:
-            raw_block += self.getStorageByteEntry(sn, self.db[sn])
-        self.frw.writeFlashDB(raw_block)
+        self.frw.writeSettings(raw_block)
+        block = bytes()
+        for i, sn in enumerate(self.db):
+            block = self.getStorageByteEntry(sn, self.db[sn])
+            self.frw.writeFlashDB(block, i)
 
     def __checkSettings(self, settings):
         """Verify the settings have the expected keys"""

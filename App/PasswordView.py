@@ -112,6 +112,8 @@ class PasswordView(tk.Frame):
             self.init_password_rows()
             self.init_input_row()
             self.addedRows = True
+        else:
+            self.remember_input_row()
 
     def switch_to_start(self, controller):
         self.clear_input_row()
@@ -175,19 +177,26 @@ class PasswordView(tk.Frame):
     def init_input_row(self):
         self.site_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
         self.username_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
-        self.password_entry = tk.Entry(self.rows, show="*", fg='grey', font=SMALLFONT)
+        self.password_entry = tk.Entry(
+            self.rows, show="*", fg='grey', font=SMALLFONT)
 
         self.site_entry.insert(0, 'Sitename')
         self.username_entry.insert(0, 'Username')
         self.password_entry.insert(0, 'Password')
 
-        self.site_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.site_entry, 'Sitename'))
-        self.username_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.username_entry, 'Username'))
-        self.password_entry.bind("<FocusIn>", lambda event: self.focus_entry(self.password_entry, 'Password'))
+        self.site_entry.bind("<FocusIn>", lambda event: self.focus_entry(
+            self.site_entry, 'Sitename'))
+        self.username_entry.bind("<FocusIn>", lambda event: self.focus_entry(
+            self.username_entry, 'Username'))
+        self.password_entry.bind("<FocusIn>", lambda event: self.focus_entry(
+            self.password_entry, 'Password'))
 
-        self.site_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.site_entry, 'Sitename'))
-        self.username_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.username_entry, 'Username'))
-        self.password_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(self.password_entry, 'Password'))
+        self.site_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(
+            self.site_entry, 'Sitename'))
+        self.username_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(
+            self.username_entry, 'Username'))
+        self.password_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(
+            self.password_entry, 'Password'))
 
         self.add_new_pswd = ttk.Button(
             self.rows, text="Add", style="Style.TButton",
@@ -242,7 +251,8 @@ class PasswordView(tk.Frame):
             print("Password already exists in db")
             return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("[ERR] Unknown error while adding password. Status=", resp["status"])
+            print("[ERR] Unknown error while adding password. Status=",
+                  resp["status"])
             return
 
         self.forget_input_row()
@@ -279,14 +289,16 @@ class PasswordView(tk.Frame):
             self.controller.show_frame(StartScreen.StartScreen)
             return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("[ERR] Unknown error while getting username and password. Status=", resp["status"])
+            print(
+                "[ERR] Unknown error while getting username and password. Status=", resp["status"])
             return
 
         cipher_text = resp['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
 
         cipher_uname = resp['username']
-        plain_text_usr = crypto.decrypt(cipher_uname, self.get_master_pw_hash())
+        plain_text_usr = crypto.decrypt(
+            cipher_uname, self.get_master_pw_hash())
 
         top = tk.Toplevel(self)
         top.geometry("550x400")
@@ -300,7 +312,8 @@ class PasswordView(tk.Frame):
         usernameWrapper = ttk.Frame(top)
         usernameWrapper.grid(column=0, row=3, padx=25, pady=25, sticky='nw')
 
-        usernameLabel = ttk.Label(usernameWrapper, text='*****', font=MEDIUMFONT)
+        usernameLabel = ttk.Label(
+            usernameWrapper, text='*****', font=MEDIUMFONT)
         usernameLabel.grid(column=0, row=0, padx=5, sticky='nw')
         usernameRevealBtn = ttk.Button(usernameWrapper, text="Reveal", style='GetInfo.TButton',
                                        command=lambda: self.revealHideUsrPw(cipher_uname, usernameLabel, usernameRevealBtn))
@@ -316,7 +329,8 @@ class PasswordView(tk.Frame):
         passwordWrapper = ttk.Frame(top)
         passwordWrapper.grid(column=0, row=9, padx=25, pady=25, sticky='nw')
 
-        passwordLabel = ttk.Label(passwordWrapper, text='*****', font=MEDIUMFONT)
+        passwordLabel = ttk.Label(
+            passwordWrapper, text='*****', font=MEDIUMFONT)
         passwordLabel.grid(column=0, row=0, padx=5, sticky='nw')
         passwordRevealBtn = ttk.Button(passwordWrapper, text="Reveal", style='GetInfo.TButton',
                                        command=lambda: self.revealHideUsrPw(cipher_text, passwordLabel, passwordRevealBtn))
@@ -337,7 +351,7 @@ class PasswordView(tk.Frame):
             return
 
         top = tk.Toplevel(self)
-        top.geometry("550x400")
+        #top.geometry("550x400")
         top.title("RasPass Settings")
 
         image = self.open_img(top, (400, 75), "./imgs/Settings.png")
@@ -363,14 +377,16 @@ class PasswordView(tk.Frame):
                                command=lambda: self.enrollFinger(top, enrollBtn))
         enrollBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
-        regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
+        regFingers = tk.Label(top, font=BOLDFONT,
+                              text="Fingerprints registered:")
         regFingers.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
 
         rows = ttk.Frame(top)
         rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
 
         if len(fingerPrints) == 0:
-            tk.Label(rows, text='No fingerprints registered', fg='red', font=MEDIUMFONT).grid()
+            tk.Label(rows, text='No fingerprints registered',
+                     fg='red', font=MEDIUMFONT).grid()
         for finger in fingerPrints:
             self.initFingerprintEntry(rows, fingerPrints[finger])
 
@@ -383,7 +399,8 @@ class PasswordView(tk.Frame):
         name.insert(0, "Fingerprint name")
         name.grid(column=0, row=0)
 
-        name.bind("<FocusIn>", lambda event: self.focus_entry(name, 'Fingerprint name'))
+        name.bind("<FocusIn>", lambda event: self.focus_entry(
+            name, 'Fingerprint name'))
 
         submit = ttk.Button(frame, width=8, text="submit", style='Style.TButton',
                             command=lambda: self.comm.enrollFingerprint(name.get()))
@@ -415,8 +432,8 @@ class PasswordView(tk.Frame):
         entry.insert(0, name)
         entry.config(state="readonly")
 
-        entry.grid(row=rownum, column=0, sticky="nesw")
-        delete.grid(row=rownum, column=1, sticky="nesw")
+        entry.grid(row=rownum, column=0, pady=3, sticky="nesw")
+        delete.grid(row=rownum, column=1, pady=3, sticky="nesw")
 
     def deleteFingerprint(self):
         pass
@@ -426,16 +443,20 @@ class PasswordView(tk.Frame):
         top = tk.Toplevel(self)
         top.geometry("350x150")
         top.title("Update %s info" % sitename)
-        site = ttk.Label(top, text="Update info for %s" % sitename, font=LARGEFONT)
+        site = ttk.Label(top, text="Update info for %s" %
+                         sitename, font=LARGEFONT)
         site.grid(column=0, row=0, padx=25, pady=15)
 
-        usrbtn = ttk.Button(top, width=15, text="Change Username", style='Style.TButton',)
+        usrbtn = ttk.Button(
+            top, width=15, text="Change Username", style='Style.TButton',)
         usrbtn.grid(column=0, row=2, padx=25)
         usrbtn['command'] = lambda: self.changeField(top, usrbtn, 2, sitename)
 
-        pswdbtn = ttk.Button(top, width=15, text="Change Password", style='Style.TButton',)
+        pswdbtn = ttk.Button(
+            top, width=15, text="Change Password", style='Style.TButton',)
         pswdbtn.grid(column=0, row=4, padx=25)
-        pswdbtn['command'] = lambda: self.changeField(top, pswdbtn, 4, sitename)
+        pswdbtn['command'] = lambda: self.changeField(
+            top, pswdbtn, 4, sitename)
         ttk.Button(top, width=10, text="Cancel", style='Style.TButton',
                    command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
 
@@ -481,7 +502,8 @@ class PasswordView(tk.Frame):
             self.controller.show_frame(StartScreen.StartScreen)
             return False
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while removing password. Status=", resp["status"])
+            print("Unknown error while removing password. Status=",
+                  resp["status"])
             return False
 
         for i in items:
