@@ -1,7 +1,3 @@
-import serial
-from serial.tools import list_ports
-import time
-
 import tkinter as tk
 from tkinter import ttk
 import sv_ttk
@@ -53,7 +49,6 @@ def main():
     commLink = AppComm()
 
     rasPassApp = RasPassApp(commLink)
-
 
     sv_ttk.set_theme("light")
 

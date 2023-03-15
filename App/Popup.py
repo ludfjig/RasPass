@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
 import time
 
 SMALLFONT = ("Courier", 14)
+
 
 class Popup:
     def __init__(self, window, title, startMsg, color="green"):
@@ -14,7 +14,7 @@ class Popup:
         self.mainLabel.pack(fill='x', padx=50, pady=5)
         self.window.update()
 
-    def destroy(self, timeout : int):
+    def destroy(self, timeout: int):
         """ Destroy window after timeout seconds """
         time.sleep(timeout)
         self.top.destroy()

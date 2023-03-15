@@ -7,7 +7,6 @@
 import adafruit_fingerprint as af
 import time
 import hashlib
-import time
 from machine import Pin
 
 try:
@@ -17,16 +16,16 @@ except ImportError:
 
 
 class Auth:
-    DEFAULT_PSWD: Tuple[int, int, int, int] = (0,0,0,0)     # Default sensor password
+    DEFAULT_PSWD: Tuple[int, int, int, int] = (0, 0, 0, 0)  # Default sensor password
     finger: af.Adafruit_Fingerprint
-    fingerTemplates: Dict[int,str]  # Fingerprint templates we have
+    fingerTemplates: Dict[int, str]  # Fingerprint templates we have
     numAttempts: int                # Number of attempts on sensor
     maxAttempts: int                # Maximum number of attempts before reset
     isDefaultPswd: bool             # Is the sensor using the default password?
     isVerified: bool                # Is this sensor active (verified password)?
     isReset: bool                   # Is this sensor soft-reset (needs power cycle to work again)?
 
-    def __init__(self, fingerprint: af.Adafruit_Fingerprint, maxAttempts : int = 5):
+    def __init__(self, fingerprint: af.Adafruit_Fingerprint, maxAttempts: int = 5):
         self.finger = fingerprint
         self.fingerTemplates = {}
         self.numAttempts = 0
@@ -57,25 +56,26 @@ class Auth:
         """Initialize the fingerprint sensor with the password.
         This must be called first, before any other API call.
         Returns true on success, or false on failed authentication/error"""
+
         if self.isReset:
             return False
         if self.finger.initialize(fpPasswd):
             self.fingerTemplates = {}
             if self.finger.read_templates() == af.OK:
                 for fpId in self.finger.templates:
-                    if self.finger.load_model(fpId,1) == af.OK:
-                        data = self.finger.get_fpdata("char",1)
+                    if self.finger.load_model(fpId, 1) == af.OK:
+                        data = self.finger.get_fpdata("char", 1)
                         if len(data) > 0:
                             self.fingerTemplates[fpId] = str(hashlib.sha256(bytes(data)).digest().hex())
                         time.sleep(0.1)
                 self.isVerified = True
                 self.isDefaultPswd = fpPasswd == self.DEFAULT_PSWD
-                self.numAttempts = 0 # Reset # of attempts on setup
+                self.numAttempts = 0  # Reset # of attempts on setup
                 return True
         return False
 
     def changePswd(self, oldFpPasswd: Tuple[int, int, int, int],
-                        newFpPasswd: Tuple[int, int, int, int]):
+                   newFpPasswd: Tuple[int, int, int, int]):
         """Change the fp password, if the old password is correct"""
         if not self.isVerified or self.isReset:
             return False
@@ -95,36 +95,36 @@ class Auth:
         if self.get_fingerprint():
             if self.finger.finger_id is not None and self.finger.finger_id >= 0:
                 fpId = int(self.finger.finger_id)
-                #self.blink_yes()
+                # self.blink_yes()
                 return (fpId, self.fingerTemplates[fpId])
 
-        #self.blink_no()
+        # self.blink_no()
         return None
 
     def authenticate(self) -> bool:
         """Require fingerprint authentication to continue"""
-        if not self.isVerified or self.isReset: # Not setup
+        if not self.isVerified or self.isReset:  # Not setup
             return False
-        elif self.numAttempts >= self.maxAttempts: # Too many attempts - reset
+        elif self.numAttempts >= self.maxAttempts:  # Too many attempts - reset
             self.softreset()
             return False
         else:
-            verifiedUser = self.verifyFingerprint() != None
+            verifiedUser = self.verifyFingerprint() is not None
             self.numAttempts = 0 if verifiedUser else self.numAttempts + 1
             return verifiedUser
 
     def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""
         """Credit: Adafruit"""
-        #print("Waiting for image...")
+        # print("Waiting for image...")
         if not self.isVerified or self.isReset:
             return False
         while self.finger.get_image() != af.OK:
             pass
-        #print("Templating...")
+        # print("Templating...")
         if self.finger.image_2_tz(1) != af.OK:
             return False
-        #print("Searching...")
+        # print("Searching...")
         if self.finger.finger_search() != af.OK:
             return False
         return True
@@ -179,7 +179,7 @@ class Auth:
             else:
                 print("Other error")"""
             return False
-        
+
     def template_finger(self, slot):
         """Take a 2 finger images and template it, then store in 'location'"""
         """Credit: Adafruit"""
@@ -187,7 +187,6 @@ class Auth:
         if i == af.OK:
             return self.template(slot)
         return -5
-
 
     def enroll_finger(self, location):
         """Take a 2 finger images and template it, then store in 'location'"""
@@ -260,7 +259,7 @@ class Auth:
             return False
 
         return True
-    
+
     def create_image(self, location):
         i = self.finger.create_model()
         if i == af.OK:
@@ -272,9 +271,9 @@ class Auth:
         while True:
             i = self.finger.get_image()
             if i == af.NOFINGER:
-                continue # keep trying until finger is placed on sensor
+                continue  # keep trying until finger is placed on sensor
             return i
-            
+
     def template(self, fingerimg):
         i = self.finger.image_2_tz(fingerimg)
         return i

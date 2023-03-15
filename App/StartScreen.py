@@ -24,7 +24,6 @@ class StartScreen(tk.Frame):
 
         self.open_img("./imgs/logo2.png")
 
-
         self.style = ttk.Style()
         self.style.configure('Style.TButton', font=SMALLFONT)
 
@@ -35,13 +34,13 @@ class StartScreen(tk.Frame):
         self.statusMsg.grid(row=3, column=0, columnspan=2, pady=5)
 
         self.connBtn = ttk.Button(self, text="Connect to Pico", width=20, style='Style.TButton',
-                         command=self.togglePicoConn)
+                                  command=self.togglePicoConn)
         self.connBtn.grid(row=4, column=0, columnspan=2, pady=20)
 
         self.entryFrame = tk.Frame(self, width=50)
         self.entryFrame.grid(row=5, column=0)
         self.checkPwBtn = ttk.Button(self.entryFrame, text="Check Master Password", style='Style.TButton',
-                         command=lambda: self.checkMasterPass(controller, s))
+                                     command=lambda: self.checkMasterPass(controller, s))
         self.checkPwBtn.grid(row=0, column=1, padx=10)
         self.checkPwBtn["state"] = "disabled"
 
@@ -66,7 +65,7 @@ class StartScreen(tk.Frame):
         self.master.delete(0, tk.END)
         controller.update_idletasks()
 
-        print("[INFO] Password: %s. Hash: %s" %(self.master.get(), pass_hash))
+        print("[INFO] Password: %s. Hash: %s" % (self.master.get(), pass_hash))
         pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
         if not pass_check or "valid" not in pass_check or not pass_check["valid"]:
             print("[WARN] Incorrect master password")

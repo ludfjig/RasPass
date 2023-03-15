@@ -9,23 +9,23 @@ import json
 
 
 class DataBase:
-    SETTINGS_START : int = 0
-    SETTINGS_END : int = FlashRW.BLOCKSIZE*3
-    PSWDS_START : int = SETTINGS_END
-    PSWDS_END : int = FlashRW.MAXSIZE
+    SETTINGS_START: int = 0
+    SETTINGS_END: int = FlashRW.BLOCKSIZE*3
+    PSWDS_START: int = SETTINGS_END
+    PSWDS_END: int = FlashRW.MAXSIZE
 
-    ENCODING : str = "ascii"
+    ENCODING: str = "ascii"
 
-    SITE_SZ : int = FlashRW.BLOCKSIZE//2
-    USER_SZ : int = FlashRW.BLOCKSIZE//4
-    PSWD_SZ : int = FlashRW.BLOCKSIZE//4
+    SITE_SZ: int = FlashRW.BLOCKSIZE//2
+    USER_SZ: int = FlashRW.BLOCKSIZE//4
+    PSWD_SZ: int = FlashRW.BLOCKSIZE//4
 
-    SETTINGS_KEYS = ["fingerprints"] # Keys that should be in settings
+    SETTINGS_KEYS = ["fingerprints"]  # Keys that should be in settings
 
     def __init__(self, flashRWI: FlashRW):
         """Initialize the database. Reads and parses database from flash"""
-        self.frw : FlashRW = flashRWI
-        self.settings : dict = {}
+        self.frw: FlashRW = flashRWI
+        self.settings: dict = {}
         self.__parseFlashDB()
         if not self.__checkSettings(self.settings):
             self.__setDefaultSettings()
@@ -39,7 +39,7 @@ class DataBase:
             self.settings = json.loads(self.__getUnPadded(rawSettings))
         except:
             self.settings = {}
-        rawSites = raw[self.SETTINGS_END:] #self.PSWDS_END]
+        rawSites = raw[self.SETTINGS_END:] # self.PSWDS_END]
         for c in range(len(rawSites) // FlashRW.BLOCKSIZE):
             en = rawSites[c * FlashRW.BLOCKSIZE: (c + 1) * FlashRW.BLOCKSIZE]
             sitename, username, password = self.getStorageSitnameUPPair(en)
@@ -72,17 +72,17 @@ class DataBase:
 
     def addMasterHash(self, pass_hash: bytes):
         """Add hash of last 4 bytes of master password to database"""
-        #self.master_hash = pass_hash
+        # self.master_hash = pass_hash
         self.__storeFlashDB()
 
     def setSettings(self, settings: dict) -> bool:
         """ Check settings, and store in flash """
         if not self.__checkSettings(settings):  # Check settings
             return False
-        try: # check length
+        try:  # check length
             if len(json.dumps(settings)) > self.SETTINGS_END-self.SETTINGS_START:
                 return False
-        except: # not JSON
+        except:  # not JSON
             return False
         self.settings = settings
         self.__storeFlashDB()
@@ -90,7 +90,7 @@ class DataBase:
 
     def getSettings(self, fpIds) -> dict:
         """ Get settings (combine calculated settings and stored settings)"""
-        actualSettings : dict = {}
+        actualSettings: dict = {}
         actualSettings.update(self.settings)
         # Get num passwords
         actualSettings["numPswdAvail"] = self.getMaxNumPasswords() - self.getNumPasswords()

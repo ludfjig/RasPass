@@ -15,9 +15,9 @@ from libraries.flashrw import FlashRW  # noqa: E402
 from libraries.localdb import DataBase  # noqa: E402
 import libraries.adafruit_fingerprint as af  # noqa: E402
 
+
 def setupIO() -> tuple:
     # Setup the Pico IO, and return (fingerprint sensor, onboard led)
-
     # Fingerprint Sensor UART
     # Wiring:
     # yellow = Sensor TX -> Pico GPIO 5
@@ -35,7 +35,8 @@ def setupIO() -> tuple:
 
     return (led, finger)
 
-def setupLibs(led : Pin, finger : af.Adafruit_Fingerprint) -> tuple:
+
+def setupLibs(led: Pin, finger: af.Adafruit_Fingerprint) -> tuple:
     # Setup the library instances, and return communications
     frw = FlashRW()
     database = DataBase(frw)
@@ -51,7 +52,8 @@ def setupLibs(led : Pin, finger : af.Adafruit_Fingerprint) -> tuple:
 
     return (comms, frw, database)
 
-def mainLoop(led : Pin, comms : PicoComm):
+
+def mainLoop(led: Pin, comms: PicoComm):
     # Main comms loop for reading requests & replying
     while True:
         req = comms.readRequest()
@@ -59,6 +61,7 @@ def mainLoop(led : Pin, comms : PicoComm):
             led.on()
             comms.processRequest(req)
             led.off()
+
 
 '''
 ########################### Note to analysis team
@@ -84,15 +87,13 @@ time.sleep(0.25)
 fp.main_loop(finger)
 '''
 
-
-
 # First time setting up - still need to set hash
 # set the master password hash to be null initially
-#database.master_hash = (4 * b"\x00")
-#else:
+# database.master_hash = (4 * b"\x00")
+# else:
 #   fp.setupFp(tuple(database.master_hash))
 
-#fp.changePswd((0,0,0,0), tuple(b'P8K='))
+# fp.changePswd((0,0,0,0), tuple(b'P8K='))
 
 led, finger = setupIO()
 print("Starting")

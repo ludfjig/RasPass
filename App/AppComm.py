@@ -3,8 +3,6 @@ from serial.tools import list_ports
 import re
 import json
 import time
-import sys
-import base64
 from Popup import Popup
 
 
@@ -43,7 +41,7 @@ class AppComm:
                 try:
                     try:
                         self.s = serial.Serial(device, timeout=self.DEFAULT_READ_TIMEOUT,
-                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
+                                               write_timeout=self.DEFAULT_WRITE_TIMEOUT)
                     except serial.SerialException:
                         # for some reason when I do list_ports.comports on my mac it always
                         # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
@@ -51,7 +49,7 @@ class AppComm:
                         # over cu fails
                         device = re.sub(r'/cu', r'/tty', device)
                         self.s = serial.Serial(device, 9600, timeout=self.DEFAULT_READ_TIMEOUT,
-                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
+                                               write_timeout=self.DEFAULT_WRITE_TIMEOUT)
                 except:
                     self.s = None
                 break
@@ -267,7 +265,7 @@ class AppComm:
 
         return self.communicateReq(req)
 
-    def enrollFingerprint(self, name) -> dict | None:
+    def enrollFingerprint(self, name) -> bool:
         """Enrolls a new fingerprint for authentification"""
         p = Popup(self.window, "Fingerprint Enrollment", "Place and then remove finger from fingerprint sensor.")
         req = {
@@ -291,10 +289,10 @@ class AppComm:
             if response['status'] == self.STATUS_SUCCESS:
                 p.destroy(1)
                 req3 = {
-                "method": "enrollFingerprint",
-                "fpName": name,
-                "phase": 2,
-                "authtoken": "1"
+                    "method": "enrollFingerprint",
+                    "fpName": name,
+                    "phase": 2,
+                    "authtoken": "1"
                 }
                 response = self.communicateReq(req3)
                 if (response['status'] == self.STATUS_SUCCESS):

@@ -5,25 +5,27 @@ import auth
 import uselect
 import time
 import io
+from micropython import const
 
 # Delimit byte frames with byte stuffing
 # Data is encoded utf-8
 # Since 0xfe and 0xff are not used in utf-8, these delimit a frame
 
+OK = const(0x0)
 
 
 class PicoComm:
     FRAMESTART = b"\xff"
     FRAMESTOP = b"\xfe"
     STATUS_SUCCESS = 0
-    STATUS_MISSING_PARAM = 3        # Missing request parameter
-    STATUS_MALFORMED_REQ = 4        # Malformed request
-    STATUS_BAD_METHOD = 5           # Bad/nonexistent method
-    STATUS_FAILED_BIOMETRICS = 6    # Failed biometric, but not too many attempts
-    STATUS_NOT_VERIFIED = 7         # User must run verifyMasterHash
-    STATUS_UNKNOWN_ERR = 10         # Other (unhandled) exception thrown in code - traceback returned
-    STATUS_API_OTHER_ERROR = 11     # Other (handled) error in the API
-    STATUS_NOT_YET_IMPLEMENTED = 12 # API method exists, but not implemented
+    STATUS_MISSING_PARAM = 3         # Missing request parameter
+    STATUS_MALFORMED_REQ = 4         # Malformed request
+    STATUS_BAD_METHOD = 5            # Bad/nonexistent method
+    STATUS_FAILED_BIOMETRICS = 6     # Failed biometric, but not too many attempts
+    STATUS_NOT_VERIFIED = 7          # User must run verifyMasterHash
+    STATUS_UNKNOWN_ERR = 10          # Other (unhandled) exception thrown in code - traceback returned
+    STATUS_API_OTHER_ERROR = 11      # Other (handled) error in the API
+    STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
 
     """ Communication interface on Pico via USB """
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
@@ -51,12 +53,12 @@ class PicoComm:
 
         stopi = self.rawbuf.index(self.FRAMESTOP)
         if self.FRAMESTART not in self.rawbuf:
-            self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):] # delete malformed packet
-            return None # Invalid packet
+            self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):]  # delete malformed packet
+            return None  # Invalid packet
 
         starti = self.rawbuf.index(self.FRAMESTART)
         rawPkt = self.rawbuf[starti+len(self.FRAMESTART):stopi]
-        self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):] # Crop out packet
+        self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):]  # Crop out packet
         try:
             decoded = json.loads(rawPkt.decode('utf-8'))
             return decoded
@@ -91,7 +93,6 @@ class PicoComm:
                 errMsg["error"] = f.read()
             self.writeResponse(errMsg)
         return False
-
 
     def getAllSiteNames(self, req: dict) -> dict | None:
         """Returns all site names stored in password manager"""
@@ -306,8 +307,8 @@ class PicoComm:
 
     def enrollFingerprint(self, req: dict) -> dict | None:
         """ Enroll a new fingerprint """
-        #success = self.auth.template_finger(self.auth.get_num(self.auth.finger.library_size), req['fpName'])
-        
+        # success = self.auth.template_finger(self.auth.get_num(self.auth.finger.library_size), req['fpName'])
+
         if req['phase'] < 2:
             i = self.auth.template_finger(req['phase']+1)
             return {
@@ -345,7 +346,6 @@ class PicoComm:
                 "error": None
             }
 
-
     def verifyFingerprint(self, req: dict) -> dict | None:
         """Verifies a fingerprint on the sensor that is enrolled is valid.
         If the fpId field is defined in req, will search for that fingerprint."""
@@ -370,7 +370,7 @@ class PicoComm:
 
     def verifyMasterHash(self, req: dict) -> dict | None:
         if "hash" not in req or len(req["hash"]) != 4:
-            return  {
+            return {
                 "method": "verifyMasterHash",
                 "status": self.STATUS_MISSING_PARAM,
                 "valid": False,

@@ -6,7 +6,6 @@ import pyperclip as pc
 import hashlib
 import crypto
 import sv_ttk
-from tkinter.messagebox import askyesno
 from Popup import Popup
 
 LARGEFONT = ("Courier", 20)
@@ -156,12 +155,10 @@ class PasswordView(tk.Frame):
         s = tk.Entry(self.rows, width=20, font=("Courier bold", 14))
         u = ttk.Button(self.rows, width=20, text="Get Info", style='Style.TButton',
                        command=lambda: self.getInfo(site))
-        c = ttk.Button(
-            self.rows, text="Change", style='Style.TButton',
-                        command=lambda: self.changePswdUsr(site))
-        d = ttk.Button(
-            self.rows, text="Delete", style='Style.TButton',
-                        command=lambda: self.deletePassword(site, items))
+        c = ttk.Button(self.rows, text="Change", style='Style.TButton',
+                       command=lambda: self.changePswdUsr(site))
+        d = ttk.Button(self.rows, text="Delete", style='Style.TButton',
+                       command=lambda: self.deletePassword(site, items))
 
         items.append(s)
         items.append(u)
@@ -253,7 +250,7 @@ class PasswordView(tk.Frame):
         self.clear_input_row()
         self.remember_input_row()
 
-    def revealUsrPw(self, cipher_text, label, btn):
+    def revealHideUsrPw(self, cipher_text, label, btn):
         current_text = label.cget('text')
         if current_text == '*****':
             plain_text = crypto.decrypt(cipher_text, self.get_master_pw_hash())
@@ -261,12 +258,6 @@ class PasswordView(tk.Frame):
             btn.configure(text='Hide')
             print("[INFO] Revealed")
         else:
-            self.hideUsrPw(label, btn)
-        return
-
-    def hideUsrPw(self, label, btn):
-        current_text = label.cget('text')
-        if current_text != '*****':
             label.config(text='*****')
             btn.configure(text='Reveal')
             print("[INFO] Hidden")
@@ -312,11 +303,11 @@ class PasswordView(tk.Frame):
         usernameLabel = ttk.Label(usernameWrapper, text='*****', font=MEDIUMFONT)
         usernameLabel.grid(column=0, row=0, padx=5, sticky='nw')
         usernameRevealBtn = ttk.Button(usernameWrapper, text="Reveal", style='GetInfo.TButton',
-                              command=lambda: self.revealUsrPw(cipher_uname, usernameLabel, usernameRevealBtn))
+                                       command=lambda: self.revealHideUsrPw(cipher_uname, usernameLabel, usernameRevealBtn))
         usernameRevealBtn.grid(column=3, row=0, padx=5, sticky='nw')
 
         usernameGetBtn = ttk.Button(usernameWrapper, text="Copy", style='GetInfo.TButton',
-                              command=lambda: self.copyField(top, plain_text_usr))
+                                    command=lambda: self.copyField(top, plain_text_usr))
         usernameGetBtn.grid(column=6, row=0, padx=5, sticky='nw')
 
         password = tk.Label(top, font=LARGEBOLDFONT, text="Password:")
@@ -328,11 +319,11 @@ class PasswordView(tk.Frame):
         passwordLabel = ttk.Label(passwordWrapper, text='*****', font=MEDIUMFONT)
         passwordLabel.grid(column=0, row=0, padx=5, sticky='nw')
         passwordRevealBtn = ttk.Button(passwordWrapper, text="Reveal", style='GetInfo.TButton',
-                              command=lambda: self.revealUsrPw(cipher_text, passwordLabel, passwordRevealBtn))
+                                       command=lambda: self.revealHideUsrPw(cipher_text, passwordLabel, passwordRevealBtn))
         passwordRevealBtn.grid(column=3, row=0, padx=5, sticky='nw')
 
         passwordGetBtn = ttk.Button(passwordWrapper, text="Copy", style='GetInfo.TButton',
-                              command=lambda: self.copyField(top, plain_text_pw))
+                                    command=lambda: self.copyField(top, plain_text_pw))
         passwordGetBtn.grid(column=6, row=0, padx=5, sticky='nw')
 
         rows = ttk.Frame(top)
@@ -369,7 +360,7 @@ class PasswordView(tk.Frame):
         style = ttk.Style()
         style.configure('Settings.TButton', font=MEDIUMFONT)
         enrollBtn = ttk.Button(top, text="Enroll New Fingerprint", style='Settings.TButton',
-                              command=lambda: self.enrollFinger(top, enrollBtn))
+                               command=lambda: self.enrollFinger(top, enrollBtn))
         enrollBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
         regFingers = tk.Label(top, font=BOLDFONT, text="Fingerprints registered:")
@@ -398,10 +389,9 @@ class PasswordView(tk.Frame):
                             command=lambda: self.comm.enrollFingerprint(name.get()))
         submit.grid(column=1, row=0)
 
-        #cancel = ttk.Button(frame, width=8, text="cancel", style='Style.TButton',
+        # cancel = ttk.Button(frame, width=8, text="cancel", style='Style.TButton',
         #                    command=lambda: self.cancelEnroll(btn, submit, cancel, name))
-        #cancel.grid(column=2, row=0)
-
+        # cancel.grid(column=2, row=0)
 
     """
     def cancelEnroll(self, btn, submit, cancel, name):
@@ -417,7 +407,7 @@ class PasswordView(tk.Frame):
 
         entry = tk.Entry(rows,  width=20, font=("Courier bold", 14))
         delete = ttk.Button(rows, width=20, text="Delete", style='Style.TButton',
-                       command=lambda: self.deleteFingerprint)
+                            command=lambda: self.deleteFingerprint)
 
         items.append(entry)
         items.append(delete)

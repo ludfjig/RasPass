@@ -1,11 +1,9 @@
 # Library to read/write from the Pico Flash
 # Copyright (c), 2023  RasPass
 
-
-
 class FlashRW:
-    BLOCKSIZE : int = 2048          # Flash storage block size
-    MAXSIZE : int = BLOCKSIZE*250   # Maximum flash storage
+    BLOCKSIZE: int = 2048          # Flash storage block size
+    MAXSIZE: int = BLOCKSIZE*250   # Maximum flash storage
 
     def __init__(self):
         """Initialize the flash"""
