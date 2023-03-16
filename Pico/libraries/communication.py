@@ -317,7 +317,12 @@ class PicoComm:
                 "error": None
             }
         elif req["phase"] == 2:
-            i = self.auth.create_image(len(self.auth.finger.templates))
+            length = len(self.auth.finger.templates)
+            i = self.auth.create_image(length)
+            #fpIds = self.auth.getFingerprintIds()
+            #id = fpIds[len(fpIds) - 1]
+            self.db.settings["fingerprints"][length] = req["fpName"]
+            self.db.__storeFlashDB()
             return {
                 "method": "enrollFingerprint",
                 "status": i,
@@ -339,12 +344,21 @@ class PicoComm:
                 "error": "Authentication error"
             }
         else:
-            # TODO: implement delete
-            return {
-                "method": "deleteFingerprint",
-                "status": self.STATUS_NOT_YET_IMPLEMENTED,
-                "error": None
-            }
+            fpId = self.db.settings[req["fpName"]]
+            fpId = str(fpId)
+            if not self.auth.del_finger(fpId):
+                return {
+                    "method": "deleteFingerprint",
+                    "status": self.STATUS_UNKNOWN_ERR,
+                    "error": "Failed to delete fingureprint (unknown error)"
+                }
+            else:
+                self.db.__storeFlashDB()
+                return {
+                    "method": "deleteFingerprint",
+                    "status": self.STATUS_SUCCESS,
+                    "error": None
+                }
 
     def verifyFingerprint(self, req: dict) -> dict | None:
         """Verifies a fingerprint on the sensor that is enrolled is valid.

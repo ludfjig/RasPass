@@ -14,17 +14,6 @@ SMALLFONT = ("Courier", 14)
 BOLDFONT = ('Courier bold', 16)
 LARGEBOLDFONT = ('Courier bold', 20)
 
-STATUS_SUCCESS = 0
-STATUS_MISSING_PARAM = 3        # Missing request parameter
-STATUS_MALFORMED_REQ = 4        # Malformed request
-STATUS_BAD_METHOD = 5           # Bad/nonexistent method
-STATUS_FAILED_BIOMETRICS = 6    # Failed biometric, but not too many attempts
-STATUS_NOT_VERIFIED = 7         # User must run verifyMasterHash
-# Other (unhandled) exception thrown in code - traceback returned
-STATUS_UNKNOWN_ERR = 10
-STATUS_API_OTHER_ERROR = 11     # Other (handled) error in the API
-STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
-
 
 class PasswordView(tk.Frame):
     def __init__(self, parent, controller, s, commLink, master_pw):
@@ -248,7 +237,7 @@ class PasswordView(tk.Frame):
             return
         # switch this to a better return status message (not always password already in db
         elif resp["status"] == self.comm.STATUS_API_OTHER_ERROR:
-            print("Password already exists in db")
+            print("[ERR] Password already exists in db")
             return
         elif resp["status"] != self.comm.STATUS_SUCCESS:
             print("[ERR] Unknown error while adding password. Status=",
@@ -346,7 +335,7 @@ class PasswordView(tk.Frame):
     def settingsPopup(self):
         # Open dialog to change password or username
         res = self.comm.getSettings()
-        if res['status'] != STATUS_SUCCESS:
+        if res['status'] != self.comm.STATUS_SUCCESS:
             print("[ERR] Authentification failure")
             return
 
@@ -403,20 +392,14 @@ class PasswordView(tk.Frame):
             name, 'Fingerprint name'))
 
         submit = ttk.Button(frame, width=8, text="submit", style='Style.TButton',
-                            command=lambda: self.comm.enrollFingerprint(name.get()))
+                            command=lambda: self.enrollEvent(name.get(), parent))
         submit.grid(column=1, row=0)
 
-        # cancel = ttk.Button(frame, width=8, text="cancel", style='Style.TButton',
-        #                    command=lambda: self.cancelEnroll(btn, submit, cancel, name))
-        # cancel.grid(column=2, row=0)
-
-    """
-    def cancelEnroll(self, btn, submit, cancel, name):
-        submit.grid_remove()
-        cancel.grid_remove()
-        name.grid_remove()
-        btn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
-    """
+    def enrollEvent(self, name, parent):
+        success = self.comm.enrollFingerprint(name)
+        if not success:
+            p = Popup(parent, "Error", "Enrollment failed, please try again", "red")
+            p.destroy(2)
 
     def initFingerprintEntry(self, rows, name):
         _, rownum = rows.grid_size()
@@ -424,7 +407,7 @@ class PasswordView(tk.Frame):
 
         entry = tk.Entry(rows,  width=20, font=("Courier bold", 14))
         delete = ttk.Button(rows, width=20, text="Delete", style='Style.TButton',
-                            command=lambda: self.deleteFingerprint)
+                            command=lambda: self.deleteFingerprint(entry.get()))
 
         items.append(entry)
         items.append(delete)
@@ -435,7 +418,8 @@ class PasswordView(tk.Frame):
         entry.grid(row=rownum, column=0, pady=3, sticky="nesw")
         delete.grid(row=rownum, column=1, pady=3, sticky="nesw")
 
-    def deleteFingerprint(self):
+    def deleteFingerprint(self, fpName):
+        #self.comm.deleteFingerprint(fpName)
         pass
 
     def changePswdUsr(self, sitename):
@@ -479,12 +463,24 @@ class PasswordView(tk.Frame):
 
     def initiateChange(self, popup, field, change, site):
         new = change.get().strip()
+        resp = None
         if field == "usr":
             cipher_usr = crypto.encrypt(new, self.get_master_pw_hash())
-            self.comm.changeUsername(site, cipher_usr)
+            resp = self.comm.changeUsername(site, cipher_usr)
         else:
             cipher_pass = crypto.encrypt(new, self.get_master_pw_hash())
-            self.comm.changePassword(site, cipher_pass)
+            resp = self.comm.changePassword(site, cipher_pass)
+
+        if resp is None:
+            print("[ERR] Change %s failed" % field)
+            return False
+        elif resp["status"] == self.comm.STATUS_FAILED_BIOMETRICS:
+            print("[ERR] %s" % resp["error"])
+            return False
+        elif resp["status"] != self.comm.STATUS_SUCCESS:
+            print("[ERR] Unknown error while removing password. Status=",
+                  resp["status"])
+            return False
         popup.destroy()
 
     def confirmDel(self, sitename, items, row):
@@ -513,7 +509,7 @@ class PasswordView(tk.Frame):
             self.controller.show_frame(StartScreen.StartScreen)
             return False
         elif resp["status"] != self.comm.STATUS_SUCCESS:
-            print("Unknown error while removing password. Status=",
+            print("[ERR] Unknown error while removing password. Status=",
                   resp["status"])
             return False
 

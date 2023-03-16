@@ -339,3 +339,6 @@ class Auth:
             if c == "q":
                 print("Exiting fingerprint example program")
                 raise SystemExit
+
+    def del_finger(self, fpId):
+        return self.finger.delete_model(fpId)

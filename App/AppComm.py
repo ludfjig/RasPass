@@ -303,11 +303,11 @@ class AppComm:
         print("[WARN] Failed to enroll fingerprint")
         return False
 
-    def deleteFingerprint(self, id) -> dict | None:
+    def deleteFingerprint(self, name) -> dict | None:
         """Deletes a previously enrolled fingerprint"""
         req = {
             "method": "deleteFingerprint",
-            "fpId": id,
+            "fpName": name,
             "authtoken": "1"
         }
 

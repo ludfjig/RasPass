@@ -93,14 +93,10 @@ class DataBase:
         """ Get settings (combine calculated settings and stored settings)"""
         actualSettings: dict = {}
         actualSettings.update(self.settings)
+
         # Get num passwords
         actualSettings["numPswdAvail"] = self.getMaxNumPasswords() - self.getNumPasswords()
-        # Check all enrolled fingerprints have names, and set defaults otherwise
-        i = 1
-        for fpId in fpIds:
-            if fpId not in actualSettings["fingerprints"]:
-                actualSettings["fingerprints"][fpId] = "unnamed %d" %i
-                i += 1
+        self.__storeFlashDB()
         return actualSettings
 
     def getNumPasswords(self):
