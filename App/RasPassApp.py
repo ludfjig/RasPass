@@ -13,7 +13,7 @@ class RasPassApp(tk.Tk):
         self.serial = commLink.s
         commLink.setWindow(self)
         self.title("RasPass Password Manager")
-       # self.geometry("850x350")
+        # self.geometry("850x350")
         self.iconbitmap("imgs/logo.ico")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)

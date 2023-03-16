@@ -157,10 +157,10 @@ class PasswordView(tk.Frame):
         s = tk.Entry(self.rows, width=20, font=("Courier bold", 14))
         u = ttk.Button(self.rows, width=20, text="Get Info", style='Style.TButton',
                        command=lambda: self.getInfo(site))
-        c = ttk.Button(self.rows, text="Change", style='Style.TButton',
+        c = ttk.Button(self.rows, width=20, text="Change", style='Style.TButton',
                        command=lambda: self.changePswdUsr(site))
-        d = ttk.Button(self.rows, text="Delete", style='Style.TButton',
-                       command=lambda: self.deletePassword(site, items))
+        d = ttk.Button(self.rows, text="Delete", width=16, style='Style.TButton',
+                       command=lambda: self.confirmDel(site, items, rows))
 
         items.append(s)
         items.append(u)
@@ -441,7 +441,7 @@ class PasswordView(tk.Frame):
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
         top = tk.Toplevel(self)
-        top.geometry("350x150")
+        #top.geometry("350x150")
         top.title("Update %s info" % sitename)
         site = ttk.Label(top, text="Update info for %s" %
                          sitename, font=LARGEFONT)
@@ -487,11 +487,22 @@ class PasswordView(tk.Frame):
             self.comm.changePassword(site, cipher_pass)
         popup.destroy()
 
-    def deletePassword(self, sitename, items):
+    def confirmDel(self, sitename, items, row):
+        items[-1].grid_forget()
+        confirmFrame = tk.Frame(self.rows, width=16)
+        confirmFrame.grid(row=row, column=3, sticky="nesw")
+        confirm = ttk.Button(confirmFrame, width=7, text="Confirm", style='Style.TButton', command=lambda: self.deletePassword(sitename, confirmFrame, items))
+        confirm.grid(row=0, column=0, sticky="nesw")
+        cancel = ttk.Button(confirmFrame, width=7, text="Cancel", style='Style.TButton', command=lambda: self.revertDel(items, confirmFrame, row))
+        cancel.grid(row=0, column=1, sticky="nesw")
+
+    def revertDel(self, items, confirm, row):
+        items[-1].grid(row=row, column=3, sticky="nesw")
+        confirm.destroy()
+
+    def deletePassword(self, sitename, confirmFrame, items):
         # Delete and refresh interface
 
-        # should probably prompt the user again to make sure they really meant
-        # to delete the password
         resp = self.comm.removePassword(sitename)
 
         if resp is None:
@@ -506,6 +517,7 @@ class PasswordView(tk.Frame):
                   resp["status"])
             return False
 
+        confirmFrame.destroy()
         for i in items:
             i.destroy()
 
