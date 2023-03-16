@@ -319,10 +319,14 @@ class PicoComm:
         elif req["phase"] == 2:
             length = len(self.auth.finger.templates)
             i = self.auth.create_image(length)
-            #fpIds = self.auth.getFingerprintIds()
-            #id = fpIds[len(fpIds) - 1]
+            fpIds = list(self.auth.getFingerprintIds())
+            if length in fpIds:
+                while length in fpIds:
+                    length += 1
+
             self.db.settings["fingerprints"][length] = req["fpName"]
-            self.db.__storeFlashDB()
+            if i == 0:
+                self.db.__storeFlashDB()
             return {
                 "method": "enrollFingerprint",
                 "status": i,
@@ -337,28 +341,27 @@ class PicoComm:
 
     def deleteFingerprint(self, req: dict) -> dict | None:
         """ Delete a fingerprint """
-        if not self.auth.authenticate():
+        
+        keys = list(self.db.settings["fingerprints"].keys())
+        names = list(self.db.settings["fingerprints"].values())
+        pos = names.index(req["fpName"].strip())
+        fpId = keys[pos]
+        error = self.auth.del_finger(fpId)
+        if error is not const(0x0):
             return {
-                "method": "enrollFingerprint",
-                "status": self.STATUS_FAILED_BIOMETRICS if self.auth.isVerified else self.STATUS_NOT_VERIFIED,
-                "error": "Authentication error"
+                "method": "deleteFingerprint",
+                "status": self.STATUS_UNKNOWN_ERR,
+                "id": fpId,
+                "error": error
             }
         else:
-            fpId = self.db.settings[req["fpName"]]
-            fpId = str(fpId)
-            if not self.auth.del_finger(fpId):
-                return {
-                    "method": "deleteFingerprint",
-                    "status": self.STATUS_UNKNOWN_ERR,
-                    "error": "Failed to delete fingureprint (unknown error)"
-                }
-            else:
-                self.db.__storeFlashDB()
-                return {
-                    "method": "deleteFingerprint",
-                    "status": self.STATUS_SUCCESS,
-                    "error": None
-                }
+            del self.db.settings["fingerprints"][fpId]
+            self.db.__storeFlashDB()
+            return {
+                "method": "deleteFingerprint",
+                "status": self.STATUS_SUCCESS,
+                "error": None
+            }
 
     def verifyFingerprint(self, req: dict) -> dict | None:
         """Verifies a fingerprint on the sensor that is enrolled is valid.

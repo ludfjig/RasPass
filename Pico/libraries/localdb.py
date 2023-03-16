@@ -58,7 +58,7 @@ class DataBase:
             self.frw.writeFlashDB(block, i)
 
     def __checkSettings(self, settings):
-        """Verify the settings have the expected keys"""
+        """Verify the settings have the expected keys""" 
         for key in self.SETTINGS_KEYS:
             if key not in settings:
                 return False

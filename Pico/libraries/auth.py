@@ -341,4 +341,4 @@ class Auth:
                 raise SystemExit
 
     def del_finger(self, fpId):
-        return self.finger.delete_model(fpId)
+        return self.finger.delete_model(int(fpId))

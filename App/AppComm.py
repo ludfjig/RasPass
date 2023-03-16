@@ -311,4 +311,4 @@ class AppComm:
             "authtoken": "1"
         }
 
-        return self.communicateAuthenticatedReq(req)
+        return self.communicateReq(req)
