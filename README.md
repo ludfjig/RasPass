@@ -7,26 +7,19 @@ companion GUI displayed on their computer.
 Flash the Pico with the latest Microython UF2 from Raspberry Pi (![download link](https://micropython.org/download/rp2-pico/rp2-pico-latest.uf2). We tested on version 1.9.1-859)
 
 
-In VSCode, open the `Pico` folder in a new VSCode window and connect the Pico device onto VSCode. 
+In VSCode, open the `Pico` folder in a new VSCode window and connect the Pico device onto VSCode.
 
-Configure the `Pico` folder project as `Pico W Go` project and upload the project. 
+Configure the `Pico` folder project as `Pico W Go` project and upload the project.
 
 Afterwards, disconnect the Pico from VSCode.
 
-## Laptop GUI Companion
-Make sure the Pico is disconnected from VSCode. 
-
-`cd` into `App`
-
-Run the command `python3 RasPassApp.py` to run the desktop companion app!
-
-Basic design idea for the companion GUI app:
-
+## RasPass Design and Demo
+### Click on Start Screen Image to be directed to video demo of the RasPass's functionality.
 Initial startup view:
 
-![Inital Startup view](/App/imgs/StartScreen.png "Initial Startup View")
+[![Inital Startup view](/App/imgs/StartScreen.png "Initial Startup View")](https://www.youtube.com/watch?v=Q_DuC9U03qs)
 
-After authentication via master password, switch to password view:
+After authentication via master password, switches to password view:
 
 ![Password Manager view](/App/imgs/PasswordView.png "Password Manager view")
 
@@ -46,12 +39,19 @@ The user can also change their login information, which also needs fingerprint a
 
 ![Change info view](/App/imgs/Update.png "Change info view")
 
-Finally, there is a settings page where the user can see how many password entries they have left (for storage) and register/remove fingerprints for authentication. 
+Finally, there is a settings page where the user can see how many password entries they have left (for storage) and register/remove fingerprints for authentication.
 
 ![Settings view](/App/imgs/SettingsPopUp.png "Settings view")
 
+## Running the App
+Make sure the Pico is disconnected from VSCode and/or Thonny.
+
+Open a terminal and `cd` into `App`
+
+Run the command `python3 RasPassApp.py` to run the desktop companion app!
+
 ## Dependencies (for development)
-Python 3.9+
+Python 3.10+
 
 Pico-W-Go extension for working with VSCode, or Thonny IDE
 
