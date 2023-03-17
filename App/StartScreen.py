@@ -11,6 +11,10 @@ import time
 LARGEFONT = ("Courier", 20)
 SMALLFONT = ("Courier", 14)
 
+""" Creates and manages the Start Screen for the RasPassApp.
+
+"""
+
 
 class StartScreen(tk.Frame):
     def __init__(self, parent, controller, s, commLink):
@@ -44,7 +48,8 @@ class StartScreen(tk.Frame):
         self.checkPwBtn.grid(row=0, column=1, padx=10)
         self.checkPwBtn["state"] = "disabled"
 
-        self.master = ttk.Entry(self.entryFrame, width=35, show="*", font=SMALLFONT)
+        self.master = ttk.Entry(
+            self.entryFrame, width=35, show="*", font=SMALLFONT)
         self.master.grid(row=0, column=0, padx=10)
         self.master.config(state="disabled")
 
@@ -77,7 +82,8 @@ class StartScreen(tk.Frame):
         """ Connect to a Pico, if available """
         if self.comm.s is None:
             if not self.comm.initConn():
-                self.statusMsg.config(text="Status: Failed to connect", fg="red")
+                self.statusMsg.config(
+                    text="Status: Failed to connect", fg="red")
                 self.statusMsg.update()
                 time.sleep(1)
         else:

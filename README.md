@@ -1,7 +1,10 @@
 # RasPass
-A physical, encrypted password manager that has fingerprint authorization. After
-user has been authorized, they can use retrieve desired password through a
-companion App displayed on their computer.
+RasPass is a hardware password manager designed to securely store and manage passwords for multiple user accounts using a fingerprint scanner and Raspberry Pi Pico. It connects to a computer through USB and uses encryption to store the username and password combinations. All the username-password combinations are stored in the Pico’s flash memory.
+
+It is an alternative to online password managers, removing the likelihood of being compromised online. With RasPass, users only need to remember one master password to access the manager, along with their fingerprint for biometric authentication. There are a total of three factors to access RasPass: having physical access to the device, knowing the master password, and scanning the fingerprint for biometric authentication.
+
+Passwords can be retrieved and managed through the
+companion App displayed on the computer.
 
 ## RasPass Design and Demo
 ### Click on Start Screen Image to be directed to video demo of the RasPass's functionality.
@@ -53,6 +56,10 @@ Open a terminal and `cd` into `App`
 Run the command `python3 RasPassApp.py` to start the desktop companion app!
 
 ## Dependencies (for development)
+[Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/)
+
+[Fingerprint sensor](https://www.adafruit.com/product/4690)
+
 [Python 3.10+](https://www.python.org/downloads/)
 
 [Pico-W-Go](https://github.com/paulober/Pico-W-Go) extension for working with VSCode
@@ -60,17 +67,17 @@ Run the command `python3 RasPassApp.py` to start the desktop companion app!
 
 [Microython](https://micropython.org/download/rp2-pico/rp2-pico-latest.uf2)  installed on Pico
 
-[pySerial](https://pypi.org/project/pyserial/) library: pip3 install pyserial
+[pySerial](https://pypi.org/project/pyserial/) library: `pip3 install pyserial`
 
-[cryptography 39.0.1+](https://pypi.org/project/cryptography/) library: pip3 install cryptography
+[cryptography 39.0.1+](https://pypi.org/project/cryptography/) library: `pip3 install cryptography`
 
-[pyperclip 1.8.2](https://pypi.org/project/pyperclip/) library: pip3 install pyperclip
+[pyperclip 1.8.2](https://pypi.org/project/pyperclip/) library: `pip3 install pyperclip`
 
-[pillow 9.4.0](https://pypi.org/project/Pillow/) library: pip3 install pillow
+[pillow 9.4.0](https://pypi.org/project/Pillow/) library: `pip3 install pillow`
 
-[sv_ttk](https://pypi.org/project/sv-ttk/) library: pip3 install sv-ttk
+[sv_ttk](https://pypi.org/project/sv-ttk/) library: `pip3 install sv-ttk`
 
-## Known Bugs/Issues for further Development
+## Known Bugs/Issues for further development
 * Formating of the `confirm` and `cancel` buttons for deleting a fingerprint
 * Does not have a scroll bar for if the number of password entries exceeds the view window
 * Master password not stored across powerloss due to issue with the fingerprint sensor itself

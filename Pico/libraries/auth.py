@@ -16,14 +16,17 @@ except ImportError:
 
 
 class Auth:
-    DEFAULT_PSWD: Tuple[int, int, int, int] = (0, 0, 0, 0)  # Default sensor password
+    DEFAULT_PSWD: Tuple[int, int, int, int] = (
+        0, 0, 0, 0)  # Default sensor password
     finger: af.Adafruit_Fingerprint
     fingerTemplates: Dict[int, str]  # Fingerprint templates we have
     numAttempts: int                # Number of attempts on sensor
     maxAttempts: int                # Maximum number of attempts before reset
     isDefaultPswd: bool             # Is the sensor using the default password?
-    isVerified: bool                # Is this sensor active (verified password)?
-    isReset: bool                   # Is this sensor soft-reset (needs power cycle to work again)?
+    # Is this sensor active (verified password)?
+    isVerified: bool
+    # Is this sensor soft-reset (needs power cycle to work again)?
+    isReset: bool
 
     def __init__(self, fingerprint: af.Adafruit_Fingerprint, maxAttempts: int = 5):
         self.finger = fingerprint
@@ -66,7 +69,8 @@ class Auth:
                     if self.finger.load_model(fpId, 1) == af.OK:
                         data = self.finger.get_fpdata("char", 1)
                         if len(data) > 0:
-                            self.fingerTemplates[fpId] = str(hashlib.sha256(bytes(data)).digest().hex())
+                            self.fingerTemplates[fpId] = str(
+                                hashlib.sha256(bytes(data)).digest().hex())
                         time.sleep(0.1)
                 self.isVerified = True
                 self.isDefaultPswd = fpPasswd == self.DEFAULT_PSWD
@@ -323,7 +327,8 @@ class Auth:
                 self.enroll_finger(self.get_num(finger.library_size))
             if c == "f":
                 if self.get_fingerprint():
-                    print("Detected #", finger.finger_id, "with confidence", finger.confidence)
+                    print("Detected #", finger.finger_id,
+                          "with confidence", finger.confidence)
                 else:
                     print("Finger not found")
             if c == "d":

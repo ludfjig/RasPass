@@ -340,7 +340,7 @@ class PasswordView(tk.Frame):
             return
 
         top = tk.Toplevel(self)
-        #top.geometry("550x400")
+        # top.geometry("550x400")
         top.title("RasPass Settings")
 
         image = self.open_img(top, (400, 75), "./imgs/Settings.png")
@@ -398,7 +398,8 @@ class PasswordView(tk.Frame):
     def enrollEvent(self, name, parent):
         success = self.comm.enrollFingerprint(name)
         if not success:
-            p = Popup(parent, "Error", "Enrollment failed, please try again", "red")
+            p = Popup(parent, "Error",
+                      "Enrollment failed, please try again", "red")
             p.destroy(2)
 
     def initFingerprintEntry(self, rows, name):
@@ -430,7 +431,7 @@ class PasswordView(tk.Frame):
     def changePswdUsr(self, sitename):
         # Open dialog to change password or username
         top = tk.Toplevel(self)
-        #top.geometry("350x150")
+        # top.geometry("350x150")
         top.title("Update %s info" % sitename)
         site = ttk.Label(top, text="Update info for %s" %
                          sitename, font=LARGEFONT)
@@ -493,11 +494,14 @@ class PasswordView(tk.Frame):
         confirmFrame = tk.Frame(rows, width=16)
         confirmFrame.grid(row=row, column=3, sticky="nesw")
         if sitename is None:
-            confirm = ttk.Button(confirmFrame, width=7, text="Confirm", style='Style.TButton', command=lambda: self.deleteFingerprint(fpName,  confirmFrame, items))
+            confirm = ttk.Button(confirmFrame, width=7, text="Confirm", style='Style.TButton',
+                                 command=lambda: self.deleteFingerprint(fpName,  confirmFrame, items))
         else:
-            confirm = ttk.Button(confirmFrame, width=7, text="Confirm", style='Style.TButton', command=lambda: self.deletePassword(sitename, confirmFrame, items))
+            confirm = ttk.Button(confirmFrame, width=7, text="Confirm", style='Style.TButton',
+                                 command=lambda: self.deletePassword(sitename, confirmFrame, items))
         confirm.grid(row=0, column=0, sticky="nesw")
-        cancel = ttk.Button(confirmFrame, width=7, text="Cancel", style='Style.TButton', command=lambda: self.revertDel(items, confirmFrame, row))
+        cancel = ttk.Button(confirmFrame, width=7, text="Cancel", style='Style.TButton',
+                            command=lambda: self.revertDel(items, confirmFrame, row))
         cancel.grid(row=0, column=1, sticky="nesw")
 
     def revertDel(self, items, confirm, row):

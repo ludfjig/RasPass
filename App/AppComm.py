@@ -130,7 +130,8 @@ class AppComm:
     def communicateAuthenticatedReq(self, req) -> dict | None:
         """ Communicate with Pico by sending this request that needs fingerprint authentication.
         Will retry until device locks or success. Returns response or None on failure. """
-        p = Popup(self.window, "Fingerprint Authentication", "Place finger on fingerprint sensor when light turns green.")
+        p = Popup(self.window, "Fingerprint Authentication",
+                  "Place finger on fingerprint sensor when light turns green.")
         attempts = 1
         while True:
             self.s.timeout = self.AUTH_READ_TIMEOUT
@@ -145,10 +146,12 @@ class AppComm:
                 p.destroy(1)
                 return res
             elif status == self.STATUS_FAILED_BIOMETRICS:
-                p.changeMsg("Please try again when light turns green (attempt %d)." %attempts, "orange")
+                p.changeMsg(
+                    "Please try again when light turns green (attempt %d)." % attempts, "orange")
                 attempts += 1
             elif status == self.STATUS_NOT_VERIFIED:
-                p.changeMsg("Maximum number of attempts reached. Locking device... disconnect power to recover.", "red")
+                p.changeMsg(
+                    "Maximum number of attempts reached. Locking device... disconnect power to recover.", "red")
                 p.destroy(3)
                 self.disconnect()
                 return res
@@ -267,7 +270,8 @@ class AppComm:
 
     def enrollFingerprint(self, name) -> bool:
         """Enrolls a new fingerprint for authentification"""
-        p = Popup(self.window, "Fingerprint Enrollment", "Place and then remove finger from fingerprint sensor.")
+        p = Popup(self.window, "Fingerprint Enrollment",
+                  "Place and then remove finger from fingerprint sensor.")
         req = {
             "method": "enrollFingerprint",
             "fpName": name,
@@ -278,7 +282,8 @@ class AppComm:
         response = self.communicateReq(req)
         if response['status'] == self.STATUS_SUCCESS:
             p.destroy(1)
-            p = Popup(self.window, "Fingerprint Enrollment", "Replace same finger on fingerprint sensor")
+            p = Popup(self.window, "Fingerprint Enrollment",
+                      "Replace same finger on fingerprint sensor")
             req2 = {
                 "method": "enrollFingerprint",
                 "fpName": name,

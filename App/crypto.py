@@ -14,7 +14,8 @@ def encrypt(password, key):
 
     iv = os.urandom(16)
     # print("iv", iv, len(iv))
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
+                    backend=default_backend())
     encryptor = cipher.encryptor()
 
     cipher_text = iv + encryptor.update(padded_data) + encryptor.finalize()
@@ -27,10 +28,12 @@ def decrypt(cipher_text, key):
     # decryption
     cipher_text = base64.b64decode(cipher_text)
     iv = cipher_text[:16]
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
+                    backend=default_backend())
     decryptor = cipher.decryptor()
 
-    padded_plain_test = decryptor.update(cipher_text[16:]) + decryptor.finalize()
+    padded_plain_test = decryptor.update(
+        cipher_text[16:]) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
     plain_text = unpadder.update(padded_plain_test)
     plain_text += unpadder.finalize()

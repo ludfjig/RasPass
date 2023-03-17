@@ -7,6 +7,7 @@
 from flashrw import FlashRW
 import json
 
+
 class DataBase:
     SETTINGS_START: int = 0
     SETTINGS_END: int = FlashRW.BLOCKSIZE*3
@@ -38,7 +39,7 @@ class DataBase:
             self.settings = json.loads(self.__getUnPadded(rawSettings))
         except:
             self.settings = {}
-        rawSites = raw[self.SETTINGS_END:] # self.PSWDS_END]
+        rawSites = raw[self.SETTINGS_END:]  # self.PSWDS_END]
         for c in range(len(rawSites) // FlashRW.BLOCKSIZE):
             en = rawSites[c * FlashRW.BLOCKSIZE: (c + 1) * FlashRW.BLOCKSIZE]
             sitename, username, password = self.getStorageSitnameUPPair(en)
@@ -48,7 +49,8 @@ class DataBase:
         """Store db in flash"""
         raw_block = bytes()
         try:
-            raw_block += self.__getPadded(json.dumps(self.settings), self.SETTINGS_END-self.SETTINGS_START)
+            raw_block += self.__getPadded(json.dumps(self.settings),
+                                          self.SETTINGS_END-self.SETTINGS_START)
         except:
             raw_block += b"\x00" * (self.SETTINGS_END-self.SETTINGS_START)
         self.frw.writeSettings(raw_block)
@@ -58,7 +60,7 @@ class DataBase:
             self.frw.writeFlashDB(block, i)
 
     def __checkSettings(self, settings):
-        """Verify the settings have the expected keys""" 
+        """Verify the settings have the expected keys"""
         for key in self.SETTINGS_KEYS:
             if key not in settings:
                 return False
@@ -95,7 +97,8 @@ class DataBase:
         actualSettings.update(self.settings)
 
         # Get num passwords
-        actualSettings["numPswdAvail"] = self.getMaxNumPasswords() - self.getNumPasswords()
+        actualSettings["numPswdAvail"] = self.getMaxNumPasswords() - \
+            self.getNumPasswords()
         self.__storeFlashDB()
         return actualSettings
 

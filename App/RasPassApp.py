@@ -6,6 +6,14 @@ from PasswordView import PasswordView
 from StartScreen import StartScreen
 from AppComm import AppComm
 
+""" Initializes and launches the overall RasPassApp
+    App opens with the command "python3 RasPassApp.py" in terminal
+
+    Sets the theme of the App to light mode, which may be icncompatable
+    if your computer is set to dark mode. We recommend changing your
+    computers mode to light mode for the best experience.
+"""
+
 
 class RasPassApp(tk.Tk):
     def __init__(self, commLink, parent=None):
@@ -13,8 +21,10 @@ class RasPassApp(tk.Tk):
         self.serial = commLink.s
         commLink.setWindow(self)
         self.title("RasPass Password Manager")
-        # self.geometry("850x350")
+
+        # sets icon image, may only work on windows systems
         self.iconbitmap("imgs/logo.ico")
+
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
@@ -23,7 +33,8 @@ class RasPassApp(tk.Tk):
         content.columnconfigure(0, weight=1)
         content.rowconfigure(0, weight=1)
 
-        # connect pages
+        # Contains the different pages of the app. Currently a start
+        # screen and password view screen
         self.frames = {}
 
         start_screen = StartScreen(content, self, self.serial, commLink)
@@ -34,6 +45,7 @@ class RasPassApp(tk.Tk):
         self.frames[StartScreen] = start_screen
         self.frames[PasswordView] = password_view
 
+        # app opens to the start screen
         self.show_frame(StartScreen)
 
     def show_frame(self, page):

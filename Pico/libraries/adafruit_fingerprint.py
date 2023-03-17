@@ -85,7 +85,7 @@ class Adafruit_Fingerprint:
     """UART based fingerprint sensor."""
 
     _debug = False
-    _uart : UART
+    _uart: UART
 
     address = [0xFF, 0xFF, 0xFF, 0xFF]
     finger_id = None
@@ -216,7 +216,8 @@ class Adafruit_Fingerprint:
         the argument location. Returns the packet error code or OK success"""
         if not self.password:
             return False
-        self._send_packet([_DELETE, location >> 8, location & 0xFF, 0x00, 0x01])
+        self._send_packet(
+            [_DELETE, location >> 8, location & 0xFF, 0x00, 0x01])
         return self._get_packet(12)[0]
 
     def load_model(self, location: int, slot: int = 1) -> int:
@@ -319,7 +320,8 @@ class Adafruit_Fingerprint:
             [_HISPEEDSEARCH, 0x01, 0x00, 0x00, capacity >> 8, capacity & 0xFF]
         )
         r = self._get_packet(16)
-        self.finger_id, self.confidence = struct.unpack(">HH", bytes(r[1:5]))  # type: ignore
+        self.finger_id, self.confidence = struct.unpack(
+            ">HH", bytes(r[1:5]))  # type: ignore
         return r[0]
 
     def finger_search(self) -> int:
@@ -335,7 +337,8 @@ class Adafruit_Fingerprint:
                 capacity & 0xFF]
         )
         r = self._get_packet(16)
-        self.finger_id, self.confidence = struct.unpack(">HH", bytes(r[1:5]))  # type: ignore
+        self.finger_id, self.confidence = struct.unpack(
+            ">HH", bytes(r[1:5]))  # type: ignore
         return r[0]
 
     def compare_templates(self) -> int:
@@ -394,7 +397,7 @@ class Adafruit_Fingerprint:
         # print(packet_sum)
         # print(packet_type + length + struct.unpack('>HHHH', res[9:9+(length-2)]))
 
-        reply = list(i for i in res[9 : 9 + (length - 2)])
+        reply = list(i for i in res[9: 9 + (length - 2)])
         return reply
 
     def _get_data(self, expected: int) -> List[int]:

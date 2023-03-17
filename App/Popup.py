@@ -10,7 +10,8 @@ class Popup:
         self.window = window
         self.top = tk.Toplevel(self.window)
         self.top.title(title)
-        self.mainLabel = tk.Label(self.top, text=startMsg, font=SMALLFONT, fg=color)
+        self.mainLabel = tk.Label(
+            self.top, text=startMsg, font=SMALLFONT, fg=color)
         self.mainLabel.pack(fill='x', padx=50, pady=5)
         self.window.update()
 

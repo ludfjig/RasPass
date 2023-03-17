@@ -23,11 +23,13 @@ class PicoComm:
     STATUS_BAD_METHOD = 5            # Bad/nonexistent method
     STATUS_FAILED_BIOMETRICS = 6     # Failed biometric, but not too many attempts
     STATUS_NOT_VERIFIED = 7          # User must run verifyMasterHash
-    STATUS_UNKNOWN_ERR = 10          # Other (unhandled) exception thrown in code - traceback returned
+    # Other (unhandled) exception thrown in code - traceback returned
+    STATUS_UNKNOWN_ERR = 10
     STATUS_API_OTHER_ERROR = 11      # Other (handled) error in the API
     STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
 
     """ Communication interface on Pico via USB """
+
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
         self.db = db
         self.auth = auth
@@ -53,12 +55,14 @@ class PicoComm:
 
         stopi = self.rawbuf.index(self.FRAMESTOP)
         if self.FRAMESTART not in self.rawbuf:
-            self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):]  # delete malformed packet
+            # delete malformed packet
+            self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):]
             return None  # Invalid packet
 
         starti = self.rawbuf.index(self.FRAMESTART)
         rawPkt = self.rawbuf[starti+len(self.FRAMESTART):stopi]
-        self.rawbuf = self.rawbuf[stopi+len(self.FRAMESTOP):]  # Crop out packet
+        self.rawbuf = self.rawbuf[stopi +
+                                  len(self.FRAMESTOP):]  # Crop out packet
         try:
             decoded = json.loads(rawPkt.decode('utf-8'))
             return decoded
@@ -341,7 +345,7 @@ class PicoComm:
 
     def deleteFingerprint(self, req: dict) -> dict | None:
         """ Delete a fingerprint """
-        
+
         keys = list(self.db.settings["fingerprints"].keys())
         names = list(self.db.settings["fingerprints"].values())
         pos = names.index(req["fpName"].strip())
@@ -404,10 +408,10 @@ class PicoComm:
                 }
         valid = self.auth.setupFp(hashBytes)
         return {
-                "method": "verifyMasterHash",
-                "status": self.STATUS_SUCCESS,
-                "valid": valid,
-                "error": None
+            "method": "verifyMasterHash",
+            "status": self.STATUS_SUCCESS,
+            "valid": valid,
+            "error": None
         }
 
     def changeMasterPswd(self, req: dict) -> dict | None:
