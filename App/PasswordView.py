@@ -9,10 +9,22 @@ import sv_ttk
 from Popup import Popup
 
 LARGEFONT = ("Courier", 20)
-MEDIUMFONT = ("Courier", 16)
-SMALLFONT = ("Courier", 14)
-BOLDFONT = ('Courier bold', 16)
 LARGEBOLDFONT = ('Courier bold', 20)
+MEDIUMFONT = ("Courier", 16)
+MEDIUMBOLDFONT = ('Courier bold', 16)
+SMALLFONT = ("Courier", 14)
+
+
+""" Creates and manages the Password View screen for the RasPassApp.
+    Displays the stored password entries. Allows the user to access
+    username and password with fingerprint authentification.
+
+    Allows user to add/delete/change password entries with fingerprint
+    authentification
+
+    Option to view setting that displays how many more password entries can
+    be stored and allows user to enroll/delete fingerprints.
+"""
 
 
 class PasswordView(tk.Frame):
@@ -29,6 +41,7 @@ class PasswordView(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        # frame that acts as a root parent to all widgets on window
         content = ttk.Frame(self, padding=(3, 3, 12, 12))
 
         banner = ttk.Frame(content)
@@ -51,8 +64,6 @@ class PasswordView(tk.Frame):
         column_names.grid(column=0, row=0, sticky="nsew")
         rows.grid(column=0, row=1, sticky="nsew")
         btnFrame.grid(column=0, row=6, pady=10)
-
-        # new password button
 
         # ----------  fill   starts here ---------------------------
         parent.columnconfigure(0, weight=1)
@@ -91,24 +102,27 @@ class PasswordView(tk.Frame):
 
         sv_ttk.set_theme("light")
 
-    def returnEvent(self):
-        pass
-
     def onShowFrame(self):
-        """ Event handler for show frame """
-        # entires
+        """ Event handler for show frame. Initializes the password entry rows
+            along with the input row to add a new entry
+        """
         if not self.addedRows:
             self.init_password_rows()
             self.init_input_row()
             self.addedRows = True
         else:
+            # unfocus input row so input prompts appear again
             self.remember_input_row()
 
     def switch_to_start(self, controller):
+        """ Switches back to the start screen, clearing any text that may
+            still be in the input row
+        """
         self.clear_input_row()
         controller.show_frame(StartScreen.StartScreen)
 
     def open_img(self, parent, dim, picture):
+        """ Opens and displays header image for password view """
         img = Image.open(picture)
         img = img.resize((dim[0], dim[1]), Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img)
@@ -117,6 +131,9 @@ class PasswordView(tk.Frame):
         return panel
 
     def remember_input_row(self):
+        """ Adds the site, username, password, and add entries for the input
+            row back to the grid. Unfocuses them so prompts appear in entries.
+        """
         rows = 100
         self.site_entry.grid(column=0, row=rows, sticky="new")
         self.username_entry.grid(column=1, row=rows, sticky="new")
@@ -128,19 +145,24 @@ class PasswordView(tk.Frame):
         self.unfocus_entry(self.password_entry, 'Password')
 
     def forget_input_row(self):
+        """ Forces the grid to forget/remove the input row """
         self.username_entry.grid_forget()
         self.site_entry.grid_forget()
         self.password_entry.grid_forget()
         self.add_new_pswd.grid_forget()
 
     def clear_input_row(self):
+        """ Clears the text from the input row """
         self.username_entry.delete(0, 'end')
         self.site_entry.delete(0, 'end')
         self.password_entry.delete(0, 'end')
 
     def add_row(self, site):
+        """ Adds a new password entry row to the grid """
         _, rows = self.rows.grid_size()
 
+        # container for the elements in the password row so they can
+        # easily be deleted later
         items = []
 
         s = tk.Entry(self.rows, width=20, font=("Courier bold", 14))
@@ -164,15 +186,21 @@ class PasswordView(tk.Frame):
         d.grid(row=rows, column=3, sticky="nesw")
 
     def init_input_row(self):
+        """ Initialize the input row. Once user adds a new entry, input
+            row is cleared so more entries may be added.
+        """
         self.site_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
         self.username_entry = tk.Entry(self.rows, fg='grey', font=SMALLFONT)
         self.password_entry = tk.Entry(
             self.rows, show="*", fg='grey', font=SMALLFONT)
 
+        # prompts for the user to know what each entry box is for
         self.site_entry.insert(0, 'Sitename')
         self.username_entry.insert(0, 'Username')
         self.password_entry.insert(0, 'Password')
 
+        # when user is focused on a specific entry box, the prompt goes away
+        # so they can fill in their own text
         self.site_entry.bind("<FocusIn>", lambda event: self.focus_entry(
             self.site_entry, 'Sitename'))
         self.username_entry.bind("<FocusIn>", lambda event: self.focus_entry(
@@ -180,6 +208,7 @@ class PasswordView(tk.Frame):
         self.password_entry.bind("<FocusIn>", lambda event: self.focus_entry(
             self.password_entry, 'Password'))
 
+        # when unfocused, if entry still blank, re-adds prompt
         self.site_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(
             self.site_entry, 'Sitename'))
         self.username_entry.bind("<FocusOut>", lambda event: self.unfocus_entry(
@@ -202,22 +231,27 @@ class PasswordView(tk.Frame):
         self.add_new_pswd.grid(column=3, row=rows, sticky="nesw")
 
     def focus_entry(self, entry, msg):
+        """ Removes prompt from entry box """
         if entry.get() == msg:
             entry.delete(0, tk.END)
             entry.insert(0, '')
             entry.config(fg='black')
 
     def unfocus_entry(self, entry, msg):
+        """ Adds prompt back to entry box """
         if entry.get() == '':
             entry.insert(0, msg)
             entry.config(fg='grey')
 
     def get_master_pw_hash(self):
+        """ Returns the sha256 hash of the master password """
         m = hashlib.sha256()
         m.update(self.master_pw.get().encode('utf-8'))
         return m.digest()
 
     def init_password_rows(self):
+        """ Initializes all the password rows from the data stored in the Pico
+        """
         site_reply = self.comm.getAllSiteNames()
         if site_reply is not None and site_reply["status"] == self.comm.STATUS_SUCCESS:
             sitenames = site_reply["sitenames"]
@@ -225,9 +259,12 @@ class PasswordView(tk.Frame):
                 self.add_row(sitenames[i])
 
     def addPassword(self, sitename, username, password):
-        # Add and refresh interface (e.g. show in list)
+        """ Adds a new password row to the grid once user has clicked the
+            add button on the input row
+        """
 
-        # encryption
+        # AES CBC encrypt both the username and password before sending to
+        # be stored in pico
         cipher_pass = crypto.encrypt(password, self.get_master_pw_hash())
         cipher_usr = crypto.encrypt(username, self.get_master_pw_hash())
 
@@ -235,7 +272,6 @@ class PasswordView(tk.Frame):
         if resp is None:
             print("[ERR] Add password failed")
             return
-        # switch this to a better return status message (not always password already in db
         elif resp["status"] == self.comm.STATUS_API_OTHER_ERROR:
             print("[ERR] Password already exists in db")
             return
@@ -250,6 +286,7 @@ class PasswordView(tk.Frame):
         self.remember_input_row()
 
     def revealHideUsrPw(self, cipher_text, label, btn):
+        """ Toggles the view of username or password in GetInfo popup """
         current_text = label.cget('text')
         if current_text == '*****':
             plain_text = crypto.decrypt(cipher_text, self.get_master_pw_hash())
@@ -263,11 +300,16 @@ class PasswordView(tk.Frame):
         return
 
     def copyField(self, window, pswd):
+        """ Copies username or password to computer's clipboard """
         popup = Popup(window, "", "Copied!", color="green")
         pc.copy(pswd)
         popup.destroy(1)
 
     def getInfo(self, sitename):
+        """ Creates popup where user can view and copy the username and
+            password for a specific entry. Requires fingerprint
+            authentification.
+        """
         resp = self.comm.getPassword(sitename)
 
         if resp is None:
@@ -282,19 +324,23 @@ class PasswordView(tk.Frame):
                 "[ERR] Unknown error while getting username and password. Status=", resp["status"])
             return
 
+        # decrypt password retrieved from Pico to display on App
         cipher_text = resp['password']
         plain_text_pw = crypto.decrypt(cipher_text, self.get_master_pw_hash())
 
+        # decrpyt username retrieved from Pico to display on App
         cipher_uname = resp['username']
         plain_text_usr = crypto.decrypt(
             cipher_uname, self.get_master_pw_hash())
 
+        # create popup
         top = tk.Toplevel(self)
         top.geometry("550x400")
         top.title("RasPass Site Entry Info")
 
         style = ttk.Style()
         style.configure('GetInfo.TButton', font=MEDIUMFONT)
+
         username = tk.Label(top, font=LARGEBOLDFONT, text="Username:")
         username.grid(column=0, row=0, padx=15, pady=10, sticky='nw')
 
@@ -333,16 +379,19 @@ class PasswordView(tk.Frame):
         rows.grid(column=0, row=8, padx=25, pady=5, sticky='nw')
 
     def settingsPopup(self):
-        # Open dialog to change password or username
+        """ Opens a popup to view how much storage is left and enroll/delete
+            fingerprints
+        """
         res = self.comm.getSettings()
         if res['status'] != self.comm.STATUS_SUCCESS:
             print("[ERR] Authentification failure")
             return
 
+        # creates popup
         top = tk.Toplevel(self)
-        # top.geometry("550x400")
         top.title("RasPass Settings")
 
+        # open image for settings header
         image = self.open_img(top, (400, 75), "./imgs/Settings.png")
         image.grid(column=0, row=0)
 
@@ -353,8 +402,9 @@ class PasswordView(tk.Frame):
         storageWrapper = tk.Frame(top, width=500, height=30)
         storageWrapper.grid(column=0, row=2, padx=25, pady=20, sticky='nw')
         storageWrapper.grid_propagate(False)
+
         storage = tk.Text(storageWrapper, font=LARGEFONT)
-        storage.tag_configure("bold", font=BOLDFONT)
+        storage.tag_configure("bold", font=MEDIUMBOLDFONT)
         storage.insert("end", "Storage Available: ", "bold")
         storage.insert("end", "%s password entries" % passwordsAvail)
         storage.config(state="disabled", borderwidth=0, highlightthickness=0)
@@ -362,11 +412,15 @@ class PasswordView(tk.Frame):
 
         style = ttk.Style()
         style.configure('Settings.TButton', font=MEDIUMFONT)
+
+        # button to enroll new finger prints that can be used for
+        # authentification
         enrollBtn = ttk.Button(top, text="Enroll New Fingerprint", style='Settings.TButton',
                                command=lambda: self.enrollFinger(top, enrollBtn))
         enrollBtn.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
-        regFingers = tk.Label(top, font=BOLDFONT,
+        # display all fingerprints currently registered
+        regFingers = tk.Label(top, font=MEDIUMBOLDFONT,
                               text="Fingerprints registered:")
         regFingers.grid(column=0, row=6, padx=25, pady=10, sticky='nw')
 
@@ -380,10 +434,12 @@ class PasswordView(tk.Frame):
             self.initFingerprintEntry(rows, fingerPrints[finger])
 
     def enrollFinger(self, parent, btn):
+        """ Enroll a new fingerprint for authentification """
         btn.grid_forget()
         frame = tk.Frame(parent)
         frame.grid(column=0, row=4, padx=25, pady=10, sticky='nw')
 
+        # prompt for fingerprint entry
         name = tk.Entry(frame, fg='grey', font=SMALLFONT)
         name.insert(0, "Fingerprint name")
         name.grid(column=0, row=0)
@@ -396,6 +452,9 @@ class PasswordView(tk.Frame):
         submit.grid(column=1, row=0)
 
     def enrollEvent(self, name, parent):
+        """ Enrolls new fingerprint. Opens popup that indicates if enrollment
+            was a success or needs to be tried again
+        """
         success = self.comm.enrollFingerprint(name)
         if not success:
             p = Popup(parent, "Error",
@@ -403,6 +462,7 @@ class PasswordView(tk.Frame):
             p.destroy(2)
 
     def initFingerprintEntry(self, rows, name):
+        """ Initialize a row for a stored fingerprint """
         _, rownum = rows.grid_size()
         items = []
 
@@ -414,12 +474,14 @@ class PasswordView(tk.Frame):
         items.append(delete)
 
         entry.insert(0, name)
+        # all fingerprint names are readonly
         entry.config(state="readonly")
 
         entry.grid(row=rownum, column=0, pady=3, sticky="nesw")
         delete.grid(row=rownum, column=1, pady=3, sticky="nesw")
 
     def deleteFingerprint(self, fpName, confirmFrame, items):
+        """ Delete a previously enrolled fingerprint """
         self.comm.deleteFingerprint(fpName)
 
         confirmFrame.destroy()
@@ -429,9 +491,11 @@ class PasswordView(tk.Frame):
         return True
 
     def changePswdUsr(self, sitename):
-        # Open dialog to change password or username
+        """ Open a dialog to be able to change the username or password for
+            a specific site entry. Sitename cannot be changed.
+        """
+        # Open popup
         top = tk.Toplevel(self)
-        # top.geometry("350x150")
         top.title("Update %s info" % sitename)
         site = ttk.Label(top, text="Update info for %s" %
                          sitename, font=LARGEFONT)
@@ -451,6 +515,7 @@ class PasswordView(tk.Frame):
                    command=lambda: top.destroy()).grid(column=0, row=6, padx=25, pady=15)
 
     def changeField(self, popup, btn, rw, site):
+        """ Reveals entry box to change either username or password """
         if btn['text'] == "Change Username":
             field = "usr"
         else:
@@ -468,6 +533,9 @@ class PasswordView(tk.Frame):
         submit.grid(column=1, row=0)
 
     def initiateChange(self, popup, field, change, site):
+        """ Responsible for actually updating the changed username or password
+            in the Pico database
+        """
         new = change.get().strip()
         resp = None
         if field == "usr":
@@ -490,6 +558,9 @@ class PasswordView(tk.Frame):
         popup.destroy()
 
     def confirmDel(self, items, rows, row, sitename: None, fpName: None):
+        """ Second confirmation when user clicks a delete button to prevent
+            accidental deleting
+        """
         items[-1].grid_forget()
         confirmFrame = tk.Frame(rows, width=16)
         confirmFrame.grid(row=row, column=3, sticky="nesw")
@@ -505,11 +576,14 @@ class PasswordView(tk.Frame):
         cancel.grid(row=0, column=1, sticky="nesw")
 
     def revertDel(self, items, confirm, row):
+        """ Cancels the delete and returns back to normal row view """
         items[-1].grid(row=row, column=3, sticky="nesw")
         confirm.destroy()
 
     def deletePassword(self, sitename, confirmFrame, items):
-        # Delete and refresh interface
+        """ Delete a password row entry from the app and Pico database.
+            Requires fingerprint authentification
+        """
 
         resp = self.comm.removePassword(sitename)
 

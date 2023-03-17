@@ -14,6 +14,9 @@ try:
 except ImportError:
     pass
 
+""" Handles authentification and management of fingerprint templates and setup
+"""
+
 
 class Auth:
     DEFAULT_PSWD: Tuple[int, int, int, int] = (
@@ -32,7 +35,7 @@ class Auth:
         self.finger = fingerprint
         self.fingerTemplates = {}
         self.numAttempts = 0
-        self.maxAttempts = maxAttempts  # Number of attempts. TODO: initialize from settings
+        self.maxAttempts = maxAttempts  # Number of attempts
         self.led = Pin(25, Pin.OUT)
         self.isDefaultPswd = False
         self.isVerified = False
@@ -99,10 +102,8 @@ class Auth:
         if self.get_fingerprint():
             if self.finger.finger_id is not None and self.finger.finger_id >= 0:
                 fpId = int(self.finger.finger_id)
-                # self.blink_yes()
                 return (fpId, self.fingerTemplates[fpId])
 
-        # self.blink_no()
         return None
 
     def authenticate(self) -> bool:
@@ -346,4 +347,5 @@ class Auth:
                 raise SystemExit
 
     def del_finger(self, fpId):
+        """ Removes a stored fingerprint """
         return self.finger.delete_model(int(fpId))

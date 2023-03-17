@@ -12,7 +12,8 @@ LARGEFONT = ("Courier", 20)
 SMALLFONT = ("Courier", 14)
 
 """ Creates and manages the Start Screen for the RasPassApp.
-
+    Blocks user from accessing password view until a valid master password
+    has been entered.
 """
 
 
@@ -31,21 +32,26 @@ class StartScreen(tk.Frame):
         self.style = ttk.Style()
         self.style.configure('Style.TButton', font=SMALLFONT)
 
-        # check if master password has already been set up
-        # if not, ask to set password instead of enter master password
+        # display whether or not the Pico has been successfully connected
         self.statusMsg = tk.Label(
             self, text="Status: Not connected", fg="red", font=SMALLFONT)
         self.statusMsg.grid(row=3, column=0, columnspan=2, pady=5)
 
-        self.connBtn = ttk.Button(self, text="Connect to Pico", width=20, style='Style.TButton',
+        # button to initiate attempt to connect to pico
+        self.connBtn = ttk.Button(self, text="Connect to Pico", width=20,
+                                  style='Style.TButton',
                                   command=self.togglePicoConn)
         self.connBtn.grid(row=4, column=0, columnspan=2, pady=20)
 
         self.entryFrame = tk.Frame(self, width=50)
         self.entryFrame.grid(row=5, column=0)
-        self.checkPwBtn = ttk.Button(self.entryFrame, text="Check Master Password", style='Style.TButton',
+        self.checkPwBtn = ttk.Button(self.entryFrame,
+                                     text="Check Master Password",
+                                     style='Style.TButton',
                                      command=lambda: self.checkMasterPass(controller, s))
+
         self.checkPwBtn.grid(row=0, column=1, padx=10)
+        # check master password button disabled until pico connected
         self.checkPwBtn["state"] = "disabled"
 
         self.master = ttk.Entry(
@@ -56,13 +62,18 @@ class StartScreen(tk.Frame):
         sv_ttk.set_theme("light")
 
     def returnEvent(self):
+        """ On return key click, submits and checks the master password entry.
+        """
         self.checkMasterPass(self.window, self.s)
 
     def checkMasterPass(self, controller, s):
-        # check that the entered password hash matches the password hash stored
-        # in the raspass
-        # if it does, switch to password view
-        # if not, give 2 more attempts before 5min timeout (timing if pico disconnected?)
+        """ Checks that the hash of the last 4 bytes of entered master password
+            matches the password hash stored in the secure storage of the
+            fingerprint sensor.
+
+            If password valid, switches to the PasswordView.
+            If not, displays message informing user of an incorrect password
+        """
         self.statusMsg.config(text="Status: Checking password...", fg="orange")
         pass_hash = self.get_master_pw_hash()
 
@@ -71,11 +82,15 @@ class StartScreen(tk.Frame):
         controller.update_idletasks()
 
         print("[INFO] Password: %s. Hash: %s" % (self.master.get(), pass_hash))
+
+        # check hash of last four bytes of password against stored password
         pass_check = self.comm.verifyMasterHash(pass_hash[-4:])
-        if not pass_check or "valid" not in pass_check or not pass_check["valid"]:
+        if not pass_check or "valid" not in pass_check or \
+           not pass_check["valid"]:
             print("[WARN] Incorrect master password")
             self.statusMsg.config(text="Status: Incorrect password", fg="red")
             return
+        # valid master password initiates change to password view
         controller.show_frame(PasswordView.PasswordView)
 
     def togglePicoConn(self):
@@ -105,11 +120,13 @@ class StartScreen(tk.Frame):
         self.master.config(state="disabled")
 
     def get_master_pw_hash(self):
+        """ Returns the sha256 hash of the master password """
         m = hashlib.sha256()
         m.update(self.master.get().encode('utf-8'))
         return m.digest()
 
     def open_img(self, picture):
+        """ Open and display the header image """
         img = Image.open(picture)
         img = img.resize((800, 150), Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img)

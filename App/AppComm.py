@@ -5,6 +5,10 @@ import json
 import time
 from Popup import Popup
 
+""" Handles all communication with the Pico using defined API calls defined
+    on both the App and Pico side based on the Communication.py interface.
+"""
+
 
 class AppComm:
     FRAMESTART: bytes = b"\xff"
@@ -43,10 +47,10 @@ class AppComm:
                         self.s = serial.Serial(device, timeout=self.DEFAULT_READ_TIMEOUT,
                                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
                     except serial.SerialException:
-                        # for some reason when I do list_ports.comports on my mac it always
-                        # gives me "/dev/cu.usbmodem101" instead of "/dev/tty.usbmodem101"
-                        # so this is just forcing it to use tty for my computer if connecting
-                        # over cu fails
+                        # Fix sometimes needed for Mac
+                        # list_ports.comports sometimes only gives "/dev/cu.usbmodem101"
+                        # instead of "/dev/tty.usbmodem101"
+                        # This forces it to use tty if connecting over cu fails
                         device = re.sub(r'/cu', r'/tty', device)
                         self.s = serial.Serial(device, 9600, timeout=self.DEFAULT_READ_TIMEOUT,
                                                write_timeout=self.DEFAULT_WRITE_TIMEOUT)
@@ -65,14 +69,14 @@ class AppComm:
             return False
 
     def disconnect(self):
+        """ Close the connection between the Pico and the App """
         self.s.close()
         self.s = None
 
     def writeRequest(self, req: dict) -> int:
+        """ Write a given request to the Pico """
         if self.s is None:
             return -1
-        # will create correct json format to send later
-        # right now just trying to set up basic framework
 
         # first, dump out anything in the input buffer
         self.s.reset_input_buffer()
@@ -87,10 +91,11 @@ class AppComm:
             return (size == len(encoded))
         except serial.SerialTimeoutException:
             # timed out, something went wrong, return -1 to indicate error
-            return False
+            return -1
 
-    # expects a json response from pico
     def readResponse(self) -> dict | None:
+        """ Read response from the Pico. Expects a json response """
+
         # while there is a next line to read from pico, read data
         # failure on error reading
         # structure back to python object from json
@@ -191,7 +196,7 @@ class AppComm:
 
     def getPassword(self, sitename: str) -> dict | None:
         """Get the username,password. Returns response or None on failure"""
-        # sanitize input
+
         print("[INFO] Get password request for sitename %s" % sitename)
         req = {
             "method": "getPassword",

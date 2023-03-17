@@ -1,6 +1,10 @@
 # Library to read/write from the Pico Flash
 # Copyright (c), 2023  RasPass
 
+""" Reads and writes to flash storage on the Pico
+"""
+
+
 class FlashRW:
     BLOCKSIZE: int = 2048          # Flash storage block size
     MAXSIZE: int = BLOCKSIZE*250   # Maximum flash storage
@@ -47,6 +51,10 @@ class FlashRW:
         return False
 
     def writeSettings(self, raw_block: bytes) -> bool:
+        """ Write the raw_block for the settings (block aligned) to flash.
+            Settings will always be stored in the first 3 blocks of flash
+            Return success/failure
+        """
         assert len(raw_block) % self.BLOCKSIZE == 0
         self.openWrite()
         self.file.seek(0)

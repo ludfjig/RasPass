@@ -39,7 +39,7 @@ class DataBase:
             self.settings = json.loads(self.__getUnPadded(rawSettings))
         except:
             self.settings = {}
-        rawSites = raw[self.SETTINGS_END:]  # self.PSWDS_END]
+        rawSites = raw[self.SETTINGS_END:]
         for c in range(len(rawSites) // FlashRW.BLOCKSIZE):
             en = rawSites[c * FlashRW.BLOCKSIZE: (c + 1) * FlashRW.BLOCKSIZE]
             sitename, username, password = self.getStorageSitnameUPPair(en)
@@ -75,7 +75,6 @@ class DataBase:
 
     def addMasterHash(self, pass_hash: bytes):
         """Add hash of last 4 bytes of master password to database"""
-        # self.master_hash = pass_hash
         self.__storeFlashDB()
 
     def setSettings(self, settings: dict) -> bool:

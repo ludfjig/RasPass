@@ -3,6 +3,9 @@ import time
 
 SMALLFONT = ("Courier", 14)
 
+""" Creates and manages a popup to display messages to the user
+"""
+
 
 class Popup:
     def __init__(self, window, title, startMsg, color="green"):

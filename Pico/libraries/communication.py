@@ -13,6 +13,11 @@ from micropython import const
 
 OK = const(0x0)
 
+""" Handles all communication with the App using defined API calls defined
+    on both the App and Pico side based on the Communication.py interface.
+    Communicates via USB
+"""
+
 
 class PicoComm:
     FRAMESTART = b"\xff"
@@ -27,8 +32,6 @@ class PicoComm:
     STATUS_UNKNOWN_ERR = 10
     STATUS_API_OTHER_ERROR = 11      # Other (handled) error in the API
     STATUS_NOT_YET_IMPLEMENTED = 12  # API method exists, but not implemented
-
-    """ Communication interface on Pico via USB """
 
     def __init__(self, db: localdb.DataBase, auth: auth.Auth):
         self.db = db
@@ -311,7 +314,6 @@ class PicoComm:
 
     def enrollFingerprint(self, req: dict) -> dict | None:
         """ Enroll a new fingerprint """
-        # success = self.auth.template_finger(self.auth.get_num(self.auth.finger.library_size), req['fpName'])
 
         if req['phase'] < 2:
             i = self.auth.template_finger(req['phase']+1)

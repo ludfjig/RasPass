@@ -87,20 +87,8 @@ time.sleep(0.25)
 fp.main_loop(finger)
 '''
 
-# First time setting up - still need to set hash
-# set the master password hash to be null initially
-# database.master_hash = (4 * b"\x00")
-# else:
-#   fp.setupFp(tuple(database.master_hash))
-
-# fp.changePswd((0,0,0,0), tuple(b'P8K='))
-
 led, finger = setupIO()
 print("Starting")
-# led, finger = setupIO()
-# fp = Auth(finger)
-# fp.main_loop(finger)
-
 
 try:
     # Run project

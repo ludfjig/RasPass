@@ -1,5 +1,7 @@
 import tkinter as tk
-from tkinter import ttk
+
+# Incomplete/Non-functioning implementation of a scrollable frame for tkinter
+# In future may complete and integrate into App
 
 
 class Scrollable(tk.Frame):
